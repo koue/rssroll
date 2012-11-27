@@ -1,5 +1,3 @@
-/*	cgi.c,v 1.0 2011/12/13 koue					*/
-
 /*
  * Copyright (c) 2004 Daniel Hartmeier. All rights reserved.
  * Copyright (c) 2011 Nikola Kolev. All right reserved.
