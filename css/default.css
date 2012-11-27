@@ -1,0 +1,309 @@
+@charset "UTF-8";
+
+/* Version: 2005-01-08
+ body
+============================================*/
+
+body {
+	padding: 1% 3%;
+	font-family: sans-serif;
+	/*background: white url("./images/background.jpg") repeat-y 0;*/
+}
+
+h1, h2, h3, h4 {
+	font-family: "Optima", serif;
+}
+
+/*___ anchors ___*/
+
+a:link	{text-decoration: none;}
+a:visited	{text-decoration: none;}
+a:hover	{text-decoration: underline;}
+a:link img	{ border: 1px solid;}
+a:visited img	{ border: 1px solid;}
+
+
+/* header
+============================================*/
+
+div#header  {
+	color: #666;
+	font-size: 200%;
+	font-weight: bold;
+	font-family: "Optima", "Georgia", serif;
+}
+
+div#header a:link,
+div#header a:visited {
+	color: #666;
+}
+
+
+/* main content (entries)
+============================================*/
+
+div#content {
+	float: right;
+	width: 75%;
+	margin-top: 0.3em;
+}
+
+/*___ main blog each entries ___*/
+
+p.date {
+	margin-bottom: 0.2em;
+	color: #888;
+	font-size: 90%;
+	font-weight: bold;
+}
+
+div.entry {
+	border: 1px solid #aaa;
+	/* background: white url("./images/entry.jpg") repeat-y right; */
+}
+
+div.entryend {
+	margin-bottom: 4%;  /* make margin at the out of entry. */
+}
+
+/*___ entry title ___*/
+
+div.entry h1.title {
+	margin-bottom: 1%;
+	padding: 0.6em 1% 1% 2%;
+	color: #373A3F;
+	font-size: 110%;
+	font-weight: bold;
+	border-bottom: 1px dotted #ccc;
+}
+
+div.entry h1.title a {
+	text-decoration: none;
+}
+
+
+/* entry body (story)
+============================================*/
+
+div.entry div.story {
+	padding: 0% 4%;
+	color: #222;
+	font-size: 100%;  /* if problem, change font-size in your stories...*/
+	line-height: 145%;
+}
+
+div.story p {
+	margin: 1% 0;
+}
+
+/*___ styles on entry body (story) ___*/
+
+div.story h1, div.story h2, div.story h3, div.story h4 {
+	margin-top: 5%;
+	font-size: 105%;
+	font-weight: bold;
+	font-family: serif;
+	letter-spacing: 0.1em;
+}
+
+div.story li {
+	line-height: 140%;
+}
+
+div.story dt {
+	margin-top: 1em;
+	padding-left: 0.6em;
+	clear: both;
+	border-left: 6px solid #DEDEDE;
+}
+
+div.story dd {
+	width: 80%;
+	padding-top: 0.2em;
+	padding-left: 0.3em;
+	font-size: 90%;
+	clear: both;
+}
+
+div.story blockquote {
+  	border-left: double #C4C4C4;
+  	margin: 2% 0% 2% 5%;
+  	padding-left: 3%;
+}
+
+div.story pre {
+	padding: 1%;
+	font-size:10px;
+	line-height: 140%;
+	font-family: sans-serif;
+	clear: both;
+}
+
+/*___ images in entry body (story) ___*/
+
+div.story img {
+	margin: 1px 1%;
+}
+
+div.story img.left {
+	margin: 1% 3% 1% 0%;
+	float: left;
+}
+
+div.story img.right {
+	margin: 1% 0% 1% 3%;
+	float: right;
+}
+
+/*___ entries postinfo ___*/
+
+div.entry p.postinfo {
+	padding: 1% 3%;
+	text-align: right;
+	font-size: 90%;
+	clear: both;
+}
+
+
+/* writeback for html & writeback
+============================================*/
+
+div.entryend div.writeback {
+	margin: 0% 0% 0% 5%;
+	padding: 1% 3%;
+	color: #3a3a3a;
+	font-size: 90%;
+	line-height: 140%;
+	border-left: 1px dotted #aaa;
+	border-right: 1px solid #aaa;
+	border-bottom: 1px solid #aaa;
+	background: #f3f3f3;
+}
+
+div.entryend div strong {
+	color: #111;
+	font-weight: normal;
+}
+
+a.comments:hover { text-decoration: none; }
+*.comments {
+	margin-top: 3%;
+	color: #816F5E;
+	font-weight: bold;
+	font-family: serif;
+	letter-spacing: 0.1em;
+	border: 0;
+	clear: both;
+}
+
+*.meta {
+	color: #444;
+	font-size: 90%;
+}
+
+/*___ form for wikieditish & writeback ___*/
+
+div.story > form > p > input,
+div.story > form > p > textarea {
+	margin: 0;
+	padding: 0% 1%;
+	font-size: 100%;
+	line-height: 85%;
+	font-family: sans-serif;  /* if problem, add your country font */
+}
+
+p.trackback {
+	padding-left: 2em;
+	border-left: 3px double #C4C4C4;
+}
+
+
+/* sidebar (side columns)
+============================================*/
+
+div#sidebar {
+	padding-top: 1.5em;
+	width: 23%;
+	float: left;
+}
+
+/*___ column-box ___*/
+
+div#sidebar div.column {
+	margin-bottom: 1.2em;
+	padding: 4%;
+	color: #444;
+	font-size: 90%;  /* please change font-size in your column...*/
+	line-height: 130%;
+	text-align: left;
+	border: 1px solid #aaa;
+/*	background: white url("./images/entry.jpg") repeat-y right; */
+}
+
+div.column h1 {
+	margin: 0;
+	padding: 0 0 2% 0;
+	color: #71797D;
+	font-size: 105%;
+	font-weight: bold;
+}
+
+div.column p {
+	padding: 1% 4% 4% 4%;
+}
+
+div.column ul {
+	margin: 0% 0% 0% 1%;
+	padding-left: 0.3em;
+	list-style: none;
+}
+
+/*___ powered in column ___*/
+
+div.column p.powered {
+	padding: 0;
+	text-align: center;
+	font-size: 85%;
+}
+
+p.powered a { color: #888;}
+p.powered img,
+p.powered a:visited img {
+	border: 0;
+}
+
+
+
+/* stated styles for the particular plugins
+============================================*/
+
+/*___ Breadcrumb by Categories plugin ___*/
+div.breadcrumb {
+	padding: 0.1em 0.3em;
+	color: #444;
+	font-size: 90%;
+	line-height: 130%;
+}
+
+/*___ paging ___*/
+div.paging, div.back_and_forth {
+	color: #444;
+	font-size: 90%;
+	text-align: right;
+	clear: right;   /* very important */
+}
+
+/*___ calendar ___*/
+*.calendar, *.month-calendar { margin: 0 auto; font-size: 85%; color: #777; }
+caption.month-calendar-head { text-align: left; }
+*.month-calendar td { padding: 1px; }
+th.month-calendar-day-head { display: none; }
+*.Sunday { color: #D89586; }
+*.Saturday { color: #7D9BD0; }
+
+/*___ Seemore ___*/
+a.seemore  { padding-left: 2em;}
+hr.seemore { display: none; }
+
+/*___ Google_Highlight ___*/
+*.highlight { background-color: #CFFFA6; }
