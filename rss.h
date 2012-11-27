@@ -23,7 +23,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 
 #define RSSMAXITEM 512
-#define RSSMAXBUFSIZE 4096
+#define RSSMAXBUFSIZE 65536
 
 
 // version id's
