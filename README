@@ -1,0 +1,5 @@
+RSS collector in C
+
+curl
+libxml2
+sqlite3
