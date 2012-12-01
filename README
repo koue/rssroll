@@ -1,5 +1,7 @@
-RSS collector in C
+rss collector in written in c
 
-curl
-libxml2
-sqlite3
+used libraries:
+
+	curl
+	libxml2
+	sqlite3

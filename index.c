@@ -75,7 +75,7 @@ chomp(char *s) {
 static void
 dprintf(const char *fmt, ...)
 {
-	static char s[65536];
+	static char s[RSSMAXBUFSIZE];
 	va_list ap;
 	int r;
 

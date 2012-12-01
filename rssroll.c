@@ -33,10 +33,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sqlite3.h>
+#include <unistd.h>
 #include <curl/curl.h>
 #include <curl/types.h>
 #include <curl/easy.h>
 #include <sys/param.h>
+
 #include "rss.h"
 
 #define DEBUG 		0
@@ -45,10 +47,10 @@
 /* file to save content for parsing from rss file 	*/
 #define BODYFILE	"/tmp/.body.txt"
 /* max length of the insert query			*/
-#define	MAXQUERY	65536
+#define	MAXQUERY	131072
 
 /* rss database store	*/
-sqlite3* db;
+static sqlite3* db;
 
 /* debug message out */
 void 
@@ -334,11 +336,16 @@ main( int argc, char** argv){
 		return 0;	
 	}
 	
-	strcpy(DBNAME,argv[2]);
+	snprintf(DBNAME, sizeof(DBNAME), "%s", argv[2]);
+
+	if(access(DBNAME, R_OK)){
+		printf("Cannot read database file!\n");
+		return 1;
+	}
 	
-	sqlite3_open(argv[2], &db);
+	sqlite3_open(DBNAME, &db);
 	if (!db) {
-		printf("Count not open database %s\n",DBNAME);
+		printf("Cannot open database %s\n",DBNAME);
 		return 1;
 	}
 	if(DEBUG) {

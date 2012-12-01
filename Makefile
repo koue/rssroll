@@ -2,8 +2,8 @@ CC=gcc -Wall -Wstrict-prototypes -g -O0
 
 all: rssroll index.cgi
 
-rssroll: rssroll.c rss.o 
-	$(CC) -I /usr/local/include/libxml2 -I /usr/local/include -L /usr/local/lib rssroll.c -o rssroll -lxml2 -lsqlite3 -lcurl rss.o
+rssroll: rssroll.c rss.o
+	$(CC) -I /usr/local/include/libxml2 -I /usr/local/include -L /usr/local/lib rssroll.c -o rssroll -lxml2 -lsqlite3 -lcurl rss.o 
 
 rss.o: rss.c rss.h
 	$(CC) -static -I /usr/local/include/libxml2 -I /usr/local/include -c rss.c

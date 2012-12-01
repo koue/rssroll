@@ -21,9 +21,10 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #ifndef RSS_H
 #define RSS_H
 
-
-#define RSSMAXITEM 512
-#define RSSMAXBUFSIZE 65536
+/* increase this number if rss files have more then 32 items */
+#define RSSMAXITEM 32
+/* examine the rss items lenghts and change this value if its necessary. */
+#define RSSMAXBUFSIZE 131072
 
 
 // version id's
@@ -43,8 +44,8 @@ enum {
 
 typedef struct
 {
-  char title[RSSMAXBUFSIZE];
-  char url[RSSMAXBUFSIZE];
+  char title[256];
+  char url[256];
   char desc[RSSMAXBUFSIZE];
   time_t date;
 } st_rss_item_t;
@@ -55,8 +56,8 @@ typedef struct
   int version;               // version of the feed
 
   // feed information
-  char title[RSSMAXBUFSIZE];
-  char url[RSSMAXBUFSIZE];
+  char title[256];
+  char url[256];
   char desc[RSSMAXBUFSIZE];
   time_t date;
 
