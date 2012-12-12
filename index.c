@@ -47,12 +47,13 @@
 #include "cgi.h"
 #include "rss.h"
 
-static char		*baseurl = "https://blogroll.chaosophia.net/";
+static char		*baseurl = "https://blogroll.chaosophia.net/index.cgi";
 static char		*ct_html = "Content-Type: text/html; charset=utf-8";
 static char		*htmldir = "html";
 static char		*mailaddr = "koue@chaosophia.net";
 static sqlite3*		db;		
 static char		*dbname = "/srv/rss.db";
+static char		query_string[10];
 static struct query	*q = NULL;
 static gzFile		gz = NULL;
 
@@ -91,6 +92,20 @@ dprintf(const char *fmt, ...)
 			    r, (int)strlen(s));
 	} else
 		fprintf(stdout, "%s", s);
+}
+
+int
+trace_categories_callback (void *p_data, int num_fields, char **p_fields, char **p_col_names)
+{
+	/*
+		p_fields[0]	-	id
+		p_fields[1]	-	title
+
+		the rest are not used.
+	*/
+	dprintf("<p><a href='%s?%s'>%s</a></p>", baseurl, p_fields[0], p_fields[1]);
+
+	return 0;
 }
 
 int
@@ -179,6 +194,13 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 					dprintf("%s", baseurl);
 				else if (!strcmp(a, "CTYPE"))
 					dprintf("%s", ct_html);
+				else if (!strcmp(a, "CATEGORIES")){
+//koue koue
+					char *errmsg;
+					if(sqlite3_exec(db, "SELECT id, title FROM categories", trace_categories_callback, 0, &errmsg) != SQLITE_OK) {
+						render_error("cannot load database");
+					}
+				}
 				else if (r != NULL)
 					(*r)(a, e);
 				a = b + 2;
@@ -199,11 +221,13 @@ render_front(const char *m, const st_rss_item_t *e)
 		catid = 2 - blog
 		catid = 3 - news
 	*/
-	char *query = "SELECT id, modified, link, title, description, pubdate from feeds where chanid IN (select id from channels where catid = 2) order by id desc limit 10";
+	char feeds_query[256];
+	
+	sqlite3_snprintf(sizeof(feeds_query), feeds_query, "SELECT id, modified, link, title, description, pubdate from feeds where chanid IN (select id from channels where catid = '%q') order by id desc limit 10", query_string);
+	//char *feeds_query = "SELECT id, modified, link, title, description, pubdate from feeds where chanid IN (select id from channels where catid = 2) order by id desc limit 10";
 
 	if (!strcmp(m, "FEEDS")) {
-		snprintf(fn, sizeof(fn), "%s/feed.html", htmldir);
-		if(sqlite3_exec(db, query, trace_feeds_callback, 0, &errmsg) != SQLITE_OK) {
+		if(sqlite3_exec(db, feeds_query, trace_feeds_callback, 0, &errmsg) != SQLITE_OK) {
 			render_error("cannot load database");
 		}
 	} else if (!strcmp(m, "HEADER")) {
@@ -212,9 +236,9 @@ render_front(const char *m, const st_rss_item_t *e)
 	} else if (!strcmp(m, "FOOTER")) {
 		snprintf(fn, sizeof(fn), "%s/footer.html", htmldir);
 		render_html(fn, NULL, NULL);
-	} else if (!strcmp(m, "CONTENT")) {
-		snprintf(fn, sizeof(fn), "%s/content.html", htmldir);
-		render_html(fn, NULL, NULL);
+//	} else if (!strcmp(m, "CONTENT")) {
+//		snprintf(fn, sizeof(fn), "%s/content.html", htmldir);
+//		render_html(fn, NULL, NULL);
 	} else
 		dprintf("render_front: unknown macro '%s'<br>\n", m);
 }
@@ -353,6 +377,9 @@ main(int argc, char *argv[])
 	} */
 	sqlite3_open(dbname, &db);
 
+	// default feeds
+	snprintf(query_string, sizeof(query_string), "2");
+
 	if ((q = get_query()) == NULL) {
 		render_error("get_query");
 		printf("error main: get_query() NULL");
@@ -380,19 +407,16 @@ main(int argc, char *argv[])
 			return (0);
 		} else {
 			for (i = 0; i < strlen(s); i++) {
-				/* sanity check of the query string, accepts only alpha, '/' and '_' and '.' if its on 5 position before the end of the string
-					Correct: /follow/this/path/
-						 /or/this/
-						 /and/this/if/its/single/article.html
+				/* 
+					sanity check of the query string, accepts only alpha
 				*/
-                        	if ((!isalpha(s[i])) && (!isdigit(s[i])) && (s[i] != '/') && (s[i] != '_')) {
-					if ((i == (strlen(s)-5)) && (s[i] == '.'))
-						continue;
+                        	if (!isdigit(s[i])) {
                                 	printf("Status: 400\r\n\r\nYou are trying to send wrong query!\n");
 	                                fflush(stdout);
         	                        return (0);
                 	        }
                 	}
+			snprintf(query_string, sizeof(query_string), "%s", s);
 		}	
 	}
 
