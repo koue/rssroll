@@ -1,7 +1,46 @@
-rss collector in written in c
+rss collector written in c
 
 used libraries:
 
 	curl
 	libxml2
 	sqlite3
+
+howto:
+
+$ tar zxf rssroll.tar.gz
+
+$ cd rssroll
+
+## edit index.c
+static char             *baseurl = "https://blogroll.chaosophia.net/index.cgi";
+## change it with your url
+static char             *mailaddr = "koue@chaosophia.net";
+## change mail
+static char             *dbname = "/srv/rss.db";
+## change path to the sqlite rss db. 
+
+$ make
+( there is no configure so if there is error during compilation 
+  probably its caused by missing library or wrong "include" or
+  "library" path in Makefile.)
+
+## create sqlite database
+$ sqlite3 rssroll.db < create_database.sql
+
+## create categories
+$ sqlite3 rssroll.db "insert into categories (title) values ('news')"
+$ sqlite3 rssroll.db "insert into categories (title) values ('tech')"
+
+## add channels from parsing
+$ sqlite3 rssroll.db "insert into channels (catid, modified, link) values (2, 123456, 'http://www.freebsd.org/security/rss.xml')"
+## catid = 2 (tech category), modified = 123456 (random value, this is the latest parsing timestamp), link of the rss file
+
+## parse the feeds
+$ ./rssroll -d ./rssroll.db
+
+## put index.cgi in your web dir
+
+example:
+https://blogroll.chaosophia.net/index.cgi
+
