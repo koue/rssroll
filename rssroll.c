@@ -35,7 +35,6 @@
 #include <sqlite3.h>
 #include <unistd.h>
 #include <curl/curl.h>
-#include <curl/types.h>
 #include <curl/easy.h>
 #include <sys/param.h>
 
