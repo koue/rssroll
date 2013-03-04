@@ -8,10 +8,13 @@ rssroll: rssroll.c rss.o
 rss.o: rss.c rss.h
 	$(CC) -static -I /usr/local/include/libxml2 -I /usr/local/include -c rss.c
 
-index.cgi: index.c cgi.o
-	$(CC) -I /usr/local/include -L /usr/local/lib -lsqlite3 -lz cgi.o index.c -o index.cgi
+index.cgi: index.c cgi.o configfile.o
+	$(CC) -I /usr/local/include -L /usr/local/lib -lsqlite3 -lz cgi.o configfile.o index.c -o index.cgi
 
 cgi.o: cgi.c cgi.h
 	$(CC) -static -c cgi.c
+
+configfile.o: configfile.c configfile.h
+	$(CC) -static -c configfile.c
 clean:
 	rm -f rssroll *.o *.core index.cgi

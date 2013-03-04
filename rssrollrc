@@ -1,0 +1,6 @@
+name=chaosophia blogroller
+url=https://blogroll.chaosophia.net/index.cgi
+dbpath=/srv/rss.db
+owner=koue@chaosophia.net
+ct_html=Content-Type: text/html; charset=utf-8
+htmldir=html

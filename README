@@ -12,18 +12,14 @@ $ tar zxf rssroll.tar.gz
 
 $ cd rssroll
 
-## edit index.c
-static char             *baseurl = "https://blogroll.chaosophia.net/index.cgi";
-## change it with your url
-static char             *mailaddr = "koue@chaosophia.net";
-## change mail
-static char             *dbname = "/srv/rss.db";
-## change path to the sqlite rss db. 
-
 $ make
 ( there is no configure so if there is error during compilation 
   probably its caused by missing library or wrong "include" or
   "library" path in Makefile.)
+
+$ cp rssrollrc /usr/local/etc
+
+## edit /usr/local/etc/rssrollrc
 
 ## create sqlite database
 $ sqlite3 rssroll.db < create_database.sql

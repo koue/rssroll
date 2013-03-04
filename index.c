@@ -46,16 +46,26 @@
 
 #include "cgi.h"
 #include "rss.h"
+#include "configfile.h"
 
-static char		*baseurl = "https://blogroll.chaosophia.net/index.cgi";
-static char		*ct_html = "Content-Type: text/html; charset=utf-8";
-static char		*htmldir = "html";
-static char		*mailaddr = "koue@chaosophia.net";
 static sqlite3*		db;		
-static char		*dbname = "/srv/rss.db";
 static char		query_string[10];
 static struct query	*q = NULL;
 static gzFile		gz = NULL;
+
+struct index_params {
+	int	feeds;
+	char    url[256];
+	char    name[256];
+	char    dbpath[256];
+	char    desc[256];
+	char    owner[256];
+	char	ct_html[256];
+	char	htmldir[256];
+};
+
+
+static struct index_params	rssroll[1];
 
 typedef	void (*render_cb)(const char *, const st_rss_item_t *);
 
@@ -71,6 +81,24 @@ chomp(char *s) {
         while (*s && *s != '\n' && *s != '\r')
                 s++;
         *s = 0;
+}
+
+void config_cb (const char *name, const char *value) {
+	printf("config_cb\n");
+	if (!strcmp(name, "url"))
+		snprintf(rssroll->url, sizeof(rssroll->url), "%s", value);
+	else if (!strcmp(name, "name"))
+		snprintf(rssroll->name, sizeof(rssroll->name), "%s", value);
+	else if (!strcmp(name, "dbpath"))
+		snprintf(rssroll->dbpath, sizeof(rssroll->dbpath), "%s", value);
+	else if (!strcmp(name, "desc"))
+		snprintf(rssroll->desc, sizeof(rssroll->desc), "%s", value);
+	else if (!strcmp(name, "owner"))
+		snprintf(rssroll->owner, sizeof(rssroll->owner), "%s", value);
+	else if (!strcmp(name, "ct_html"))
+		snprintf(rssroll->ct_html, sizeof(rssroll->ct_html), "%s", value);
+	else if (!strcmp(name, "htmldir"))
+		snprintf(rssroll->htmldir, sizeof(rssroll->htmldir), "%s", value);
 }
 
 static void
@@ -103,7 +131,7 @@ trace_categories_callback (void *p_data, int num_fields, char **p_fields, char *
 
 		the rest are not used.
 	*/
-	dprintf("<p><a href='%s?%s'>%s</a></p>", baseurl, p_fields[0], p_fields[1]);
+	dprintf("<p><a href='%s?%s'>%s</a></p>", rssroll->url, p_fields[0], p_fields[1]);
 
 	return 0;
 }
@@ -122,7 +150,7 @@ trace_feeds_callback (void *p_data, int num_fields, char **p_fields, char **p_co
 	st_rss_item_t	rss_item;	
 	char	fn[1024];
 	
-	snprintf(fn, sizeof(fn), "%s/feed.html", htmldir);
+	snprintf(fn, sizeof(fn), "%s/feed.html", rssroll->htmldir);
 
 //	printf("%s\n", p_fields[5]);
 	snprintf(rss_item.title, sizeof(rss_item.title), "%s", p_fields[3]);
@@ -147,7 +175,7 @@ render_error(const char *fmt, ...)
 	va_start(ap, fmt);
 	vsnprintf(s, sizeof(s), fmt, ap);
 	va_end(ap);
-	printf("%s\r\n\r\n", ct_html);
+	printf("%s\r\n\r\n", rssroll->ct_html);
 	fflush(stdout);
 	dprintf("<html><head><title>Error</title></head><body>\n");
 	dprintf("<h2>Error</h2><p><b>%s</b><p>\n", s);
@@ -167,7 +195,7 @@ render_error(const char *fmt, ...)
 	dprintf("<p>If you believe this is a bug in <i>this</i> server, "
 	    "please send reports with instructions about how to "
 	    "reproduce to <a href=\"mailto:%s\"><b>%s</b></a><p>\n",
-	    mailaddr, mailaddr);
+	    rssroll->owner, rssroll->owner);
 	dprintf("</body></html>\n");
 }
 
@@ -190,12 +218,15 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 			a = b + 2;
 			if ((b = strstr(a, "%%")) != NULL) {
 				*b = 0;
-				if (!strcmp(a, "BASEURL"))
-					dprintf("%s", baseurl);
-				else if (!strcmp(a, "CTYPE"))
-					dprintf("%s", ct_html);
-				else if (!strcmp(a, "CATEGORIES")){
-//koue koue
+				if (!strcmp(a, "RSSROLL_BASEURL"))
+					dprintf("%s", rssroll->url);
+				else if (!strcmp(a, "RSSROLL_NAME"))
+					dprintf("%s", rssroll->name);
+				else if (!strcmp(a, "RSSROLL_OWNER"))
+					dprintf("%s", rssroll->owner);
+				else if (!strcmp(a, "RSSROLL_CTYPE"))
+					dprintf("%s", rssroll->ct_html);
+				else if (!strcmp(a, "RSSROLL_CATEGORIES")){
 					char *errmsg;
 					if(sqlite3_exec(db, "SELECT id, title FROM categories", trace_categories_callback, 0, &errmsg) != SQLITE_OK) {
 						render_error("cannot load database");
@@ -231,14 +262,11 @@ render_front(const char *m, const st_rss_item_t *e)
 			render_error("cannot load database");
 		}
 	} else if (!strcmp(m, "HEADER")) {
-		snprintf(fn, sizeof(fn), "%s/header.html", htmldir);
+		snprintf(fn, sizeof(fn), "%s/header.html", rssroll->htmldir);
 		render_html(fn, NULL, NULL);
 	} else if (!strcmp(m, "FOOTER")) {
-		snprintf(fn, sizeof(fn), "%s/footer.html", htmldir);
+		snprintf(fn, sizeof(fn), "%s/footer.html", rssroll->htmldir);
 		render_html(fn, NULL, NULL);
-//	} else if (!strcmp(m, "CONTENT")) {
-//		snprintf(fn, sizeof(fn), "%s/content.html", htmldir);
-//		render_html(fn, NULL, NULL);
 	} else
 		dprintf("render_front: unknown macro '%s'<br>\n", m);
 }
@@ -370,12 +398,13 @@ main(int argc, char *argv[])
 	int i;
 
 	umask(007);
+	parse_configfile("/usr/local/etc/rssrollrc", config_cb);
 	/*if (chdir("/tmp")) {
 		printf("error main: chdir: /tmp: %s", strerror(errno));
 		render_error("chdir: /tmp: %s", strerror(errno));
 		goto done;
 	} */
-	sqlite3_open(dbname, &db);
+	sqlite3_open(rssroll->dbpath, &db);
 
 	// default feeds
 	snprintf(query_string, sizeof(query_string), "2");
@@ -456,9 +485,9 @@ main(int argc, char *argv[])
 
 	char fn[1024];
 	
-	printf("%s\r\n\r\n", ct_html);
+	printf("%s\r\n\r\n", rssroll->ct_html);
 	fflush(stdout);
-	snprintf(fn, sizeof(fn), "%s/main.html", htmldir);
+	snprintf(fn, sizeof(fn), "%s/main.html", rssroll->htmldir);
 	render_html(fn, &render_front, NULL);
 
 done:
