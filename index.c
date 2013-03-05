@@ -52,9 +52,11 @@ static sqlite3*		db;
 static char		query_string[10];
 static struct query	*q = NULL;
 static gzFile		gz = NULL;
+static char		*rssrollrc = "/usr/local/etc/rssrollrc";
 
 struct index_params {
 	int	feeds;
+	int	defcat;
 	char    url[256];
 	char    name[256];
 	char    dbpath[256];
@@ -83,8 +85,19 @@ chomp(char *s) {
         *s = 0;
 }
 
+void load_default_config(void){
+	snprintf(rssroll->url, sizeof(rssroll->url), "http://rssroll.example.com");
+	snprintf(rssroll->name, sizeof(rssroll->name), "rssroll");
+	snprintf(rssroll->dbpath, sizeof(rssroll->dbpath), "/usr/local/etc/rssroll.db");
+	snprintf(rssroll->desc, sizeof(rssroll->desc), "rssroll description");
+	snprintf(rssroll->owner, sizeof(rssroll->owner), "dont@blame.me");
+	snprintf(rssroll->ct_html, sizeof(rssroll->ct_html), "Content-Type: text/html; charset=utf-8");
+	snprintf(rssroll->htmldir, sizeof(rssroll->htmldir), "html");
+	rssroll->feeds = 10;
+	rssroll->defcat = 1;
+}
+
 void config_cb (const char *name, const char *value) {
-	printf("config_cb\n");
 	if (!strcmp(name, "url"))
 		snprintf(rssroll->url, sizeof(rssroll->url), "%s", value);
 	else if (!strcmp(name, "name"))
@@ -99,6 +112,10 @@ void config_cb (const char *name, const char *value) {
 		snprintf(rssroll->ct_html, sizeof(rssroll->ct_html), "%s", value);
 	else if (!strcmp(name, "htmldir"))
 		snprintf(rssroll->htmldir, sizeof(rssroll->htmldir), "%s", value);
+	else if (!strcmp(name, "feeds"))
+		rssroll->feeds = atoi(value);
+	else if (!strcmp(name, "category"))
+		rssroll->defcat = atoi(value);
 }
 
 static void
@@ -254,7 +271,7 @@ render_front(const char *m, const st_rss_item_t *e)
 	*/
 	char feeds_query[256];
 	
-	sqlite3_snprintf(sizeof(feeds_query), feeds_query, "SELECT id, modified, link, title, description, pubdate from feeds where chanid IN (select id from channels where catid = '%q') order by id desc limit 10", query_string);
+	sqlite3_snprintf(sizeof(feeds_query), feeds_query, "SELECT id, modified, link, title, description, pubdate from feeds where chanid IN (select id from channels where catid = '%q') order by id desc limit %d", query_string, rssroll->feeds);
 	//char *feeds_query = "SELECT id, modified, link, title, description, pubdate from feeds where chanid IN (select id from channels where catid = 2) order by id desc limit 10";
 
 	if (!strcmp(m, "FEEDS")) {
@@ -398,16 +415,24 @@ main(int argc, char *argv[])
 	int i;
 
 	umask(007);
-	parse_configfile("/usr/local/etc/rssrollrc", config_cb);
+	load_default_config();
+	if (parse_configfile(rssrollrc, config_cb) == -1) {
+		render_error("error: cannot open config file: %s", rssrollrc);	
+		goto done;
+	}
 	/*if (chdir("/tmp")) {
 		printf("error main: chdir: /tmp: %s", strerror(errno));
 		render_error("chdir: /tmp: %s", strerror(errno));
 		goto done;
 	} */
-	sqlite3_open(rssroll->dbpath, &db);
+
+	if (sqlite3_open(rssroll->dbpath, &db) != SQLITE_OK) {
+		render_error("cannot load database: %s", rssroll->dbpath);
+		goto done;
+	}
 
 	// default feeds
-	snprintf(query_string, sizeof(query_string), "2");
+	snprintf(query_string, sizeof(query_string), "%d", rssroll->defcat);
 
 	if ((q = get_query()) == NULL) {
 		render_error("get_query");
