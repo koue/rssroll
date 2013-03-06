@@ -1,0 +1,43 @@
+To build:
+	
+	# make
+
+	There is no configure so if there is error during compilation 
+	probably its caused by missing library or wrong "include" or
+	"library" path in Makefile.
+
+
+To install:
+
+	# make install
+
+
+To deinstall:
+
+	# make remove
+
+
+To setup:
+
+	# vi /usr/local/etc/rssrollrc
+	Edit config file and add proper options.
+
+	# sqlite3 PATH_TO_SQLITE_DB < create_database.sql
+	Create empty database.
+
+	# sqlite3 PATH_TO_SQLITE_DB "insert into categories (title) values ('news')"
+	Add category into database.
+
+	# sqlite3 PATH_TO_SQLITE_DB "insert into categories (title) values ('tech')"
+	Add more categories into database.
+
+	# sqlite3 PATH_TO_SQLITE_DB "insert into channels (catid, modified, link) values (2, 123456, 'http://www.freebsd.org/security/rss.xml')"
+	Add RSS URL for tracing. 
+
+	# /usr/local/bin/rssroll -d PATH_TO_SQLITE_DB
+	Run rssroll to fetch feeds.
+
+	Load rssroll.cgi into your web browser.
+
+	Add rssroll into crontab
+	51	9,17	*	*	*	root	/usr/local/bin/rssroll -d PATH_TO_SQLITE_DB
