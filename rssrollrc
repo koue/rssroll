@@ -1,20 +1,20 @@
 # rssroller name, will be printed on the top of the web page
-name=chaosophia blogroller
+name=rssroller
 
 # URL on which it will be accessed
-url=https://blogroll.chaosophia.net/index.cgi
+url=http://rssroller.example.net/cgi-bin/rssroll.cgi
 
 # path to sqlite database where rss feeds are saved
 dbpath=/srv/rss.db
 
 # the owner's mail
-owner=koue@chaosophia.net
+owner=dont@blame.me
 
 # default charset, used by cgi
 ct_html=Content-Type: text/html; charset=utf-8
 
 # path to the html files
-htmldir=html
+htmldir=/usr/local/www/rssroll/html
 
 # how many feeds will be printed on the page
 feeds=10
