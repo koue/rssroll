@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2004 Daniel Hartmeier
- * Copyright (c) 2012 Nikola Kolev
+ * Copyright (c) 2012, 2013 Nikola Kolev
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
