@@ -1,42 +1,24 @@
-rss collector written in c
+	rssroll - rss collector written in c
+	version 0.2 of 04 March 2013
 
-used libraries:
+rssroll is rss crawler which fetchs rss feeds and stores them into sqlite3 database.
+There is web interface for browsing stored feeds which are grouped by category.
+
+Used libraries:
 
 	curl
 	libxml2
 	sqlite3
 
-howto:
 
-$ tar zxf rssroll.tar.gz
+Check INSTALL file for setup information.
 
-$ cd rssroll
+Used configuration:
 
-$ make
-( there is no configure so if there is error during compilation 
-  probably its caused by missing library or wrong "include" or
-  "library" path in Makefile.)
+	OS: 		FreeBSD 9.0-RELEASE-p3 i386
+	Compilator: 	gcc version 4.2.1 20070831 patched [FreeBSD]
+	Web server:	thttpd-2.25b
 
-$ cp rssrollrc /usr/local/etc
-
-## edit /usr/local/etc/rssrollrc
-
-## create sqlite database
-$ sqlite3 rssroll.db < create_database.sql
-
-## create categories
-$ sqlite3 rssroll.db "insert into categories (title) values ('news')"
-$ sqlite3 rssroll.db "insert into categories (title) values ('tech')"
-
-## add channels from parsing
-$ sqlite3 rssroll.db "insert into channels (catid, modified, link) values (2, 123456, 'http://www.freebsd.org/security/rss.xml')"
-## catid = 2 (tech category), modified = 123456 (random value, this is the latest parsing timestamp), link of the rss file
-
-## parse the feeds
-$ ./rssroll -d ./rssroll.db
-
-## put index.cgi in your web dir
-
-example:
+Example:
 https://blogroll.chaosophia.net/index.cgi
 
