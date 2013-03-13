@@ -36,7 +36,6 @@
 #include <unistd.h>
 #include <curl/curl.h>
 #include <curl/easy.h>
-#include <sys/param.h>
 
 #include "rss.h"
 
@@ -214,7 +213,7 @@ parse_header(int id, char *modified) {
                 if (!strcmp(k, "Last-Modified:")) {
                         t++;
                         k[0] = 0;
-                        for (i = 0; i < MAXPATHLEN - 1 && *t && *t != '\n'; ++i)
+                        for (i = 0; i < 255 && *t && *t != '\n'; ++i)
                                 k[i] = *t++;
                         break;
                 }
@@ -324,7 +323,7 @@ usage(char *f){
 int 
 main( int argc, char** argv){
 
-	char DBNAME[MAXPATHLEN];
+	char DBNAME[256];
 	
 	if(argc != 3) {
 		usage(argv[0]);
