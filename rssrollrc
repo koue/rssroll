@@ -14,7 +14,7 @@ owner=dont@blame.me
 ct_html=Content-Type: text/html; charset=utf-8
 
 # path to the html files
-htmldir=/usr/local/www/rssroll/html
+htmldir=/usr/local/www/data/rssroll/html
 
 # how many feeds will be printed on the page
 feeds=10
