@@ -2,7 +2,7 @@
 # Makefile for rssroll
 #
 
-bin_PROGRAMS = rssroll index
+bin_PROGRAMS = rssroll index.cgi
 
 # rssroll
 rssroll_SOURCES = rss.c rss.h \
@@ -11,12 +11,12 @@ rssroll_CFLAGS = $(XML2_CFLAGS) $(SQLITE3_CFLAGS) -I/usr/include/curl
 rssroll_LDADD = $(XML2_LDFLAGS) -lcurl $(SQLITE3_LDFLAGS)
 
 # index
-index_SOURCES = cgi.c cgi.h \
+index_cgi_SOURCES = cgi.c cgi.h \
                 configfile.c configfile.h \
                 index.c index.h
 
-index_CFLAGS = $(SQLITE3_CFLAGS)
-index_LDADD = $(SQLITE3_LDFLAGS) -lz
+index_cgi_CFLAGS = $(SQLITE3_CFLAGS)
+index_cgi_LDADD = $(SQLITE3_LDFLAGS) -lz
 
 dist_noinst_SCRIPTS = autogen.sh
 

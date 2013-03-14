@@ -53,7 +53,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = rssroll$(EXEEXT) index$(EXEEXT)
+bin_PROGRAMS = rssroll$(EXEEXT) index.cgi$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_noinst_SCRIPTS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
@@ -72,12 +72,12 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_index_OBJECTS = index-cgi.$(OBJEXT) index-configfile.$(OBJEXT) \
-	index-index.$(OBJEXT)
-index_OBJECTS = $(am_index_OBJECTS)
+am_index_cgi_OBJECTS = index_cgi-cgi.$(OBJEXT) \
+	index_cgi-configfile.$(OBJEXT) index_cgi-index.$(OBJEXT)
+index_cgi_OBJECTS = $(am_index_cgi_OBJECTS)
 am__DEPENDENCIES_1 =
-index_DEPENDENCIES = $(am__DEPENDENCIES_1)
-index_LINK = $(CCLD) $(index_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+index_cgi_DEPENDENCIES = $(am__DEPENDENCIES_1)
+index_cgi_LINK = $(CCLD) $(index_cgi_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 am_rssroll_OBJECTS = rssroll-rss.$(OBJEXT) rssroll-rssroll.$(OBJEXT)
 rssroll_OBJECTS = $(am_rssroll_OBJECTS)
@@ -93,8 +93,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(index_SOURCES) $(rssroll_SOURCES)
-DIST_SOURCES = $(index_SOURCES) $(rssroll_SOURCES)
+SOURCES = $(index_cgi_SOURCES) $(rssroll_SOURCES)
+DIST_SOURCES = $(index_cgi_SOURCES) $(rssroll_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -224,12 +224,12 @@ rssroll_CFLAGS = $(XML2_CFLAGS) $(SQLITE3_CFLAGS) -I/usr/include/curl
 rssroll_LDADD = $(XML2_LDFLAGS) -lcurl $(SQLITE3_LDFLAGS)
 
 # index
-index_SOURCES = cgi.c cgi.h \
+index_cgi_SOURCES = cgi.c cgi.h \
                 configfile.c configfile.h \
                 index.c index.h
 
-index_CFLAGS = $(SQLITE3_CFLAGS)
-index_LDADD = $(SQLITE3_LDFLAGS) -lz
+index_cgi_CFLAGS = $(SQLITE3_CFLAGS)
+index_cgi_LDADD = $(SQLITE3_LDFLAGS) -lz
 dist_noinst_SCRIPTS = autogen.sh
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -325,9 +325,9 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-index$(EXEEXT): $(index_OBJECTS) $(index_DEPENDENCIES) $(EXTRA_index_DEPENDENCIES) 
-	@rm -f index$(EXEEXT)
-	$(index_LINK) $(index_OBJECTS) $(index_LDADD) $(LIBS)
+index.cgi$(EXEEXT): $(index_cgi_OBJECTS) $(index_cgi_DEPENDENCIES) $(EXTRA_index_cgi_DEPENDENCIES) 
+	@rm -f index.cgi$(EXEEXT)
+	$(index_cgi_LINK) $(index_cgi_OBJECTS) $(index_cgi_LDADD) $(LIBS)
 rssroll$(EXEEXT): $(rssroll_OBJECTS) $(rssroll_DEPENDENCIES) $(EXTRA_rssroll_DEPENDENCIES) 
 	@rm -f rssroll$(EXEEXT)
 	$(rssroll_LINK) $(rssroll_OBJECTS) $(rssroll_LDADD) $(LIBS)
@@ -338,9 +338,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/index-cgi.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/index-configfile.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/index-index.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/index_cgi-cgi.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/index_cgi-configfile.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/index_cgi-index.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rssroll-rss.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rssroll-rssroll.Po@am__quote@
 
@@ -358,47 +358,47 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
 
-index-cgi.o: cgi.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -MT index-cgi.o -MD -MP -MF $(DEPDIR)/index-cgi.Tpo -c -o index-cgi.o `test -f 'cgi.c' || echo '$(srcdir)/'`cgi.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index-cgi.Tpo $(DEPDIR)/index-cgi.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cgi.c' object='index-cgi.o' libtool=no @AMDEPBACKSLASH@
+index_cgi-cgi.o: cgi.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -MT index_cgi-cgi.o -MD -MP -MF $(DEPDIR)/index_cgi-cgi.Tpo -c -o index_cgi-cgi.o `test -f 'cgi.c' || echo '$(srcdir)/'`cgi.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index_cgi-cgi.Tpo $(DEPDIR)/index_cgi-cgi.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cgi.c' object='index_cgi-cgi.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -c -o index-cgi.o `test -f 'cgi.c' || echo '$(srcdir)/'`cgi.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -c -o index_cgi-cgi.o `test -f 'cgi.c' || echo '$(srcdir)/'`cgi.c
 
-index-cgi.obj: cgi.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -MT index-cgi.obj -MD -MP -MF $(DEPDIR)/index-cgi.Tpo -c -o index-cgi.obj `if test -f 'cgi.c'; then $(CYGPATH_W) 'cgi.c'; else $(CYGPATH_W) '$(srcdir)/cgi.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index-cgi.Tpo $(DEPDIR)/index-cgi.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cgi.c' object='index-cgi.obj' libtool=no @AMDEPBACKSLASH@
+index_cgi-cgi.obj: cgi.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -MT index_cgi-cgi.obj -MD -MP -MF $(DEPDIR)/index_cgi-cgi.Tpo -c -o index_cgi-cgi.obj `if test -f 'cgi.c'; then $(CYGPATH_W) 'cgi.c'; else $(CYGPATH_W) '$(srcdir)/cgi.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index_cgi-cgi.Tpo $(DEPDIR)/index_cgi-cgi.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='cgi.c' object='index_cgi-cgi.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -c -o index-cgi.obj `if test -f 'cgi.c'; then $(CYGPATH_W) 'cgi.c'; else $(CYGPATH_W) '$(srcdir)/cgi.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -c -o index_cgi-cgi.obj `if test -f 'cgi.c'; then $(CYGPATH_W) 'cgi.c'; else $(CYGPATH_W) '$(srcdir)/cgi.c'; fi`
 
-index-configfile.o: configfile.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -MT index-configfile.o -MD -MP -MF $(DEPDIR)/index-configfile.Tpo -c -o index-configfile.o `test -f 'configfile.c' || echo '$(srcdir)/'`configfile.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index-configfile.Tpo $(DEPDIR)/index-configfile.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='configfile.c' object='index-configfile.o' libtool=no @AMDEPBACKSLASH@
+index_cgi-configfile.o: configfile.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -MT index_cgi-configfile.o -MD -MP -MF $(DEPDIR)/index_cgi-configfile.Tpo -c -o index_cgi-configfile.o `test -f 'configfile.c' || echo '$(srcdir)/'`configfile.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index_cgi-configfile.Tpo $(DEPDIR)/index_cgi-configfile.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='configfile.c' object='index_cgi-configfile.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -c -o index-configfile.o `test -f 'configfile.c' || echo '$(srcdir)/'`configfile.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -c -o index_cgi-configfile.o `test -f 'configfile.c' || echo '$(srcdir)/'`configfile.c
 
-index-configfile.obj: configfile.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -MT index-configfile.obj -MD -MP -MF $(DEPDIR)/index-configfile.Tpo -c -o index-configfile.obj `if test -f 'configfile.c'; then $(CYGPATH_W) 'configfile.c'; else $(CYGPATH_W) '$(srcdir)/configfile.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index-configfile.Tpo $(DEPDIR)/index-configfile.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='configfile.c' object='index-configfile.obj' libtool=no @AMDEPBACKSLASH@
+index_cgi-configfile.obj: configfile.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -MT index_cgi-configfile.obj -MD -MP -MF $(DEPDIR)/index_cgi-configfile.Tpo -c -o index_cgi-configfile.obj `if test -f 'configfile.c'; then $(CYGPATH_W) 'configfile.c'; else $(CYGPATH_W) '$(srcdir)/configfile.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index_cgi-configfile.Tpo $(DEPDIR)/index_cgi-configfile.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='configfile.c' object='index_cgi-configfile.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -c -o index-configfile.obj `if test -f 'configfile.c'; then $(CYGPATH_W) 'configfile.c'; else $(CYGPATH_W) '$(srcdir)/configfile.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -c -o index_cgi-configfile.obj `if test -f 'configfile.c'; then $(CYGPATH_W) 'configfile.c'; else $(CYGPATH_W) '$(srcdir)/configfile.c'; fi`
 
-index-index.o: index.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -MT index-index.o -MD -MP -MF $(DEPDIR)/index-index.Tpo -c -o index-index.o `test -f 'index.c' || echo '$(srcdir)/'`index.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index-index.Tpo $(DEPDIR)/index-index.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='index.c' object='index-index.o' libtool=no @AMDEPBACKSLASH@
+index_cgi-index.o: index.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -MT index_cgi-index.o -MD -MP -MF $(DEPDIR)/index_cgi-index.Tpo -c -o index_cgi-index.o `test -f 'index.c' || echo '$(srcdir)/'`index.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index_cgi-index.Tpo $(DEPDIR)/index_cgi-index.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='index.c' object='index_cgi-index.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -c -o index-index.o `test -f 'index.c' || echo '$(srcdir)/'`index.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -c -o index_cgi-index.o `test -f 'index.c' || echo '$(srcdir)/'`index.c
 
-index-index.obj: index.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -MT index-index.obj -MD -MP -MF $(DEPDIR)/index-index.Tpo -c -o index-index.obj `if test -f 'index.c'; then $(CYGPATH_W) 'index.c'; else $(CYGPATH_W) '$(srcdir)/index.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index-index.Tpo $(DEPDIR)/index-index.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='index.c' object='index-index.obj' libtool=no @AMDEPBACKSLASH@
+index_cgi-index.obj: index.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -MT index_cgi-index.obj -MD -MP -MF $(DEPDIR)/index_cgi-index.Tpo -c -o index_cgi-index.obj `if test -f 'index.c'; then $(CYGPATH_W) 'index.c'; else $(CYGPATH_W) '$(srcdir)/index.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index_cgi-index.Tpo $(DEPDIR)/index_cgi-index.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='index.c' object='index_cgi-index.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -c -o index-index.obj `if test -f 'index.c'; then $(CYGPATH_W) 'index.c'; else $(CYGPATH_W) '$(srcdir)/index.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -c -o index_cgi-index.obj `if test -f 'index.c'; then $(CYGPATH_W) 'index.c'; else $(CYGPATH_W) '$(srcdir)/index.c'; fi`
 
 rssroll-rss.o: rss.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(rssroll_CFLAGS) $(CFLAGS) -MT rssroll-rss.o -MD -MP -MF $(DEPDIR)/rssroll-rss.Tpo -c -o rssroll-rss.o `test -f 'rss.c' || echo '$(srcdir)/'`rss.c
