@@ -1,0 +1,10 @@
+*~
+*.o
+/.deps
+*.swp
+Makefile
+/config.h
+/config.log
+/config.status
+/rssroll
+/stamp-h1
