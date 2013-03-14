@@ -72,12 +72,15 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_index_OBJECTS = cgi.$(OBJEXT) configfile.$(OBJEXT) index.$(OBJEXT)
+am_index_OBJECTS = index-cgi.$(OBJEXT) index-configfile.$(OBJEXT) \
+	index-index.$(OBJEXT)
 index_OBJECTS = $(am_index_OBJECTS)
-index_LDADD = $(LDADD)
+am__DEPENDENCIES_1 =
+index_DEPENDENCIES = $(am__DEPENDENCIES_1)
+index_LINK = $(CCLD) $(index_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_rssroll_OBJECTS = rssroll-rss.$(OBJEXT) rssroll-rssroll.$(OBJEXT)
 rssroll_OBJECTS = $(am_rssroll_OBJECTS)
-am__DEPENDENCIES_1 =
 rssroll_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 rssroll_LINK = $(CCLD) $(rssroll_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
@@ -225,6 +228,8 @@ index_SOURCES = cgi.c cgi.h \
                 configfile.c configfile.h \
                 index.c index.h
 
+index_CFLAGS = $(SQLITE3_CFLAGS)
+index_LDADD = $(SQLITE3_LDFLAGS) -lz
 dist_noinst_SCRIPTS = autogen.sh
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -322,7 +327,7 @@ clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 index$(EXEEXT): $(index_OBJECTS) $(index_DEPENDENCIES) $(EXTRA_index_DEPENDENCIES) 
 	@rm -f index$(EXEEXT)
-	$(LINK) $(index_OBJECTS) $(index_LDADD) $(LIBS)
+	$(index_LINK) $(index_OBJECTS) $(index_LDADD) $(LIBS)
 rssroll$(EXEEXT): $(rssroll_OBJECTS) $(rssroll_DEPENDENCIES) $(EXTRA_rssroll_DEPENDENCIES) 
 	@rm -f rssroll$(EXEEXT)
 	$(rssroll_LINK) $(rssroll_OBJECTS) $(rssroll_LDADD) $(LIBS)
@@ -333,9 +338,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/cgi.Po
-include ./$(DEPDIR)/configfile.Po
-include ./$(DEPDIR)/index.Po
+include ./$(DEPDIR)/index-cgi.Po
+include ./$(DEPDIR)/index-configfile.Po
+include ./$(DEPDIR)/index-index.Po
 include ./$(DEPDIR)/rssroll-rss.Po
 include ./$(DEPDIR)/rssroll-rssroll.Po
 
@@ -352,6 +357,48 @@ include ./$(DEPDIR)/rssroll-rssroll.Po
 #	source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+index-cgi.o: cgi.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -MT index-cgi.o -MD -MP -MF $(DEPDIR)/index-cgi.Tpo -c -o index-cgi.o `test -f 'cgi.c' || echo '$(srcdir)/'`cgi.c
+	$(am__mv) $(DEPDIR)/index-cgi.Tpo $(DEPDIR)/index-cgi.Po
+#	source='cgi.c' object='index-cgi.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -c -o index-cgi.o `test -f 'cgi.c' || echo '$(srcdir)/'`cgi.c
+
+index-cgi.obj: cgi.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -MT index-cgi.obj -MD -MP -MF $(DEPDIR)/index-cgi.Tpo -c -o index-cgi.obj `if test -f 'cgi.c'; then $(CYGPATH_W) 'cgi.c'; else $(CYGPATH_W) '$(srcdir)/cgi.c'; fi`
+	$(am__mv) $(DEPDIR)/index-cgi.Tpo $(DEPDIR)/index-cgi.Po
+#	source='cgi.c' object='index-cgi.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -c -o index-cgi.obj `if test -f 'cgi.c'; then $(CYGPATH_W) 'cgi.c'; else $(CYGPATH_W) '$(srcdir)/cgi.c'; fi`
+
+index-configfile.o: configfile.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -MT index-configfile.o -MD -MP -MF $(DEPDIR)/index-configfile.Tpo -c -o index-configfile.o `test -f 'configfile.c' || echo '$(srcdir)/'`configfile.c
+	$(am__mv) $(DEPDIR)/index-configfile.Tpo $(DEPDIR)/index-configfile.Po
+#	source='configfile.c' object='index-configfile.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -c -o index-configfile.o `test -f 'configfile.c' || echo '$(srcdir)/'`configfile.c
+
+index-configfile.obj: configfile.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -MT index-configfile.obj -MD -MP -MF $(DEPDIR)/index-configfile.Tpo -c -o index-configfile.obj `if test -f 'configfile.c'; then $(CYGPATH_W) 'configfile.c'; else $(CYGPATH_W) '$(srcdir)/configfile.c'; fi`
+	$(am__mv) $(DEPDIR)/index-configfile.Tpo $(DEPDIR)/index-configfile.Po
+#	source='configfile.c' object='index-configfile.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -c -o index-configfile.obj `if test -f 'configfile.c'; then $(CYGPATH_W) 'configfile.c'; else $(CYGPATH_W) '$(srcdir)/configfile.c'; fi`
+
+index-index.o: index.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -MT index-index.o -MD -MP -MF $(DEPDIR)/index-index.Tpo -c -o index-index.o `test -f 'index.c' || echo '$(srcdir)/'`index.c
+	$(am__mv) $(DEPDIR)/index-index.Tpo $(DEPDIR)/index-index.Po
+#	source='index.c' object='index-index.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -c -o index-index.o `test -f 'index.c' || echo '$(srcdir)/'`index.c
+
+index-index.obj: index.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -MT index-index.obj -MD -MP -MF $(DEPDIR)/index-index.Tpo -c -o index-index.obj `if test -f 'index.c'; then $(CYGPATH_W) 'index.c'; else $(CYGPATH_W) '$(srcdir)/index.c'; fi`
+	$(am__mv) $(DEPDIR)/index-index.Tpo $(DEPDIR)/index-index.Po
+#	source='index.c' object='index-index.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_CFLAGS) $(CFLAGS) -c -o index-index.obj `if test -f 'index.c'; then $(CYGPATH_W) 'index.c'; else $(CYGPATH_W) '$(srcdir)/index.c'; fi`
 
 rssroll-rss.o: rss.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(rssroll_CFLAGS) $(CFLAGS) -MT rssroll-rss.o -MD -MP -MF $(DEPDIR)/rssroll-rss.Tpo -c -o rssroll-rss.o `test -f 'rss.c' || echo '$(srcdir)/'`rss.c

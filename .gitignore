@@ -6,5 +6,9 @@ Makefile
 /config.h
 /config.log
 /config.status
+/autom4te.cache
 /rssroll
+/index
 /stamp-h1
+\.#*
+\#*

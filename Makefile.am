@@ -15,6 +15,9 @@ index_SOURCES = cgi.c cgi.h \
                 configfile.c configfile.h \
                 index.c index.h
 
+index_CFLAGS = $(SQLITE3_CFLAGS)
+index_LDADD = $(SQLITE3_LDFLAGS) -lz
+
 dist_noinst_SCRIPTS = autogen.sh
 
 #CFLAGS=-Wall -Wstrict-prototypes -g -O0 -I/usr/local/include -I/usr/local/include/libxml2
