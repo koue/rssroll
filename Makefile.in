@@ -72,14 +72,14 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_index_cgi_OBJECTS = index_cgi-cgi.$(OBJEXT) \
-	index_cgi-configfile.$(OBJEXT) index_cgi-index.$(OBJEXT)
+am_index_cgi_OBJECTS = index_cgi-index.$(OBJEXT) \
+	index_cgi-cgi.$(OBJEXT) index_cgi-configfile.$(OBJEXT)
 index_cgi_OBJECTS = $(am_index_cgi_OBJECTS)
 am__DEPENDENCIES_1 =
 index_cgi_DEPENDENCIES = $(am__DEPENDENCIES_1)
 index_cgi_LINK = $(CCLD) $(index_cgi_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am_rssroll_OBJECTS = rssroll-rss.$(OBJEXT) rssroll-rssroll.$(OBJEXT)
+am_rssroll_OBJECTS = rssroll-rssroll.$(OBJEXT) rssroll-rss.$(OBJEXT)
 rssroll_OBJECTS = $(am_rssroll_OBJECTS)
 rssroll_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 rssroll_LINK = $(CCLD) $(rssroll_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
@@ -217,20 +217,23 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 # rssroll
-rssroll_SOURCES = rss.c rss.h \
-                        rssroll.c rssroll.h
+rssroll_SOURCES = rssroll.c \
+                        rss.c rss.h
 
-rssroll_CFLAGS = $(XML2_CFLAGS) $(SQLITE3_CFLAGS) -I/usr/include/curl
+
+# TODO:  The reference to /usr/include/curl must be removed
+rssroll_CFLAGS = $(XML2_CFLAGS) $(SQLITE3_CFLAGS) -I/usr/include/curl -Wall -Wstrict-prototypes
 rssroll_LDADD = $(XML2_LDFLAGS) -lcurl $(SQLITE3_LDFLAGS)
 
 # index
-index_cgi_SOURCES = cgi.c cgi.h \
-                configfile.c configfile.h \
-                index.c index.h
+index_cgi_SOURCES = index.c \
+                        cgi.c cgi.h \
+                        configfile.c configfile.h
 
-index_cgi_CFLAGS = $(SQLITE3_CFLAGS)
+index_cgi_CFLAGS = $(SQLITE3_CFLAGS) -Wall -Wstrict-prototypes
 index_cgi_LDADD = $(SQLITE3_LDFLAGS) -lz
 dist_noinst_SCRIPTS = autogen.sh
+EXTRA_DIST = autogen.sh rssrollrc html css
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -358,6 +361,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
 
+index_cgi-index.o: index.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -MT index_cgi-index.o -MD -MP -MF $(DEPDIR)/index_cgi-index.Tpo -c -o index_cgi-index.o `test -f 'index.c' || echo '$(srcdir)/'`index.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index_cgi-index.Tpo $(DEPDIR)/index_cgi-index.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='index.c' object='index_cgi-index.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -c -o index_cgi-index.o `test -f 'index.c' || echo '$(srcdir)/'`index.c
+
+index_cgi-index.obj: index.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -MT index_cgi-index.obj -MD -MP -MF $(DEPDIR)/index_cgi-index.Tpo -c -o index_cgi-index.obj `if test -f 'index.c'; then $(CYGPATH_W) 'index.c'; else $(CYGPATH_W) '$(srcdir)/index.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index_cgi-index.Tpo $(DEPDIR)/index_cgi-index.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='index.c' object='index_cgi-index.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -c -o index_cgi-index.obj `if test -f 'index.c'; then $(CYGPATH_W) 'index.c'; else $(CYGPATH_W) '$(srcdir)/index.c'; fi`
+
 index_cgi-cgi.o: cgi.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -MT index_cgi-cgi.o -MD -MP -MF $(DEPDIR)/index_cgi-cgi.Tpo -c -o index_cgi-cgi.o `test -f 'cgi.c' || echo '$(srcdir)/'`cgi.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index_cgi-cgi.Tpo $(DEPDIR)/index_cgi-cgi.Po
@@ -386,19 +403,19 @@ index_cgi-configfile.obj: configfile.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -c -o index_cgi-configfile.obj `if test -f 'configfile.c'; then $(CYGPATH_W) 'configfile.c'; else $(CYGPATH_W) '$(srcdir)/configfile.c'; fi`
 
-index_cgi-index.o: index.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -MT index_cgi-index.o -MD -MP -MF $(DEPDIR)/index_cgi-index.Tpo -c -o index_cgi-index.o `test -f 'index.c' || echo '$(srcdir)/'`index.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index_cgi-index.Tpo $(DEPDIR)/index_cgi-index.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='index.c' object='index_cgi-index.o' libtool=no @AMDEPBACKSLASH@
+rssroll-rssroll.o: rssroll.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(rssroll_CFLAGS) $(CFLAGS) -MT rssroll-rssroll.o -MD -MP -MF $(DEPDIR)/rssroll-rssroll.Tpo -c -o rssroll-rssroll.o `test -f 'rssroll.c' || echo '$(srcdir)/'`rssroll.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/rssroll-rssroll.Tpo $(DEPDIR)/rssroll-rssroll.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='rssroll.c' object='rssroll-rssroll.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -c -o index_cgi-index.o `test -f 'index.c' || echo '$(srcdir)/'`index.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(rssroll_CFLAGS) $(CFLAGS) -c -o rssroll-rssroll.o `test -f 'rssroll.c' || echo '$(srcdir)/'`rssroll.c
 
-index_cgi-index.obj: index.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -MT index_cgi-index.obj -MD -MP -MF $(DEPDIR)/index_cgi-index.Tpo -c -o index_cgi-index.obj `if test -f 'index.c'; then $(CYGPATH_W) 'index.c'; else $(CYGPATH_W) '$(srcdir)/index.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/index_cgi-index.Tpo $(DEPDIR)/index_cgi-index.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='index.c' object='index_cgi-index.obj' libtool=no @AMDEPBACKSLASH@
+rssroll-rssroll.obj: rssroll.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(rssroll_CFLAGS) $(CFLAGS) -MT rssroll-rssroll.obj -MD -MP -MF $(DEPDIR)/rssroll-rssroll.Tpo -c -o rssroll-rssroll.obj `if test -f 'rssroll.c'; then $(CYGPATH_W) 'rssroll.c'; else $(CYGPATH_W) '$(srcdir)/rssroll.c'; fi`
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/rssroll-rssroll.Tpo $(DEPDIR)/rssroll-rssroll.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='rssroll.c' object='rssroll-rssroll.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(index_cgi_CFLAGS) $(CFLAGS) -c -o index_cgi-index.obj `if test -f 'index.c'; then $(CYGPATH_W) 'index.c'; else $(CYGPATH_W) '$(srcdir)/index.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(rssroll_CFLAGS) $(CFLAGS) -c -o rssroll-rssroll.obj `if test -f 'rssroll.c'; then $(CYGPATH_W) 'rssroll.c'; else $(CYGPATH_W) '$(srcdir)/rssroll.c'; fi`
 
 rssroll-rss.o: rss.c
 @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(rssroll_CFLAGS) $(CFLAGS) -MT rssroll-rss.o -MD -MP -MF $(DEPDIR)/rssroll-rss.Tpo -c -o rssroll-rss.o `test -f 'rss.c' || echo '$(srcdir)/'`rss.c
@@ -413,20 +430,6 @@ rssroll-rss.obj: rss.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='rss.c' object='rssroll-rss.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(rssroll_CFLAGS) $(CFLAGS) -c -o rssroll-rss.obj `if test -f 'rss.c'; then $(CYGPATH_W) 'rss.c'; else $(CYGPATH_W) '$(srcdir)/rss.c'; fi`
-
-rssroll-rssroll.o: rssroll.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(rssroll_CFLAGS) $(CFLAGS) -MT rssroll-rssroll.o -MD -MP -MF $(DEPDIR)/rssroll-rssroll.Tpo -c -o rssroll-rssroll.o `test -f 'rssroll.c' || echo '$(srcdir)/'`rssroll.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/rssroll-rssroll.Tpo $(DEPDIR)/rssroll-rssroll.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='rssroll.c' object='rssroll-rssroll.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(rssroll_CFLAGS) $(CFLAGS) -c -o rssroll-rssroll.o `test -f 'rssroll.c' || echo '$(srcdir)/'`rssroll.c
-
-rssroll-rssroll.obj: rssroll.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(rssroll_CFLAGS) $(CFLAGS) -MT rssroll-rssroll.obj -MD -MP -MF $(DEPDIR)/rssroll-rssroll.Tpo -c -o rssroll-rssroll.obj `if test -f 'rssroll.c'; then $(CYGPATH_W) 'rssroll.c'; else $(CYGPATH_W) '$(srcdir)/rssroll.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/rssroll-rssroll.Tpo $(DEPDIR)/rssroll-rssroll.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='rssroll.c' object='rssroll-rssroll.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(rssroll_CFLAGS) $(CFLAGS) -c -o rssroll-rssroll.obj `if test -f 'rssroll.c'; then $(CYGPATH_W) 'rssroll.c'; else $(CYGPATH_W) '$(srcdir)/rssroll.c'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -787,40 +790,6 @@ uninstall-am: uninstall-binPROGRAMS
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am uninstall-binPROGRAMS
 
-
-#CFLAGS=-Wall -Wstrict-prototypes -g -O0 -I/usr/local/include -I/usr/local/include/libxml2
-#LDFLAGS=-L/usr/local/lib
-#CC=gcc
-
-# all: rssroll index.cgi
-
-# rssroll: rssroll.c rss.o
-#       $(CC) $(CFLAGS) $(LDFLAGS) rssroll.c -o rssroll -lxml2 -lsqlite3 -lcurl rss.o
-
-# rss.o: rss.c rss.h
-#       $(CC) $(CFLAGS) -static -c rss.c
-
-# index.cgi: index.c cgi.o configfile.o
-#       $(CC) $(CFLAGS) $(LDFLAGS) -lsqlite3 -lz cgi.o configfile.o index.c -o index.cgi
-
-# cgi.o: cgi.c cgi.h
-#       $(CC) $(CFLAGS) -static -c cgi.c
-
-# configfile.o: configfile.c configfile.h
-#       $(CC) $(CFLAGS) -static -c configfile.c
-
-# install:
-#       cp rssroll /usr/local/bin
-#       cp index.cgi /usr/local/www/cgi-bin/rssroll.cgi
-#       cp rssrollrc /usr/local/etc
-#       mkdir /usr/local/www/data/rssroll
-#       cp -r html css /usr/local/www/data/rssroll
-
-# clean:
-#       rm -f rssroll *.o *.core index.cgi
-
-# remove:
-#       rm -rf /usr/local/bin/rssroll /usr/local/www/cgi-bin/rssroll.cgi /usr/local/etc/rssrollrc /usr/local/www/data/rssroll
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
