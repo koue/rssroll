@@ -1,0 +1,15 @@
+*~
+*.o
+/.deps
+*.swp
+Makefile
+/config.h
+/config.log
+/config.status
+/autom4te.cache
+/rssroll
+/index.cgi
+/stamp-h1
+\.#*
+\#*
+/*.tar.gz
