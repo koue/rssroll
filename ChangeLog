@@ -1,8 +1,12 @@
 # rssroll CHANGELOG
-# v 0.2
+# v 0.2.1
 # Nikola Kolev <koue@chaosophia.net>
 # http://chaosophia.net/rssroll/
 #
+
+Changes 0.2.1 (2013.03.20):
+
+- Add autotool build based on autoconf and automake. Atanas Kunev <atanas.kunev@gmail.com>.
 
 Changes 0.2 (2013.03.04):
 
