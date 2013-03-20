@@ -1,0 +1,24 @@
+#
+# Makefile for rssroll
+#
+
+bin_PROGRAMS = rssroll index.cgi
+
+# rssroll
+rssroll_SOURCES =       rssroll.c \
+                        rss.c rss.h
+
+# TODO:  The reference to /usr/include/curl must be removed
+rssroll_CFLAGS = $(XML2_CFLAGS) $(SQLITE3_CFLAGS) -I/usr/include/curl -Wall -Wstrict-prototypes
+rssroll_LDADD = $(XML2_LDFLAGS) -lcurl $(SQLITE3_LDFLAGS)
+
+# index
+index_cgi_SOURCES =	index.c \
+                        cgi.c cgi.h \
+                        configfile.c configfile.h
+
+index_cgi_CFLAGS = $(SQLITE3_CFLAGS) -Wall -Wstrict-prototypes
+index_cgi_LDADD = $(SQLITE3_LDFLAGS) -lz
+
+dist_noinst_SCRIPTS = autogen.sh
+EXTRA_DIST = autogen.sh rssrollrc html css
