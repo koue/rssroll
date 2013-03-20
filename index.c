@@ -118,7 +118,7 @@ void config_cb (const char *name, const char *value) {
 }
 
 static void
-dprintf(const char *fmt, ...)
+d_printf(const char *fmt, ...)
 {
 	static char s[RSSMAXBUFSIZE];
 	va_list ap;
@@ -128,11 +128,11 @@ dprintf(const char *fmt, ...)
 	r = vsnprintf(s, sizeof(s), fmt, ap);
 	va_end(ap);
 	if (r < 0 || r >= sizeof(s))
-		printf("error dprintf: vsnprintf: r %d (%d)", r, (int)sizeof(s));
+		printf("error d_printf: vsnprintf: r %d (%d)", r, (int)sizeof(s));
 	if (gz != NULL) {
 		r = gzputs(gz, s);
 		if (r != strlen(s))
-			printf("error dprintf: gzputs: r %d (%d)",
+			printf("error d_printf: gzputs: r %d (%d)",
 			    r, (int)strlen(s));
 	} else
 		fprintf(stdout, "%s", s);
@@ -147,7 +147,7 @@ trace_categories_callback (void *p_data, int num_fields, char **p_fields, char *
 
 		the rest are not used.
 	*/
-	dprintf("<p><a href='%s?%s'>%s</a></p>", rssroll->url, p_fields[0], p_fields[1]);
+	d_printf("<p><a href='%s?%s'>%s</a></p>", rssroll->url, p_fields[0], p_fields[1]);
 
 	return 0;
 }
@@ -193,26 +193,26 @@ render_error(const char *fmt, ...)
 	va_end(ap);
 	printf("%s\r\n\r\n", rssroll->ct_html);
 	fflush(stdout);
-	dprintf("<html><head><title>Error</title></head><body>\n");
-	dprintf("<h2>Error</h2><p><b>%s</b><p>\n", s);
+	d_printf("<html><head><title>Error</title></head><body>\n");
+	d_printf("<h2>Error</h2><p><b>%s</b><p>\n", s);
 	if (q != NULL) {
-		dprintf("Request: <b>%s</b><br>\n",
+		d_printf("Request: <b>%s</b><br>\n",
 		    html_esc(q->query_string, e, sizeof(e), 0));
-		dprintf("Address: <b>%s</b><br>\n",
+		d_printf("Address: <b>%s</b><br>\n",
 		    html_esc(q->remote_addr, e, sizeof(e), 0));
 		if (q->user_agent != NULL)
-			dprintf("User agent: <b>%s</b><br>\n",
+			d_printf("User agent: <b>%s</b><br>\n",
 			    html_esc(q->user_agent, e, sizeof(e), 0));
 		if (q->referer != NULL)
-			dprintf("Referer: <b>%s</b><br>\n",
+			d_printf("Referer: <b>%s</b><br>\n",
 			    html_esc(q->referer, e, sizeof(e), 0));
 	}
-	dprintf("Time: <b>%s</b><br>\n", rfc822_time(time(0)));
-	dprintf("<p>If you believe this is a bug in <i>this</i> server, "
+	d_printf("Time: <b>%s</b><br>\n", rfc822_time(time(0)));
+	d_printf("<p>If you believe this is a bug in <i>this</i> server, "
 	    "please send reports with instructions about how to "
 	    "reproduce to <a href=\"mailto:%s\"><b>%s</b></a><p>\n",
 	    rssroll->owner, rssroll->owner);
-	dprintf("</body></html>\n");
+	d_printf("</body></html>\n");
 }
 
 static int
@@ -222,7 +222,7 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 	char s[8192];
 
 	if ((f = fopen(html_fn, "r")) == NULL) {
-		dprintf("ERROR: fopen: %s: %s<br>\n", html_fn, strerror(errno));
+		d_printf("ERROR: fopen: %s: %s<br>\n", html_fn, strerror(errno));
 		return (1);
 	}
 	while (fgets(s, sizeof(s), f)) {
@@ -230,18 +230,18 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 
 		for (a = s; (b = strstr(a, "%%")) != NULL;) {
 			*b = 0;
-			dprintf("%s", a);
+			d_printf("%s", a);
 			a = b + 2;
 			if ((b = strstr(a, "%%")) != NULL) {
 				*b = 0;
 				if (!strcmp(a, "RSSROLL_BASEURL"))
-					dprintf("%s", rssroll->url);
+					d_printf("%s", rssroll->url);
 				else if (!strcmp(a, "RSSROLL_NAME"))
-					dprintf("%s", rssroll->name);
+					d_printf("%s", rssroll->name);
 				else if (!strcmp(a, "RSSROLL_OWNER"))
-					dprintf("%s", rssroll->owner);
+					d_printf("%s", rssroll->owner);
 				else if (!strcmp(a, "RSSROLL_CTYPE"))
-					dprintf("%s", rssroll->ct_html);
+					d_printf("%s", rssroll->ct_html);
 				else if (!strcmp(a, "RSSROLL_CATEGORIES")){
 					char *errmsg;
 					if(sqlite3_exec(db, "SELECT id, title FROM categories", trace_categories_callback, 0, &errmsg) != SQLITE_OK) {
@@ -253,7 +253,7 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 				a = b + 2;
 			}
 		}
-		dprintf("%s", a);
+		d_printf("%s", a);
 	}
 	fclose(f);
 	return (0);
@@ -284,22 +284,22 @@ render_front(const char *m, const st_rss_item_t *e)
 		snprintf(fn, sizeof(fn), "%s/footer.html", rssroll->htmldir);
 		render_html(fn, NULL, NULL);
 	} else
-		dprintf("render_front: unknown macro '%s'<br>\n", m);
+		d_printf("render_front: unknown macro '%s'<br>\n", m);
 }
 
 static void
 render_front_feed(const char *m, const st_rss_item_t *e)
 {
 	if (!strcmp(m, "PUBDATE")) {
-		dprintf("%s", ctime(&e->date));
+		d_printf("%s", ctime(&e->date));
 	} else  if (!strcmp(m, "TITLE")) {
-		dprintf("%s", e->title);
+		d_printf("%s", e->title);
 	} else if (!strcmp(m, "DESCRIPTION")) {
-		dprintf("%s", e->desc);
+		d_printf("%s", e->desc);
 	} else if (!strcmp(m, "URL")) {
-		dprintf("%s", e->url);
+		d_printf("%s", e->url);
 	} else
-		dprintf("render_front_feed: unknown macro '%s'<br>\n", m);
+		d_printf("render_front_feed: unknown macro '%s'<br>\n", m);
 }
 
 static char *
