@@ -60,7 +60,7 @@ DIST_COMMON = README $(am__configure_deps) $(dist_noinst_SCRIPTS) \
 	$(srcdir)/config.h.in $(top_srcdir)/configure AUTHORS COPYING \
 	ChangeLog INSTALL NEWS depcomp install-sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_sqlite3.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_sqlite3.m4 $(top_srcdir)/m4/libcurl.m4 \
 	$(top_srcdir)/m4/ax_lib_xml2.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -173,6 +173,8 @@ XML2_CFLAGS = @XML2_CFLAGS@
 XML2_CONFIG = @XML2_CONFIG@
 XML2_LDFLAGS = @XML2_LDFLAGS@
 XML2_VERSION = @XML2_VERSION@
+CURL_CFLAGS = @LIBCURL_CPPFLAGS@
+CURL_LDFLAGS = @LIBCURL@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -221,9 +223,8 @@ rssroll_SOURCES = rssroll.c \
                         rss.c rss.h
 
 
-# TODO:  The reference to /usr/include/curl must be removed
-rssroll_CFLAGS = $(XML2_CFLAGS) $(SQLITE3_CFLAGS) -I/usr/include/curl -Wall -Wstrict-prototypes
-rssroll_LDADD = $(XML2_LDFLAGS) -lcurl $(SQLITE3_LDFLAGS)
+rssroll_CFLAGS = $(XML2_CFLAGS) $(SQLITE3_CFLAGS) $(CURL_CFLAGS) -Wall -Wstrict-prototypes
+rssroll_LDADD = $(XML2_LDFLAGS) $(CURL_LDFLAGS) $(SQLITE3_LDFLAGS)
 
 # index
 index_cgi_SOURCES = index.c \

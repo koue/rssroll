@@ -8,9 +8,8 @@ bin_PROGRAMS = rssroll index.cgi
 rssroll_SOURCES =       rssroll.c \
                         rss.c rss.h
 
-# TODO:  The reference to /usr/include/curl must be removed
-rssroll_CFLAGS = $(XML2_CFLAGS) $(SQLITE3_CFLAGS) -I/usr/include/curl -Wall -Wstrict-prototypes
-rssroll_LDADD = $(XML2_LDFLAGS) -lcurl $(SQLITE3_LDFLAGS)
+rssroll_CFLAGS = $(XML2_CFLAGS) $(SQLITE3_CFLAGS) $(CURL_CFLAGS) -Wall -Wstrict-prototypes
+rssroll_LDADD = $(XML2_LDFLAGS) $(CURL_LDFLAGS) $(SQLITE3_LDFLAGS)
 
 # index
 index_cgi_SOURCES =	index.c \

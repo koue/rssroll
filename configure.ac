@@ -1,11 +1,11 @@
-AC_INIT(rssroll, 0.1.0,
+AC_INIT(rssroll, 0.2.1,
                  [https://github.com/koue/rssroll/issues], ,
                  [https://github.com/koue/rssroll])
 
 # local m4 libraries
 m4_include([m4/ax_lib_sqlite3.m4])
 m4_include([m4/ax_lib_xml2.m4])
-#m4_include([m4/ax_lib_curl.m4])
+m4_include([m4/libcurl.m4])
 
 #AM_PROG_CC_C_O
 
@@ -26,7 +26,7 @@ AC_CHECK_HEADER(unistd.h)
 echo " ===> Testing for some libraries"
 AX_LIB_SQLITE3(3.0.0)
 AX_LIB_XML2(2.5.0)
-#AX_LIB_CURL([7.19.4])
+LIBCURL_CHECK_CONFIG(7.7.2)
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_HEADERS([config.h])
