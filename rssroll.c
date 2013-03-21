@@ -254,7 +254,7 @@ fetch_channel(char *link) {
 
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl_handle = curl_easy_init();
-	curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "rssroll/1.0");
+	curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "rssroll/0.2.1");
 	curl_easy_setopt(curl_handle, CURLOPT_URL, link);
 	curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
