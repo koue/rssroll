@@ -1,8 +1,11 @@
 # rssroll CHANGELOG
-# v 0.2.1
+# v 0.2.2
 # Nikola Kolev <koue@chaosophia.net>
 # http://chaosophia.net/rssroll/
 #
+Changes 0.2.2 (2013.04.03):
+
+- Implement getopt functionallity and allow debug output without recompilation.
 
 Changes 0.2.1 (2013.03.20):
 

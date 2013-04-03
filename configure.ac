@@ -1,4 +1,4 @@
-AC_INIT(rssroll, 0.2.1,
+AC_INIT(rssroll, 0.2.2,
                  [https://github.com/koue/rssroll/issues], ,
                  [https://github.com/koue/rssroll])
 

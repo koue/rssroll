@@ -1,11 +1,10 @@
+To configure:
+
+	# ./configure
+
 To build:
 	
 	# make
-
-	There is no configure so if there is error during compilation 
-	probably its caused by missing library or wrong "include" or
-	"library" path in Makefile.
-
 
 To install:
 
