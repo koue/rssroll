@@ -84,7 +84,6 @@ void
 add_feed(int id, char *url, char *title, char *desc, time_t date) {
 	char *errmsg;
 	char query[MAXQUERY];	/* if the content of the feed is too long MAXQUERY value should be increased */	
-	int ret;
 
 	if (debug)
 		dmsg("add_feed");
@@ -94,8 +93,7 @@ add_feed(int id, char *url, char *title, char *desc, time_t date) {
 	if (debug) 
 		dmsg(query);
 
-	ret = sqlite3_exec(db, query, NULL, 0, &errmsg);
-	if ( ret != SQLITE_OK) {
+	if (sqlite3_exec(db, query, NULL, 0, &errmsg) != SQLITE_OK) {
 		printf("Error: in query %s [%s].\n", query, errmsg);
 	} else {
 		printf("New feed has been added %s.\n", url);
@@ -117,7 +115,7 @@ check_link(int id, char *link, time_t pubdate) {
 	
 	char *errmsg;
 	char query[1024], currtime[32];
-	int result = 0, ret;
+	int result = 0;
 	time_t	date;
 
 	if (debug) 
@@ -128,17 +126,13 @@ check_link(int id, char *link, time_t pubdate) {
 	if (debug)
 		dmsg(query);
 
-	ret = sqlite3_exec(db, query, select_channel_callback, &result, &errmsg);
-
-	if (debug) {
-		snprintf(debugmsg, sizeof(debugmsg), "results: %d", result);	
-		dmsg(debugmsg);
-	}
-	if (ret != SQLITE_OK) {
+	if (sqlite3_exec(db, query, select_channel_callback, &result, &errmsg) != SQLITE_OK) {
 		printf("Error: in query %s [%s]\n.", query, errmsg);
 		return 1;
 	} else {
 		if (result)  { // record has been found
+			if(debug)
+				dmsg("record has been found.");
 			return 1; // dont do anything ; If you want to update changed post do it here
 		}
 		else {
@@ -150,8 +144,7 @@ check_link(int id, char *link, time_t pubdate) {
 			if (debug)
 				dmsg(query);
 
-			ret = sqlite3_exec(db, query, NULL, 0, &errmsg);
-			if (ret != SQLITE_OK)
+			if (sqlite3_exec(db, query, NULL, 0, &errmsg) != SQLITE_OK) 
 				sqlite3_mprintf("Error: in query %q [%s].\n", query, errmsg);
 			return 0; // call add_feed to add the item into the database
 		}
