@@ -39,13 +39,16 @@
 
 #include "rss.h"
 
-#define DEBUG 		0
+#define RSSROLL_VERSION	"rssroll/0.2.2"
 /* file to save header information about the rss file 	*/
 #define HEADERFILE	"/tmp/.head.txt"
 /* file to save content for parsing from rss file 	*/
 #define BODYFILE	"/tmp/.body.txt"
 /* max length of the insert query			*/
 #define	MAXQUERY	131072
+
+int debug = 0;
+static char debugmsg[512];
 
 /* rss database store	*/
 static sqlite3* db;
@@ -55,7 +58,7 @@ void
 dmsg(char *m) {
 
 	char msg[1024];
-	snprintf(msg, sizeof(msg), "[DEBUG] %s", m);
+	snprintf(msg, sizeof(msg), "[debug] %s", m);
 	printf("%s\n", msg);
 	fflush(stdout);
 }
@@ -83,12 +86,12 @@ add_feed(int id, char *url, char *title, char *desc, time_t date) {
 	char query[MAXQUERY];	/* if the content of the feed is too long MAXQUERY value should be increased */	
 	int ret;
 
-	if (DEBUG)
+	if (debug)
 		dmsg("add_feed");
 
 	sqlite3_snprintf(sizeof(query), query, "insert into feeds (chanid, modified, link, title, description, pubdate) values (%d, 0, '%q', '%q', '%q', '%ld')", id, url, title, desc, date);	/* %q is like %s but with escapesd characters */ 
 
-	if (DEBUG) 
+	if (debug) 
 		dmsg(query);
 
 	ret = sqlite3_exec(db, query, NULL, 0, &errmsg);
@@ -117,25 +120,26 @@ check_link(int id, char *link, time_t pubdate) {
 	int result = 0, ret;
 	time_t	date;
 
-	if (DEBUG) 
+	if (debug) 
 		dmsg("check_link");
 
 	sqlite3_snprintf(sizeof(query), query, "select id from feeds where pubdate = '%ld' and chanid = %d and link = '%q'", pubdate, id, link);
 
-	if (DEBUG)
+	if (debug)
 		dmsg(query);
 
 	ret = sqlite3_exec(db, query, select_channel_callback, &result, &errmsg);
 
-	if (DEBUG) 
-		printf("results: %d\n", result);
-
+	if (debug) {
+		snprintf(debugmsg, sizeof(debugmsg), "results: %d", result);	
+		dmsg(debugmsg);
+	}
 	if (ret != SQLITE_OK) {
 		printf("Error: in query %s [%s]\n.", query, errmsg);
 		return 1;
 	} else {
 		if (result)  { // record has been found
-			return 1; // dont do anything
+			return 1; // dont do anything ; If you want to update changed post do it here
 		}
 		else {
 			time(&date);
@@ -143,7 +147,7 @@ check_link(int id, char *link, time_t pubdate) {
 			chomp(currtime);
 			sqlite3_snprintf(sizeof(query), query, "update channels set modified = '%q' where id = %d", currtime, id); /* update last modified  
 																	time of the channel */
-			if (DEBUG)
+			if (debug)
 				dmsg(query);
 
 			ret = sqlite3_exec(db, query, NULL, 0, &errmsg);
@@ -162,7 +166,7 @@ parse_body(int id, char *modified) {
 	
 	st_rss_t *rss = NULL;
 	
-        if(DEBUG)
+        if(debug)
                 dmsg("parse_body.");
 
 	rss = rss_open(BODYFILE);
@@ -171,11 +175,12 @@ parse_body(int id, char *modified) {
 		return;
 	}
 
-	if (DEBUG) {
-		printf("items - %d\n", rss->item_count);
+	if (debug) {
+		snprintf(debugmsg, sizeof(debugmsg), "items - %d", rss->item_count);	
+		dmsg(debugmsg);
 	}
 
-/*	if (DEBUG) {
+/*	if (debug) {
 		for (i = (rss->item_count - 1); i > -1  ; i--)
 			printf("[%d] - %s\n"
 				"%s\n"
@@ -196,7 +201,7 @@ parse_header(int id, char *modified) {
         int i;
         FILE *fp;
 
-        if(DEBUG)
+        if(debug)
                 dmsg("parse_header");
 
         if ((fp = fopen(HEADERFILE, "r")) == NULL) {
@@ -229,9 +234,9 @@ parse_header(int id, char *modified) {
 void 
 parse_channel(int id, char *modified) {
 
-	if (DEBUG) {
-		dmsg("parse_channel");
-		printf("id - %d\n", id);
+	if (debug) {
+		snprintf(debugmsg, sizeof(debugmsg), "parse_channel id - %d", id);
+		dmsg(debugmsg);
 	}
 
 	if (parse_header(id, modified)) {
@@ -247,14 +252,14 @@ fetch_channel(char *link) {
 	FILE *headerfile;
 	FILE *bodyfile;
 
-	if (DEBUG) {
-		dmsg("fetch_channel");
-		dmsg(link);
+	if (debug) {
+		snprintf(debugmsg, sizeof(debugmsg), "fetch_channel - %s", link);
+		dmsg(debugmsg);
 	}
 
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl_handle = curl_easy_init();
-	curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "rssroll/0.2.1");
+	curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, RSSROLL_VERSION);
 	curl_easy_setopt(curl_handle, CURLOPT_URL, link);
 	curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
@@ -286,7 +291,7 @@ trace_channels_callback(void *p_data, int num_fields, char **p_fields, char **p_
 	p_fields[1]	-	modified
 	p_fields[2]	-	link
 */
-	if (DEBUG) {
+	if (debug) {
 		dmsg("trace_chennels_callback");
 		dmsg(p_fields[0]);
 		dmsg(p_fields[1]);
@@ -307,7 +312,7 @@ trace_channels(void) {
 	char *errmsg;
 	char query[]="select id, modified, link from channels";
 
-	if(DEBUG) 
+	if(debug) 
 		dmsg("trace_channels");
 
 	if(sqlite3_exec(db, query, trace_channels_callback, 0, &errmsg) != SQLITE_OK) {
@@ -315,48 +320,49 @@ trace_channels(void) {
 	}
 }
 
-void 
-usage(char *f){
-	fprintf(stderr, "Usage:\n\t %s -d database.db\n", f);
+static void 
+usage(void){
+	extern	char *__progname;
+
+	fprintf(stderr, "Usage: %s [-v] [-d database]\n", __progname);
+	exit(1);
 }
 
 int 
 main( int argc, char** argv){
 
-	char DBNAME[256];
-	
-	if(argc != 3) {
-		usage(argv[0]);
-		return 0;
-	}
+	int ch;
+	const char *dbname = "/var/db/rssroll.db";
 
-	if (strcmp (argv[1], "-d")) {
-		usage(argv[0]);
-		return 0;	
+	while ((ch = getopt(argc, argv, "d:v")) != -1) {
+		switch (ch) {
+			case 'd':
+				dbname = optarg;
+				break;
+			case 'v':
+				debug++;
+				break;
+			default:
+				usage();
+		}
 	}
-	
-	snprintf(DBNAME, sizeof(DBNAME), "%s", argv[2]);
-
-	if(access(DBNAME, R_OK)){
-		printf("Cannot read database file!\n");
+	if (argc != optind)
+		usage();
+	if(access(dbname, R_OK)){
+		fprintf(stderr, "Cannot read database file: %s!\n", dbname);
 		return 1;
 	}
-	
-	sqlite3_open(DBNAME, &db);
-	if (!db) {
-		printf("Cannot open database %s\n",DBNAME);
+	if (sqlite3_open(dbname, &db) != SQLITE_OK) {
+		fprintf(stderr, "Cannot open database file: %s\n", dbname);
 		return 1;
 	}
-	if(DEBUG) {
-		printf("[DEBUG] %s successfully loaded.\n",DBNAME);
-	}
+	if(debug) 
+		dmsg("database successfully loaded.");
 	trace_channels();
 	remove(HEADERFILE);
 	remove(BODYFILE);
-	
 	sqlite3_close(db);
-	if(DEBUG) {
-		printf("[DEBUG] %s successfully closed.\n",DBNAME);
-	}
+	if(debug) 
+		dmsg("database successfully closed.");
 	return 0;
 }
