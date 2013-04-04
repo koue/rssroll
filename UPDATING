@@ -1,0 +1,4 @@
+20130404:
+	Update from 0.2 to 0.3
+	
+	# sqlite3 PATH_TO_DB "update channels set modified='1111111111'"

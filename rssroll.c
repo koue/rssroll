@@ -39,9 +39,7 @@
 
 #include "rss.h"
 
-#define RSSROLL_VERSION	"rssroll/0.2.2"
-/* file to save header information about the rss file 	*/
-#define HEADERFILE	"/tmp/.head.txt"
+#define RSSROLL_VERSION	"rssroll/0.3"
 /* file to save content for parsing from rss file 	*/
 #define BODYFILE	"/tmp/.body.txt"
 /* max length of the insert query			*/
@@ -63,14 +61,6 @@ dmsg(char *m) {
 	fflush(stdout);
 }
 
-/* remove \r and \n from the end of string */
-void
-chomp(char *s) {
-	while (*s && *s != '\n' && *s != '\r') 
-		s++;
-	*s = 0;
-}
-
 /* curl write function */
 static size_t 
 write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
@@ -79,16 +69,16 @@ write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
 	return written;
 }
 
-/* add new feed into the database */
+/* add new item into the database */
 void
-add_feed(int id, char *url, char *title, char *desc, time_t date) {
+add_feed(int chan_id, char *item_url, char *item_title, char *item_desc, time_t item_date) {
 	char *errmsg;
-	char query[MAXQUERY];	/* if the content of the feed is too long MAXQUERY value should be increased */	
+	char query[MAXQUERY];	/* if the content of the item is too long MAXQUERY value should be increased */	
 
 	if (debug)
-		dmsg("add_feed");
+		dmsg("add_item");
 
-	sqlite3_snprintf(sizeof(query), query, "insert into feeds (chanid, modified, link, title, description, pubdate) values (%d, 0, '%q', '%q', '%q', '%ld')", id, url, title, desc, date);	/* %q is like %s but with escapesd characters */ 
+	sqlite3_snprintf(sizeof(query), query, "insert into feeds (chanid, modified, link, title, description, pubdate) values (%d, 0, '%q', '%q', '%q', '%ld')", chan_id, item_url, item_title, item_desc, item_date);	/* %q is same as %s but with escaped characters */ 
 
 	if (debug) 
 		dmsg(query);
@@ -96,7 +86,7 @@ add_feed(int id, char *url, char *title, char *desc, time_t date) {
 	if (sqlite3_exec(db, query, NULL, 0, &errmsg) != SQLITE_OK) {
 		printf("Error: in query %s [%s].\n", query, errmsg);
 	} else {
-		printf("New feed has been added %s.\n", url);
+		printf("New feed has been added %s.\n", item_url);
 	}
 }
 
@@ -111,17 +101,17 @@ select_channel_callback(void *p_data, int num_fields, char **p_fields, char **p_
 
 /* checks if the feed url appears into the database */
 int 
-check_link(int id, char *link, time_t pubdate) {
+check_link(int chan_id, char *item_link, time_t item_pubdate) {
 	
 	char *errmsg;
-	char query[1024], currtime[32];
+	char query[1024]; 
 	int result = 0;
 	time_t	date;
 
 	if (debug) 
 		dmsg("check_link");
 
-	sqlite3_snprintf(sizeof(query), query, "select id from feeds where pubdate = '%ld' and chanid = %d and link = '%q'", pubdate, id, link);
+	sqlite3_snprintf(sizeof(query), query, "select id from feeds where pubdate = '%ld' and chanid = '%d' and link = '%q'", item_pubdate, chan_id, item_link);
 
 	if (debug)
 		dmsg(query);
@@ -136,10 +126,7 @@ check_link(int id, char *link, time_t pubdate) {
 			return 1; // dont do anything ; If you want to update changed post do it here
 		}
 		else {
-			time(&date);
-			strcpy(currtime, ctime(&date));
-			chomp(currtime);
-			sqlite3_snprintf(sizeof(query), query, "update channels set modified = '%q' where id = %d", currtime, id); /* update last modified  
+			sqlite3_snprintf(sizeof(query), query, "update channels set modified = '%ld' where id = '%d'", time(&date), chan_id); /* update last modified  
 																	time of the channel */
 			if (debug)
 				dmsg(query);
@@ -153,7 +140,7 @@ check_link(int id, char *link, time_t pubdate) {
 
 /* parse content of the rss */
 void
-parse_body(int id, char *modified) {
+parse_body(int chan_id) {
 
 	int i;
 	
@@ -164,7 +151,7 @@ parse_body(int id, char *modified) {
 
 	rss = rss_open(BODYFILE);
 	if (!rss) {	
-		printf("rss id [%d] cannot be parsed.\n", id);
+		printf("rss id [%d] cannot be parsed.\n", chan_id);
 		return;
 	}
 
@@ -182,99 +169,54 @@ parse_body(int id, char *modified) {
 */
 
 	for ( i = (rss->item_count - 1); i > -1; i--)	/* check urls in reverse order, first feed has been added last to the rss */
-		if(!check_link(id, rss->item[i].url, rss->item[i].date))
-			add_feed(id, rss->item[i].url, rss->item[i].title, rss->item[i].desc, rss->item[i].date);
+		if(!check_link(chan_id, rss->item[i].url, rss->item[i].date))
+			add_feed(chan_id, rss->item[i].url, rss->item[i].title, rss->item[i].desc, rss->item[i].date);
 	rss_close (rss);
-}
-
-/* parse header of the rss, if last-modified date is same as in the database then don't do anything */
-int 
-parse_header(int id, char *modified) {
-        char s[8192], *t, k[128];
-        int i;
-        FILE *fp;
-
-        if(debug)
-                dmsg("parse_header");
-
-        if ((fp = fopen(HEADERFILE, "r")) == NULL) {
-                printf("Count not parse %s with ID: %d\n", HEADERFILE, id);
-                return 0;
-        }
-
-        while ((t = fgets(s, sizeof(s), fp))) {
-                while (*t == ' ' || *t == '\t')
-                        t++;
-                for (i = 0; i < sizeof(k) -1 && *t && *t != ' ' && *t != '\t'; ++i)
-                        k[i] = *t++;
-                k[i] = 0;
-                if (!strcmp(k, "Last-Modified:")) {
-                        t++;
-                        k[0] = 0;
-                        for (i = 0; i < 255 && *t && *t != '\n'; ++i)
-                                k[i] = *t++;
-                        break;
-                }
-        }
-        fclose(fp);
-        if (strcmp(modified, k))
-                return 1;
-        else
-                return 0;
-}
-
-/* start rss tracing */
-void 
-parse_channel(int id, char *modified) {
-
-	if (debug) {
-		snprintf(debugmsg, sizeof(debugmsg), "parse_channel id - %d", id);
-		dmsg(debugmsg);
-	}
-
-	if (parse_header(id, modified)) {
-		parse_body(id, modified);
-	}
-	return;
 }
 
 /* fetch rss file */
 int 
-fetch_channel(char *link) {
+fetch_channel(int chan_id, long chan_modified, char *chan_link) {
 	CURL *curl_handle;
-	FILE *headerfile;
+	struct curl_slist *if_chan_modified = NULL;
 	FILE *bodyfile;
+	char chan_last_modified_time[64];
+	long	http_code = 0;
 
 	if (debug) {
-		snprintf(debugmsg, sizeof(debugmsg), "fetch_channel - %s", link);
+		snprintf(debugmsg, sizeof(debugmsg), "fetch_channel - %d, %ld, %s", chan_id, chan_modified, chan_link);
 		dmsg(debugmsg);
 	}
 
+	strftime(chan_last_modified_time, sizeof(chan_last_modified_time), "If-Modified-Since: %a, %d %b %Y %T %Z", localtime(&chan_modified));
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl_handle = curl_easy_init();
+	if_chan_modified = curl_slist_append(if_chan_modified, chan_last_modified_time);
 	curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, RSSROLL_VERSION);
-	curl_easy_setopt(curl_handle, CURLOPT_URL, link);
+	curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, if_chan_modified);
+	curl_easy_setopt(curl_handle, CURLOPT_URL, chan_link);
 	curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
 
-	if ((headerfile = fopen(HEADERFILE, "w")) == NULL) {
-		curl_easy_cleanup(curl_handle);
-		return -1;
-	}
-
 	if ((bodyfile = fopen(BODYFILE, "w")) == NULL) {
 		curl_easy_cleanup(curl_handle);
-		return -1;
+		return 0;
 	}
 
-	curl_easy_setopt(curl_handle, CURLOPT_WRITEHEADER, headerfile);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, bodyfile);
 	curl_easy_perform(curl_handle);
-	fclose(headerfile);
+	curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
 	fclose(bodyfile);
 	curl_easy_cleanup(curl_handle);
-
-	return 0;
+	if (http_code != 304)
+		parse_body(chan_id);
+	else {
+		if (debug) {
+			snprintf(debugmsg, sizeof(debugmsg), "channel: id - %d, link - %s has not been changed.", chan_id, chan_link);	
+			dmsg(debugmsg);
+		}
+	}
+	return 1;
 }
 
 /* get id, modified and url from the database for the rss url */
@@ -285,17 +227,12 @@ trace_channels_callback(void *p_data, int num_fields, char **p_fields, char **p_
 	p_fields[2]	-	link
 */
 	if (debug) {
-		dmsg("trace_chennels_callback");
-		dmsg(p_fields[0]);
-		dmsg(p_fields[1]);
-		dmsg(p_fields[2]);
+		snprintf(debugmsg, sizeof(debugmsg), "%s, %s, %s", p_fields[0], p_fields[1], p_fields[2]);
+		dmsg(debugmsg);
 	}
 
-//	printf("channel - %s.\n", p_fields[2]);
-	if (!fetch_channel(p_fields[2])) {
-		parse_channel (atoi(p_fields[0]), p_fields[1]);
-	} else {
-		printf("Error: cannot fetch channel %s.\n", p_fields[2]);
+	if (!fetch_channel(atoi(p_fields[0]), atol(p_fields[1]), p_fields[2])) {
+		fprintf(stderr, "Error: cannot fetch channel %s.\n", p_fields[2]);
 	}
 	return 0;
 }
@@ -352,7 +289,6 @@ main( int argc, char** argv){
 	if(debug) 
 		dmsg("database successfully loaded.");
 	trace_channels();
-	remove(HEADERFILE);
 	remove(BODYFILE);
 	sqlite3_close(db);
 	if(debug) 

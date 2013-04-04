@@ -1,20 +1,25 @@
 # rssroll CHANGELOG
-# v 0.2.2
+# v 0.3
 # Nikola Kolev <koue@chaosophia.net>
 # http://chaosophia.net/rssroll/
 #
-Changes 0.2.2 (2013.04.03):
+Changes 0.3	(2013.04.04):
+
+- Implement If-Modified-Since functionallity and fetch the RSS file only if its newer.
+- Remove unused HEADERFILE functions.
+
+Changes 0.2.2 	(2013.04.03):
 
 - Implement getopt functionallity and allow debug output without recompilation.
 
-Changes 0.2.1 (2013.03.20):
+Changes 0.2.1 	(2013.03.20):
 
 - Add autotool build based on autoconf and automake. Atanas Kunev <atanas.kunev@gmail.com>.
 
-Changes 0.2 (2013.03.04):
+Changes 0.2 	(2013.03.04):
 
 - Add config file for index.cgi.
 
-0.1 (2012.12.13):
+0.1		(2012.12.13):
 
 - Initial release.
