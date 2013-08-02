@@ -34,14 +34,13 @@
 #include <stdlib.h>
 #include <sqlite3.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <curl/curl.h>
 #include <curl/easy.h>
 
 #include "rss.h"
 
-#define RSSROLL_VERSION	"rssroll/0.3"
-/* file to save content for parsing from rss file 	*/
-#define BODYFILE	"/tmp/.body.txt"
+#define RSSROLL_VERSION	"rssroll/0.4"
 /* max length of the insert query			*/
 #define	MAXQUERY	131072
 
@@ -140,7 +139,7 @@ check_link(int chan_id, char *item_link, time_t item_pubdate) {
 
 /* parse content of the rss */
 void
-parse_body(int chan_id) {
+parse_body(int chan_id, char *rssfile) {
 
 	int i;
 	
@@ -149,7 +148,7 @@ parse_body(int chan_id) {
         if(debug)
                 dmsg("parse_body.");
 
-	rss = rss_open(BODYFILE);
+	rss = rss_open(rssfile);
 	if (!rss) {	
 		printf("rss id [%d] cannot be parsed.\n", chan_id);
 		return;
@@ -180,8 +179,9 @@ fetch_channel(int chan_id, long chan_modified, char *chan_link) {
 	CURL *curl_handle;
 	struct curl_slist *if_chan_modified = NULL;
 	FILE *bodyfile;
-	char chan_last_modified_time[64];
+	char chan_last_modified_time[64], fn[]="/tmp/rssroll.tmp.XXXXXXXXXX";
 	long	http_code = 0;
+	int fd;
 
 	if (debug) {
 		snprintf(debugmsg, sizeof(debugmsg), "fetch_channel - %d, %ld, %s", chan_id, chan_modified, chan_link);
@@ -198,8 +198,20 @@ fetch_channel(int chan_id, long chan_modified, char *chan_link) {
 	curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
 
-	if ((bodyfile = fopen(BODYFILE, "w")) == NULL) {
+	if ((fd = mkstemp(fn)) == -1) {
+		fprintf(stderr, "Cannot create temp file!\n");
+		return 0;
+	}
+
+	if (fchmod(fd, 0600)) {
+		fprintf(stderr, "Cannot set permission to temp file!\n");
+		return 0;
+	}
+
+
+	if ((bodyfile = fdopen(fd, "w")) == NULL) {
 		curl_easy_cleanup(curl_handle);
+		fprintf(stderr, "Cannot open file for parsing!\n"); 
 		return 0;
 	}
 
@@ -209,13 +221,14 @@ fetch_channel(int chan_id, long chan_modified, char *chan_link) {
 	fclose(bodyfile);
 	curl_easy_cleanup(curl_handle);
 	if (http_code != 304)
-		parse_body(chan_id);
+		parse_body(chan_id, fn);
 	else {
 		if (debug) {
 			snprintf(debugmsg, sizeof(debugmsg), "channel: id - %d, link - %s has not been changed.", chan_id, chan_link);	
 			dmsg(debugmsg);
 		}
 	}
+	unlink(fn);	
 	return 1;
 }
 
@@ -289,7 +302,6 @@ main( int argc, char** argv){
 	if(debug) 
 		dmsg("database successfully loaded.");
 	trace_channels();
-	remove(BODYFILE);
 	sqlite3_close(db);
 	if(debug) 
 		dmsg("database successfully closed.");
