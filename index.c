@@ -49,6 +49,8 @@
 
 static sqlite3*		db;		
 static char		query_string[10];
+static char		query_category[10];
+static char		query_limit[256];
 static struct query	*q = NULL;
 static gzFile		gz = NULL;
 static char		*rssrollrc = "/usr/local/etc/rssrollrc";
@@ -247,6 +249,11 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 					if(sqlite3_exec(db, "SELECT id, title FROM categories", trace_categories_callback, 0, &errmsg) != SQLITE_OK) {
 						render_error("cannot load database");
 					}
+				} else if (!strcmp(a, "PREV")) {
+					d_printf("<a href='%s?%s/%ld'> <<< </a>", rssroll->url, query_category, strtol(query_limit, NULL, 0) + rssroll->feeds);
+				} else if (!strcmp(a, "NEXT")) {
+					if (strtol(query_limit, NULL, 0))
+						d_printf("<a href='%s?%s/%ld'> >>> </a>", rssroll->url, query_category, strtol(query_limit, NULL, 0) - rssroll->feeds);
 				}
 				else if (r != NULL)
 					(*r)(a, e);
@@ -269,8 +276,8 @@ render_front(const char *m, const st_rss_item_t *e)
 		catid = 3 - news
 	*/
 	char feeds_query[256];
-	
-	sqlite3_snprintf(sizeof(feeds_query), feeds_query, "SELECT id, modified, link, title, description, pubdate from feeds where chanid IN (select id from channels where catid = '%q') order by id desc limit %d", query_string, rssroll->feeds);
+
+	sqlite3_snprintf(sizeof(feeds_query), feeds_query, "SELECT id, modified, link, title, description, pubdate from feeds where chanid IN (select id from channels where catid = '%q') order by id desc limit %q, %d", query_category, query_limit, rssroll->feeds);
 	//char *feeds_query = "SELECT id, modified, link, title, description, pubdate from feeds where chanid IN (select id from channels where catid = 2) order by id desc limit 10";
 
 	if (!strcmp(m, "FEEDS")) {
@@ -409,7 +416,7 @@ convert_rfc822_time(const char *date)
 int 
 main(int argc, char *argv[])
 {
-	const char *s;
+	const char *s, *query_args;
 	time_t if_modified_since = 0;
 	int i;
 
@@ -431,7 +438,8 @@ main(int argc, char *argv[])
 	}
 
 	// default feeds
-	snprintf(query_string, sizeof(query_string), "%d", rssroll->defcat);
+	snprintf(query_category, sizeof(query_string), "%d", rssroll->defcat);
+	snprintf(query_limit, sizeof(query_limit), "0");
 
 	if ((q = get_query()) == NULL) {
 		render_error("get_query");
@@ -464,12 +472,19 @@ main(int argc, char *argv[])
 					sanity check of the query string, accepts only alpha
 				*/
                         	if (!isdigit(s[i])) {
-                                	printf("Status: 400\r\n\r\nYou are trying to send wrong query!\n");
-	                                fflush(stdout);
-        	                        return (0);
+					if(s[i] != '/') {
+                                		printf("Status: 400\r\n\r\nYou are trying to send wrong query!\n");
+	                                	fflush(stdout);
+        	                        	return (0);
+					}
                 	        }
                 	}
 			snprintf(query_string, sizeof(query_string), "%s", s);
+			query_args = strtok(query_string, "/");
+			snprintf(query_category, sizeof(query_category), "%s", query_args);
+			query_args = strtok(NULL, "/");
+			if (query_args != NULL)
+				snprintf(query_limit, sizeof(query_limit), "%s", query_args);
 		}	
 	}
 
