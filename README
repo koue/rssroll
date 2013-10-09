@@ -16,10 +16,10 @@ Check UPDATING file for update information.
 
 Used configuration:
 
-	OS: 		FreeBSD 9.0-RELEASE-p3 i386
+	OS: 		FreeBSD 9
 	Compilator: 	gcc version 4.2.1 20070831 patched [FreeBSD]
 	Web server:	thttpd-2.25b
 
 Example:
-https://blogroll.chaosophia.net/index.cgi
+http://koue.rssroll.net/index.cgi
 
