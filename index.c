@@ -54,6 +54,7 @@ static char		query_limit[256];
 static struct query	*q = NULL;
 static gzFile		gz = NULL;
 static char		*rssrollrc = "/usr/local/etc/rssrollrc";
+static unsigned long	callback_result = 0;
 
 struct index_params {
 	int	feeds;
@@ -167,7 +168,12 @@ trace_feeds_callback (void *p_data, int num_fields, char **p_fields, char **p_co
 	*/
 	st_rss_item_t	rss_item;	
 	char	fn[1024];
+	unsigned long *p_rn = (unsigned long*)p_data;
 	
+	/* PREV option */
+	/* callback_result++ */
+	(*p_rn)++;
+
 	snprintf(fn, sizeof(fn), "%s/feed.html", rssroll->htmldir);
 
 //	printf("%s\n", p_fields[5]);
@@ -250,7 +256,8 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 						render_error("cannot load database");
 					}
 				} else if (!strcmp(a, "PREV")) {
-					d_printf("<a href='%s?%s/%ld'> <<< </a>", rssroll->url, query_category, strtol(query_limit, NULL, 0) + rssroll->feeds);
+					if (callback_result == rssroll->feeds)	
+						d_printf("<a href='%s?%s/%ld'> <<< </a>", rssroll->url, query_category, strtol(query_limit, NULL, 0) + rssroll->feeds);
 				} else if (!strcmp(a, "NEXT")) {
 					if (strtol(query_limit, NULL, 0))
 						d_printf("<a href='%s?%s/%ld'> >>> </a>", rssroll->url, query_category, strtol(query_limit, NULL, 0) - rssroll->feeds);
@@ -277,11 +284,11 @@ render_front(const char *m, const st_rss_item_t *e)
 	*/
 	char feeds_query[256];
 
-	sqlite3_snprintf(sizeof(feeds_query), feeds_query, "SELECT id, modified, link, title, description, pubdate from feeds where chanid IN (select id from channels where catid = '%q') order by id desc limit %q, %d", query_category, query_limit, rssroll->feeds);
+	sqlite3_snprintf(sizeof(feeds_query), feeds_query, "SELECT id, modified, link, title, description, pubdate from feeds where chanid IN (select id from channels where catid = '%q') order by id desc limit '%q', '%d'", query_category, query_limit, rssroll->feeds);
 	//char *feeds_query = "SELECT id, modified, link, title, description, pubdate from feeds where chanid IN (select id from channels where catid = 2) order by id desc limit 10";
 
 	if (!strcmp(m, "FEEDS")) {
-		if(sqlite3_exec(db, feeds_query, trace_feeds_callback, 0, &errmsg) != SQLITE_OK) {
+		if(sqlite3_exec(db, feeds_query, trace_feeds_callback, &callback_result, &errmsg) != SQLITE_OK) {
 			render_error("cannot load database");
 		}
 	} else if (!strcmp(m, "HEADER")) {
