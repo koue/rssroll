@@ -14,12 +14,6 @@ Used libraries:
 Check INSTALL file for setup information.
 Check UPDATING file for update information.
 
-Used configuration:
-
-	OS: 		FreeBSD 9
-	Compilator: 	gcc version 4.2.1 20070831 patched [FreeBSD]
-	Web server:	thttpd-2.25b
-
 Example:
-http://koue.rssroll.net/index.cgi
+http://koue.chaosophia.net/rssroll/index.cgi
 
