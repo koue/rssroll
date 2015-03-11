@@ -1,8 +1,13 @@
 # rssroll CHANGELOG
-# v 0.4
+# v 0.4.1
 # Nikola Kolev <koue@chaosophia.net>
 # http://chaosophia.net/rssroll/
 #
+Changes 0.4.1	(2015.03.11):
+
+- Add linux support.
+- Fix prev link.
+
 Changes 0.4	(2013.08.02):
 
 - Create temporary file name for RSS body. Each RSS file will be saved in separate file and multiple rssrolls can be started.
