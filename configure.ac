@@ -30,7 +30,8 @@ AC_CHECK_FUNCS([strlcpy strlcat])
 echo " ===> Testing for some libraries"
 AX_LIB_SQLITE3(3.0.0)
 AX_LIB_XML2(2.5.0)
-LIBCURL_CHECK_CONFIG(7.7.2)
+LIBCURL_CHECK_CONFIG(, 7.39.0, , 
+	[AC_MSG_ERROR([Missing required libcurl >= 7.39.0])])
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_HEADERS([config.h])
