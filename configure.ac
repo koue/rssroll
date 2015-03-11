@@ -10,6 +10,7 @@ m4_include([m4/libcurl.m4])
 #AM_PROG_CC_C_O
 
 AC_PREREQ([2.59])
+AM_MAINTAINER_MODE([disable])
 AM_INIT_AUTOMAKE([1.10 no-define])
 
 AC_MSG_NOTICE([This is RssRoll.])
