@@ -23,6 +23,9 @@ AC_PROG_CC
 echo " ===> Testing for some headers"
 AC_CHECK_HEADER(unistd.h)
 
+echo " ===> Testing fir some functions"
+AC_CHECK_FUNCS([strlcpy strlcat])
+
 echo " ===> Testing for some libraries"
 AX_LIB_SQLITE3(3.0.0)
 AX_LIB_XML2(2.5.0)
