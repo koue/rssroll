@@ -146,6 +146,7 @@ struct index_params {
 	char    owner[256];
 	char	ct_html[256];
 	char	htmldir[256];
+	char	webtheme[256];
 };
 
 
@@ -175,6 +176,7 @@ void load_default_config(void){
 	snprintf(rssroll->owner, sizeof(rssroll->owner), "dont@blame.me");
 	snprintf(rssroll->ct_html, sizeof(rssroll->ct_html), "Content-Type: text/html; charset=utf-8");
 	snprintf(rssroll->htmldir, sizeof(rssroll->htmldir), "html");
+	snprintf(rssroll->webtheme, sizeof(rssroll->webtheme), "default");
 	rssroll->feeds = 10;
 	rssroll->defcat = 1;
 }
@@ -194,6 +196,8 @@ void config_cb (const char *name, const char *value) {
 		snprintf(rssroll->ct_html, sizeof(rssroll->ct_html), "%s", value);
 	else if (!strcmp(name, "htmldir"))
 		snprintf(rssroll->htmldir, sizeof(rssroll->htmldir), "%s", value);
+	else if (!strcmp(name, "webtheme"))
+		snprintf(rssroll->webtheme, sizeof(rssroll->webtheme), "%s", value);
 	else if (!strcmp(name, "feeds"))
 		rssroll->feeds = atoi(value);
 	else if (!strcmp(name, "category"))
@@ -254,7 +258,7 @@ trace_feeds_callback (void *p_data, int num_fields, char **p_fields, char **p_co
 	/* callback_result++ */
 	(*p_rn)++;
 
-	snprintf(fn, sizeof(fn), "%s/feed.html", rssroll->htmldir);
+	snprintf(fn, sizeof(fn), "%s/%s/feed.html", rssroll->htmldir, rssroll->webtheme);
 
 //	printf("%s\n", p_fields[5]);
 	snprintf(rss_item.title, sizeof(rss_item.title), "%s", p_fields[3]);
@@ -372,10 +376,10 @@ render_front(const char *m, const st_rss_item_t *e)
 			render_error("cannot load database");
 		}
 	} else if (!strcmp(m, "HEADER")) {
-		snprintf(fn, sizeof(fn), "%s/header.html", rssroll->htmldir);
+		snprintf(fn, sizeof(fn), "%s/%s/header.html", rssroll->htmldir, rssroll->webtheme);
 		render_html(fn, NULL, NULL);
 	} else if (!strcmp(m, "FOOTER")) {
-		snprintf(fn, sizeof(fn), "%s/footer.html", rssroll->htmldir);
+		snprintf(fn, sizeof(fn), "%s/%s/footer.html", rssroll->htmldir, rssroll->webtheme);
 		render_html(fn, NULL, NULL);
 	} else
 		d_printf("render_front: unknown macro '%s'<br>\n", m);
