@@ -76,6 +76,10 @@ img {
 	border-bottom: 1px dotted;
 }
 
+.post div.desc {
+	text-align: justify;
+}
+
 .topbar {
 	padding: 4px;
 }
