@@ -388,6 +388,8 @@ render_front(const char *m, const st_rss_item_t *e)
 static void
 render_front_feed(const char *m, const st_rss_item_t *e)
 {
+	char *a, *b;
+
 	if (!strcmp(m, "PUBDATE")) {
 		d_printf("%s", ctime(&e->date));
 	} else  if (!strcmp(m, "TITLE")) {
@@ -396,6 +398,16 @@ render_front_feed(const char *m, const st_rss_item_t *e)
 		d_printf("%s", e->desc);
 	} else if (!strcmp(m, "URL")) {
 		d_printf("%s", e->url);
+	} else if (!strcmp(m, "CHANNEL")) {
+		for ( a = e->url; (b = strstr(a, "//")) != NULL;) {
+			*b = 0;
+			a = b + 2;
+			if (( b = strstr(a, "/")) != NULL ) {
+				*b = 0;
+				d_printf("%s", a);
+				a = b + 1;
+			}
+		}
 	} else
 		d_printf("render_front_feed: unknown macro '%s'<br>\n", m);
 }
