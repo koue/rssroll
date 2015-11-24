@@ -17,7 +17,7 @@ ct_html=Content-Type: text/html; charset=utf-8
 htmldir=/usr/local/www/data/rssroll/html
 
 # web theme
-webtheme=default
+webtheme=flak
 
 # how many feeds will be printed on the page
 feeds=10
