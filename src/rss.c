@@ -1,8 +1,8 @@
 /*
 rss.h - RSS (and Atom) parser and generator (using libxml2)
 
-Copyright (c) 2006 NoisyB
 Copyright (c) 2012 Nikola Kolev
+Copyright (c) 2006 NoisyB
 
 
 This program is free software; you can redistribute it and/or modify

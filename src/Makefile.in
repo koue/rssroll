@@ -292,8 +292,6 @@ index_cgi_SOURCES = index.c \
 
 index_cgi_CFLAGS = $(SQLITE3_CFLAGS) -Wall -Wstrict-prototypes
 index_cgi_LDADD = $(SQLITE3_LDFLAGS) -lz
-
-#dist_noinst_SCRIPTS = autogen.sh
 EXTRA_DIST = rssrollrc html css
 all: all-am
 

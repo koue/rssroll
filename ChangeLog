@@ -1,8 +1,14 @@
 # rssroll CHANGELOG
-# v 0.4.1
+# v 0.5
 # Nikola Kolev <koue@chaosophia.net>
 # http://chaosophia.net/rssroll/
 #
+Changes 0.5	(2015.11.24):
+
+- Add web themes support. Set flak web theme as default. Looks better on 
+  smartphones.
+- Move source files in src directory.
+
 Changes 0.4.1	(2015.03.11):
 
 - Add linux support.
@@ -10,12 +16,14 @@ Changes 0.4.1	(2015.03.11):
 
 Changes 0.4	(2013.08.02):
 
-- Create temporary file name for RSS body. Each RSS file will be saved in separate file and multiple rssrolls can be started.
+- Create temporary file name for RSS body. Each RSS file will be saved in 
+  separate file and multiple rssrolls can be started.
 - Add backward and forward web browsing of the feeds.
 
 Changes 0.3	(2013.04.04):
 
-- Implement If-Modified-Since functionallity and fetch the RSS file only if its newer.
+- Implement If-Modified-Since functionallity and fetch the RSS file only if 
+  its newer.
 - Remove unused HEADERFILE functions.
 
 Changes 0.2.2 	(2013.04.03):
@@ -24,7 +32,8 @@ Changes 0.2.2 	(2013.04.03):
 
 Changes 0.2.1 	(2013.03.20):
 
-- Add autotool build based on autoconf and automake. Atanas Kunev <atanas.kunev@gmail.com>.
+- Add autotool build based on autoconf and automake. 
+  Atanas Kunev <atanas.kunev@gmail.com>.
 
 Changes 0.2 	(2013.03.04):
 
