@@ -33,7 +33,7 @@ AX_LIB_XML2(2.5.0)
 LIBCURL_CHECK_CONFIG(, 7.19.0, , 
 	[AC_MSG_ERROR([Missing required libcurl >= 7.19.0])])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile])
 AC_CONFIG_HEADERS([config.h])
 dnl AC_CONFIG_COMMANDS(make, [ls -l], [])
 AC_OUTPUT
