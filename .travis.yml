@@ -2,4 +2,8 @@ language: c
 compiler:
  - gcc
  - clang
-script: ./configure && make
+before_script:  
+ - mkdir build
+ - cd build
+ - cmake ..
+script: make
