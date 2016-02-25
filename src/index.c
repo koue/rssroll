@@ -48,7 +48,7 @@
 
 #include "config.h"
 
-#if HAVE_STRLCAT==0
+#ifndef HAVE_STRLCAT
 /*
  * '_cups_strlcat()' - Safely concatenate two strings.
  */
@@ -92,7 +92,7 @@ strlcat(char *dst,		/* O - Destination string */
 }
 #endif /* !HAVE_STRLCAT */
 
-#if HAVE_STRLCPY==0
+#ifndef HAVE_STRLCPY
 /*
  * '_cups_strlcpy()' - Safely copy two strings.
  */
