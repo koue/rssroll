@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Nikola Kolev. All rights reserved.
+ * Copyright (c) 2012-2016 Nikola Kolev. All rights reserved.
  * Copyright (c) 2004-2006 Daniel Hartmeier. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,7 @@
 
 #include "config.h"
 
-#ifndef HAVE_STRLCAT
+#if !HAVE_STRLCAT
 /*
  * '_cups_strlcat()' - Safely concatenate two strings.
  */
@@ -92,7 +92,7 @@ strlcat(char *dst,		/* O - Destination string */
 }
 #endif /* !HAVE_STRLCAT */
 
-#ifndef HAVE_STRLCPY
+#if !HAVE_STRLCPY
 /*
  * '_cups_strlcpy()' - Safely copy two strings.
  */
