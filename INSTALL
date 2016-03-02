@@ -10,6 +10,7 @@ To install:
 
 	# make install
 	# cp src/index.cgi /path/to/www/cgi
+	# cp -rv html /path/to/www/rssroll/files/
 
 
 To setup:
