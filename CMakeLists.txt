@@ -36,4 +36,8 @@ include_directories (${CURL_INCLUDE_DIRS})
 include_directories (${PROJECT_BINARY_DIR}/src)
 
 #
+install (FILES rssrollrc
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/etc)
+
+#
 add_subdirectory (src)

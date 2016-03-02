@@ -1,6 +1,6 @@
 To configure:
 
-	# ./configure
+	# mkdir build && cd build/ && cmake ../
 
 To build:
 	
@@ -9,11 +9,7 @@ To build:
 To install:
 
 	# make install
-
-
-To deinstall:
-
-	# make remove
+	# cp src/index.cgi /path/to/www/cgi
 
 
 To setup:

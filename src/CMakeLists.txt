@@ -19,3 +19,6 @@ target_link_libraries (index.cgi
 	${SQLITE_LIBRARIES}
 	-lz
 )
+
+install (TARGETS rssroll
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
