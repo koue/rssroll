@@ -27,7 +27,7 @@ find_package (Sqlite)
 #
 CHECK_FUNCTION_EXISTS("strlcat" HAVE_STRLCAT)
 CHECK_FUNCTION_EXISTS("strlcpy" HAVE_STRLCPY)
-configure_file ("${PROJECT_SOURCE_DIR}/cmakeconfig.h.in"
+configure_file ("${PROJECT_SOURCE_DIR}/config.h.in"
                 "${PROJECT_BINARY_DIR}/src/config.h" )
 #
 include_directories (${LIBXML2_INCLUDE_DIR})
