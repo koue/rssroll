@@ -20,5 +20,16 @@ target_link_libraries (index.cgi
 	-lz
 )
 
+add_executable (getdata.cgi
+        cgi.c
+        configfile.c
+        getdata.c
+)
+
+target_link_libraries (getdata.cgi
+        ${SQLITE_LIBRARIES}
+        -lz
+)
+
 install (TARGETS rssroll
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<rss version="0.92">
+  <channel>
+
+    <title>rssroll</title>
+    <link>http://rssroll.chaosophia.net/</link>
+    <description>open yourself for chaos</description>
+    <language>en-us</language>
+    <managingEditor>koue@chaosophia.net</managingEditor>
+
+%%ITEMS%%
+
+  </channel>
+</rss>
