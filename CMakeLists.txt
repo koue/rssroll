@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 2.6)
 
 #
 set (PACKAGE_NAME "rssroll")
-set (PACKAGE_VERSION "0.5.1")
+set (PACKAGE_VERSION "1.0")
 set (PACKAGE_URL "https://github.com/koue/rssroll")
 set (PACKAGE_BUGREPORT "https://github.com/koue/rssroll/issues")
 

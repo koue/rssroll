@@ -10,26 +10,24 @@ target_link_libraries (rssroll
 )
 
 add_executable (index.cgi
-	cgi.c
-	configfile.c
 	index.c
 )
 
 target_link_libraries (index.cgi 
 	${SQLITE_LIBRARIES}
 	-lz
+	/usr/local/lib/libcez.a
 )
 
-add_executable (getdata.cgi
-        cgi.c
-        configfile.c
-        getdata.c
-)
+#add_executable (getdata.cgi
+#        configfile.c
+#        getdata.c
+#)
 
-target_link_libraries (getdata.cgi
-        ${SQLITE_LIBRARIES}
-        -lz
-)
+#target_link_libraries (getdata.cgi
+#        ${SQLITE_LIBRARIES}
+#        -lz
+#)
 
 install (TARGETS rssroll
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
