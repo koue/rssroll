@@ -155,7 +155,8 @@ static struct index_params	rssroll;
 typedef	void (*render_cb)(const char *, const st_rss_item_t *);
 
 static void	 render_error(const char *fmt, ...);
-static int	 render_html(const char *html_fn, render_cb r, const st_rss_item_t *e);
+static int	 render_html(const char *html_fn, render_cb r,
+						const st_rss_item_t *e);
 static void	 render_front(const char *m, const st_rss_item_t *e);
 static void	 render_front_feed(const char *m, const st_rss_item_t *e);
 static const char *rfc822_time(time_t t);
@@ -171,7 +172,8 @@ d_printf(const char *fmt, ...)
 	r = vsnprintf(s, sizeof(s), fmt, ap);
 	va_end(ap);
 	if (r < 0 || r >= sizeof(s))
-		printf("error d_printf: vsnprintf: r %d (%d)", r, (int)sizeof(s));
+		printf("error d_printf: vsnprintf: r %d (%d)", r,
+							(int)sizeof(s));
 	if (gz != NULL) {
 		r = gzputs(gz, s);
 		if (r != strlen(s))
@@ -210,7 +212,8 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 	Stmt q;
 
 	if ((f = fopen(html_fn, "r")) == NULL) {
-		d_printf("ERROR: fopen: %s: %s<br>\n", html_fn, strerror(errno));
+		d_printf("ERROR: fopen: %s: %s<br>\n", html_fn,
+							strerror(errno));
 		return (1);
 	}
 	while (fgets(s, sizeof(s), f)) {
@@ -233,19 +236,19 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 				else if (!strcmp(a, "RSSROLL_CATEGORIES")){
 					db_prepare(&q, "SELECT id, title FROM categories");
 					while(db_step(&q)==SQLITE_ROW) {
-						d_printf("<p><a href='%s?%d'>%s</a></p>", rssroll.url, db_column_int(&q, 0), db_column_text(&q, 1));
+						d_printf("<p><a href='%s?%d'>%s</a></p>",
+							rssroll.url, db_column_int(&q, 0), db_column_text(&q, 1));
 					}
 					db_finalize(&q);
 				} else if (!strcmp(a, "PREV")) {
 					if (callback_result == rssroll.feeds)	{
-						//d_printf("<a href='%s?%s/%ld'> <<< </a>", rssroll.url, query_category, strtol(query_limit, NULL, 0) + rssroll.feeds);
-						d_printf("<a href='%s?%ld/%ld'> <<< </a>", rssroll.url, query_category, query_limit + rssroll.feeds);
+						d_printf("<a href='%s?%ld/%ld'> <<< </a>",
+							rssroll.url, query_category, query_limit + rssroll.feeds);
 					}
 				} else if (!strcmp(a, "NEXT")) {
-					//if (strtol(query_limit, NULL, 0))
 					if (query_limit) {
-						//d_printf("<a href='%s?%s/%ld'> >>> </a>", rssroll.url, query_category, strtol(query_limit, NULL, 0) - rssroll.feeds);
-						d_printf("<a href='%s?%ld/%ld'> >>> </a>", rssroll.url, query_category, query_limit - rssroll.feeds);
+						d_printf("<a href='%s?%ld/%ld'> >>> </a>",
+							rssroll.url, query_category, query_limit - rssroll.feeds);
 					}
 				}
 				else if (r != NULL)
@@ -272,23 +275,32 @@ render_front(const char *m, const st_rss_item_t *e)
 	st_rss_item_t	rss_item;	
 
 	if (!strcmp(m, "FEEDS")) {
-		db_prepare(&q, "SELECT id, modified, link, title, description, pubdate from feeds where chanid IN (select id from channels where catid = '%ld') order by id desc limit '%ld', '%d'", query_category, query_limit, rssroll.feeds);
+		db_prepare(&q, "SELECT id, modified, link, title, description, pubdate "
+				"FROM feeds WHERE chanid IN (select id from channels where catid = '%ld') "
+				"ORDER BY id DESC LIMIT '%ld', '%d'",
+				query_category, query_limit, rssroll.feeds);
 		while(db_step(&q)==SQLITE_ROW) {
 			/* PREV option */
 			callback_result++;
-			snprintf(fn, sizeof(fn), "%s/%s/feed.html", rssroll.htmldir, rssroll.webtheme);
-			snprintf(rss_item.title, sizeof(rss_item.title), "%s", db_column_text(&q, 3));
-			snprintf(rss_item.url, sizeof(rss_item.url), "%s", db_column_text(&q, 2));
-			snprintf(rss_item.desc, sizeof(rss_item.desc), "%s", db_column_text(&q, 4));
+			snprintf(fn, sizeof(fn), "%s/%s/feed.html",
+					rssroll.htmldir, rssroll.webtheme);
+			snprintf(rss_item.title, sizeof(rss_item.title), "%s",
+							db_column_text(&q, 3));
+			snprintf(rss_item.url, sizeof(rss_item.url), "%s",
+							db_column_text(&q, 2));
+			snprintf(rss_item.desc, sizeof(rss_item.desc), "%s",
+							db_column_text(&q, 4));
 			rss_item.date = strtol(db_column_text(&q, 5), NULL, 0);
 			render_html(fn, &render_front_feed, &rss_item);
 		}
 		db_finalize(&q);
 	} else if (!strcmp(m, "HEADER")) {
-		snprintf(fn, sizeof(fn), "%s/%s/header.html", rssroll.htmldir, rssroll.webtheme);
+		snprintf(fn, sizeof(fn), "%s/%s/header.html", rssroll.htmldir,
+							rssroll.webtheme);
 		render_html(fn, NULL, NULL);
 	} else if (!strcmp(m, "FOOTER")) {
-		snprintf(fn, sizeof(fn), "%s/%s/footer.html", rssroll.htmldir, rssroll.webtheme);
+		snprintf(fn, sizeof(fn), "%s/%s/footer.html", rssroll.htmldir,
+							rssroll.webtheme);
 		render_html(fn, NULL, NULL);
 	} else
 		d_printf("render_front: unknown macro '%s'<br>\n", m);
@@ -449,10 +461,6 @@ main(int argc, char *argv[])
 		goto done;
 	}
 
-	// default feeds
-//	snprintf(query_category, sizeof(query_string), "%d", rssroll.defcat);
-//	snprintf(query_limit, sizeof(query_limit), "0");
-
 	if ((s = getenv("QUERY_STRING")) != NULL) {
 		if (strlen(s) > 64) {
 			printf("Status: 400\r\n\r\n You are trying to send very long query!\n");
@@ -473,12 +481,10 @@ main(int argc, char *argv[])
                 	}
 			snprintf(query_string, sizeof(query_string), "%s", s);
 			query_args = strtok(query_string, "/");
-			//snprintf(query_category, sizeof(query_category), "%s", query_args);
 			query_category = strtol(query_args, NULL, 0);
 			query_args = strtok(NULL, "/");
 			if (query_args != NULL) {
 				query_limit = strtol(query_args, NULL, 0);
-				//snprintf(query_limit, sizeof(query_limit), "%s", query_args);
 			}
 		}	
 	}
