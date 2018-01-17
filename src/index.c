@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Nikola Kolev. All rights reserved.
+ * Copyright (c) 2012-2018 Nikola Kolev <koue@chaosophia.net>
  * Copyright (c) 2004-2006 Daniel Hartmeier. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without

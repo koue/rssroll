@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2012-2015 Nikola Kolev
- * Copyright (c) 2004 Daniel Hartmeier
+ * Copyright (c) 2012-2018 Nikola Kolev <koue@chaosophia.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +28,7 @@
  *
  */
 
+#include <cez.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -40,15 +40,13 @@
 
 #include "rss.h"
 
-#define RSSROLL_VERSION	"rssroll/0.5"
-/* max length of the insert query			*/
-#define	MAXQUERY	131072
+#define RSSROLL_VERSION	"rssroll/1.0"
 
 int debug = 0;
 static char debugmsg[512];
 
 /* rss database store	*/
-static sqlite3* db;
+Global g;
 
 /* debug message out */
 void 
@@ -71,70 +69,26 @@ write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
 /* add new item into the database */
 void
 add_feed(int chan_id, char *item_url, char *item_title, char *item_desc, time_t item_date) {
-	char *errmsg;
-	char query[MAXQUERY];	/* if the content of the item is too long MAXQUERY value should be increased */	
-
-	if (debug)
-		dmsg("add_item");
-
-	sqlite3_snprintf(sizeof(query), query, "insert into feeds (chanid, modified, link, title, description, pubdate) values (%d, 0, '%q', '%q', '%q', '%ld')", chan_id, item_url, item_title, item_desc, item_date);	/* %q is same as %s but with escaped characters */ 
-
-	if (debug) 
-		dmsg(query);
-
-	if (sqlite3_exec(db, query, NULL, 0, &errmsg) != SQLITE_OK) {
-		printf("Error: in query %s [%s].\n", query, errmsg);
-	} else {
-		printf("New feed has been added %s.\n", item_url);
-	}
-}
-
-/* used to counts results from the query */
-int
-select_channel_callback(void *p_data, int num_fields, char **p_fields, char **p_col_names) {
-	
-	int *p_rn = (int*)p_data;
-	(*p_rn)++;
-	return 0;
+	db_multi_exec("INSERT INTO feeds (chanid, modified, link, title, description, pubdate) VALUES (%d, 0, '%q', '%q', '%q', '%ld')", chan_id, item_url, item_title, item_desc, item_date);	/* %q is same as %s but with escaped characters */
+	printf("New feed has been added %s.\n", item_url);
 }
 
 /* checks if the feed url appears into the database */
 int 
 check_link(int chan_id, char *item_link, time_t item_pubdate) {
-	
-	char *errmsg;
-	char query[1024]; 
 	int result = 0;
 	time_t	date;
 
 	if (debug) 
 		dmsg("check_link");
-
-	sqlite3_snprintf(sizeof(query), query, "select id from feeds where pubdate = '%ld' and chanid = '%d' and link = '%q'", item_pubdate, chan_id, item_link);
-
-	if (debug)
-		dmsg(query);
-
-	if (sqlite3_exec(db, query, select_channel_callback, &result, &errmsg) != SQLITE_OK) {
-		printf("Error: in query %s [%s]\n.", query, errmsg);
-		return 1;
-	} else {
-		if (result)  { // record has been found
-			if(debug)
-				dmsg("record has been found.");
-			return 1; // dont do anything ; If you want to update changed post do it here
-		}
-		else {
-			sqlite3_snprintf(sizeof(query), query, "update channels set modified = '%ld' where id = '%d'", time(&date), chan_id); /* update last modified  
-																	time of the channel */
-			if (debug)
-				dmsg(query);
-
-			if (sqlite3_exec(db, query, NULL, 0, &errmsg) != SQLITE_OK) 
-				sqlite3_mprintf("Error: in query %q [%s].\n", query, errmsg);
-			return 0; // call add_feed to add the item into the database
-		}
+	result = db_int(0, "SELECT id FROM feeds WHERE pubdate = '%ld' AND chanid = '%d' AND link = '%q'", item_pubdate, chan_id, item_link);
+	if (result) {
+		if(debug)
+			dmsg("record has been found.");
+		return 1; // dont do anything ; If you want to update changed post do it here
 	}
+	db_multi_exec("UPDATE channels SET modified = '%ld' WHERE id = '%d'", time(&date), chan_id); /* update last modified  time of the channel */
+	return 0; // call add_feed to add the item into the database
 }
 
 /* parse content of the rss */
@@ -175,7 +129,7 @@ parse_body(int chan_id, char *rssfile) {
 
 /* fetch rss file */
 int 
-fetch_channel(int chan_id, long chan_modified, char *chan_link) {
+fetch_channel(int chan_id, long chan_modified, const char *chan_link) {
 	CURL *curl_handle;
 	struct curl_slist *if_chan_modified = NULL;
 	FILE *bodyfile;
@@ -232,50 +186,19 @@ fetch_channel(int chan_id, long chan_modified, char *chan_link) {
 	return 1;
 }
 
-/* get id, modified and url from the database for the rss url */
-int 
-trace_channels_callback(void *p_data, int num_fields, char **p_fields, char **p_col_names) {
-/* 	p_fields[0] 	-	id	
-	p_fields[1]	-	modified
-	p_fields[2]	-	link
-*/
-	if (debug) {
-		snprintf(debugmsg, sizeof(debugmsg), "%s, %s, %s", p_fields[0], p_fields[1], p_fields[2]);
-		dmsg(debugmsg);
-	}
-
-	if (!fetch_channel(atoi(p_fields[0]), atol(p_fields[1]), p_fields[2])) {
-		fprintf(stderr, "Error: cannot fetch channel %s.\n", p_fields[2]);
-	}
-	return 0;
-}
-
-void 
-trace_channels(void) {
-	char *errmsg;
-	char query[]="select id, modified, link from channels";
-
-	if(debug) 
-		dmsg("trace_channels");
-
-	if(sqlite3_exec(db, query, trace_channels_callback, 0, &errmsg) != SQLITE_OK) {
-		printf("SQL error: %s [%s].\n", query, errmsg);
-	}
-}
-
 static void 
 usage(void){
 	extern	char *__progname;
-
 	fprintf(stderr, "Usage: %s [-v] [-d database]\n", __progname);
 	exit(1);
 }
 
 int 
-main( int argc, char** argv){
+main(int argc, char** argv){
 
 	int ch;
 	const char *dbname = "/var/db/rssroll.db";
+	Stmt q;
 
 	while ((ch = getopt(argc, argv, "d:v")) != -1) {
 		switch (ch) {
@@ -295,14 +218,20 @@ main( int argc, char** argv){
 		fprintf(stderr, "Cannot read database file: %s!\n", dbname);
 		return 1;
 	}
-	if (sqlite3_open(dbname, &db) != SQLITE_OK) {
+	if (sqlite3_open(dbname, &g.db) != SQLITE_OK) {
 		fprintf(stderr, "Cannot open database file: %s\n", dbname);
 		return 1;
 	}
 	if(debug) 
 		dmsg("database successfully loaded.");
-	trace_channels();
-	sqlite3_close(db);
+	db_prepare(&q, "SELECT id, modified, link FROM channels");
+	while(db_step(&q)==SQLITE_ROW) {
+		if (!fetch_channel(db_column_int(&q, 0), atol(db_column_text(&q, 1)), db_column_text(&q, 2))) {
+			fprintf(stderr, "Error: cannot fetch channel %s.\n", db_column_text(&q, 2));
+		}
+	}
+	db_finalize(&q);
+	sqlite3_close(g.db);
 	if(debug) 
 		dmsg("database successfully closed.");
 	return 0;

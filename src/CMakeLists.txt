@@ -7,6 +7,7 @@ target_link_libraries (rssroll
 	${LIBXML2_LIBRARIES}
 	${SQLITE_LIBRARIES}
 	${CURL_LIBRARIES}
+	/usr/local/lib/libcez.a
 )
 
 add_executable (index.cgi
