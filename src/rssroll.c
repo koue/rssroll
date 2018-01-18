@@ -49,7 +49,7 @@ static char debugmsg[512];
 Global g;
 
 /* debug message out */
-void 
+void
 dmsg(char *m) {
 	char msg[1024];
 	snprintf(msg, sizeof(msg), "[debug] %s", m);
@@ -58,7 +58,7 @@ dmsg(char *m) {
 }
 
 /* curl write function */
-static size_t 
+static size_t
 write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
 	int written = fwrite(ptr, size, nmemb, (FILE *)stream);
 	return written;
@@ -76,12 +76,12 @@ add_feed(int chan_id, char *item_url, char *item_title, char *item_desc,
 }
 
 /* checks if the feed url appears into the database */
-int 
+int
 check_link(int chan_id, char *item_link, time_t item_pubdate) {
 	int result = 0;
 	time_t	date;
 
-	if (debug) 
+	if (debug)
 		dmsg("check_link");
 	result = db_int(0, "SELECT id FROM feeds WHERE pubdate = '%ld' "
 				"AND chanid = '%d' AND link = '%q'",
@@ -104,12 +104,12 @@ void
 parse_body(int chan_id, char *rssfile) {
 	int i;
 	st_rss_t *rss = NULL;
-	
+
         if(debug)
                 dmsg("parse_body.");
 
 	rss = rss_open(rssfile);
-	if (!rss) {	
+	if (!rss) {
 		printf("rss id [%d] cannot be parsed.\n", chan_id);
 		return;
 	}
@@ -129,7 +129,7 @@ parse_body(int chan_id, char *rssfile) {
 }
 
 /* fetch rss file */
-int 
+int
 fetch_channel(int chan_id, long chan_modified, const char *chan_link) {
 	CURL *curl_handle;
 	struct curl_slist *if_chan_modified = NULL;
@@ -168,7 +168,7 @@ fetch_channel(int chan_id, long chan_modified, const char *chan_link) {
 
 	if ((bodyfile = fdopen(fd, "w")) == NULL) {
 		curl_easy_cleanup(curl_handle);
-		fprintf(stderr, "Cannot open file for parsing!\n"); 
+		fprintf(stderr, "Cannot open file for parsing!\n");
 		return 0;
 	}
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, bodyfile);
@@ -186,18 +186,18 @@ fetch_channel(int chan_id, long chan_modified, const char *chan_link) {
 			dmsg(debugmsg);
 		}
 	}
-	unlink(fn);	
+	unlink(fn);
 	return (1);
 }
 
-static void 
+static void
 usage(void){
 	extern	char *__progname;
 	fprintf(stderr, "Usage: %s [-v] [-d database]\n", __progname);
 	exit(1);
 }
 
-int 
+int
 main(int argc, char** argv){
 
 	int ch;
@@ -226,11 +226,11 @@ main(int argc, char** argv){
 		fprintf(stderr, "Cannot open database file: %s\n", dbname);
 		return 1;
 	}
-	if(debug) 
+	if(debug)
 		dmsg("database successfully loaded.");
 	db_prepare(&q, "SELECT id, modified, link FROM channels");
 	while(db_step(&q)==SQLITE_ROW) {
-		if (!fetch_channel(db_column_int(&q, 0), atol(db_column_text(&q, 1)),
+		if (!fetch_channel(db_column_int(&q, 0), (long)db_column_int64(&q, 1),
 						db_column_text(&q, 2))) {
 			fprintf(stderr, "Error: cannot fetch channel %s.\n",
 							db_column_text(&q, 2));
@@ -238,7 +238,7 @@ main(int argc, char** argv){
 	}
 	db_finalize(&q);
 	sqlite3_close(g.db);
-	if(debug) 
+	if(debug)
 		dmsg("database successfully closed.");
 	return 0;
 }

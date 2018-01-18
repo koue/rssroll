@@ -129,24 +129,22 @@ strlcpy(char *dst,		/* O - Destination string */
 Global g;
 
 static char		query_string[10];
-//static char		query_category[10];
 unsigned long		query_category = 1;
-//static char		query_limit[256];
 unsigned long		query_limit = 0;
 static gzFile		gz = NULL;
 static char		*rssrollrc = "/usr/local/etc/rssrollrc";
 static unsigned long	callback_result = 0;
 
 struct index_params {
-	int	feeds;
 	int	defcat;
-	char 	*url;
-	char	*dbpath;
-	char	*name;
-	char	*desc;
-	char	*owner;
+	int	feeds;
 	char	*ct_html;
+	char	*dbpath;
+	char	*desc;
 	char	*htmldir;
+	char	*name;
+	char	*owner;
+	char 	*url;
 	char	*webtheme;
 };
 
@@ -192,7 +190,7 @@ render_error(const char *fmt, ...)
 	va_start(ap, fmt);
 	vsnprintf(s, sizeof(s), fmt, ap);
 	va_end(ap);
-	printf("%s\r\n\r\n", rssroll.ct_html);
+	printf("Content-Type: text/html; charset=utf-8\r\n\r\n");
 	fflush(stdout);
 	d_printf("<html><head><title>Error</title></head><body>\n");
 	d_printf("<h2>Error</h2><p><b>%s</b><p>\n", s);
@@ -218,7 +216,6 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 	}
 	while (fgets(s, sizeof(s), f)) {
 		char *a, *b;
-
 		for (a = s; (b = strstr(a, "%%")) != NULL;) {
 			*b = 0;
 			d_printf("%s", a);
@@ -266,13 +263,8 @@ static void
 render_front(const char *m, const st_rss_item_t *e)
 {
 	char fn[1024];
-	/*
-		catid = 1 - tech
-		catid = 2 - blog
-		catid = 3 - news
-	*/
 	Stmt q;
-	st_rss_item_t	rss_item;	
+	st_rss_item_t	rss_item;
 
 	if (!strcmp(m, "FEEDS")) {
 		db_prepare(&q, "SELECT id, modified, link, title, description, pubdate "
@@ -290,7 +282,7 @@ render_front(const char *m, const st_rss_item_t *e)
 							db_column_text(&q, 2));
 			snprintf(rss_item.desc, sizeof(rss_item.desc), "%s",
 							db_column_text(&q, 4));
-			rss_item.date = strtol(db_column_text(&q, 5), NULL, 0);
+			rss_item.date = db_column_int64(&q, 5);
 			render_html(fn, &render_front_feed, &rss_item);
 		}
 		db_finalize(&q);
@@ -309,8 +301,6 @@ render_front(const char *m, const st_rss_item_t *e)
 static void
 render_front_feed(const char *m, const st_rss_item_t *e)
 {
-	char *a, *b;
-
 	if (!strcmp(m, "PUBDATE")) {
 		d_printf("%s", ctime(&e->date));
 	} else  if (!strcmp(m, "TITLE")) {
@@ -320,15 +310,9 @@ render_front_feed(const char *m, const st_rss_item_t *e)
 	} else if (!strcmp(m, "URL")) {
 		d_printf("%s", e->url);
 	} else if (!strcmp(m, "CHANNEL")) {
-		for ( a = e->url; (b = strstr(a, "//")) != NULL;) {
-			*b = 0;
-			a = b + 2;
-			if (( b = strstr(a, "/")) != NULL ) {
-				*b = 0;
-				d_printf("%s", a);
-				a = b + 1;
-			}
-		}
+		char domain[64];
+		sscanf(e->url, "%*[^//]//%63[^/]", domain);
+		d_printf("%s", domain);
 	} else
 		d_printf("render_front_feed: unknown macro '%s'<br>\n", m);
 }
@@ -388,11 +372,11 @@ convert_rfc822_time(const char *date)
 
 int load_config(void) {
 	char *value;
-	
+
 	if ((rssroll.url = config_queue_value_get("url")) == NULL) {
 		render_error("url is missing");
 		return (-1);
-	} 
+	}
 	if ((rssroll.dbpath = config_queue_value_get("dbpath")) == NULL) {
 		render_error("dbpath is missing");
 		return (-1);
@@ -427,8 +411,8 @@ int load_config(void) {
 	} else {
 		rssroll.feeds = atoi(value);
 	}
-	if (( value = config_queue_value_get("defcat")) == NULL) {
-		render_error("defcat is missing");
+	if (( value = config_queue_value_get("category")) == NULL) {
+		render_error("default category is missing");
 		return (-1);
 	} else {
 		rssroll.defcat = atoi(value);
@@ -436,7 +420,7 @@ int load_config(void) {
 	return (0);
 }
 
-int 
+int
 main(int argc, char *argv[])
 {
 	const char *s, *query_args;
@@ -445,36 +429,38 @@ main(int argc, char *argv[])
 
 	umask(007);
 	if (configfile_parse(rssrollrc, config_queue_cb) == -1) {
-		render_error("error: cannot open config file: %s", rssrollrc);	
+		render_error("error: cannot open config file: %s", rssrollrc);
 		goto done;
 	}
 	if (load_config() == -1)
 		goto done;
-	/*if (chdir("/tmp")) {
+	if (chdir("/tmp")) {
 		printf("error main: chdir: /tmp: %s", strerror(errno));
 		render_error("chdir: /tmp: %s", strerror(errno));
 		goto done;
-	} */
+	}
 
 	if (sqlite3_open(rssroll.dbpath, &g.db) != SQLITE_OK) {
 		render_error("cannot load database: %s", rssroll.dbpath);
 		goto done;
 	}
 
-	if ((s = getenv("QUERY_STRING")) != NULL) {
+	if (((s = getenv("QUERY_STRING")) != NULL) && strlen(s)) {
 		if (strlen(s) > 64) {
 			printf("Status: 400\r\n\r\n You are trying to send very long query!\n");
 			fflush(stdout);
+			config_queue_purge();
 			return (0);
 		} else {
 			for (i = 0; i < strlen(s); i++) {
-				/* 
+				/*
 					sanity check of the query string, accepts only digit
 				*/
                         	if (!isdigit(s[i])) {
 					if(s[i] != '/') {
                                 		printf("Status: 400\r\n\r\nYou are trying to send wrong query!\n");
 	                                	fflush(stdout);
+						config_queue_purge();
         	                        	return (0);
 					}
                 	        }
@@ -486,7 +472,7 @@ main(int argc, char *argv[])
 			if (query_args != NULL) {
 				query_limit = strtol(query_args, NULL, 0);
 			}
-		}	
+		}
 	}
 
 	if ((s = getenv("IF_MODIFIED_SINCE")) != NULL) {
@@ -511,7 +497,7 @@ main(int argc, char *argv[])
 	}
 
 	char fn[1024];
-	
+
 	printf("%s\r\n\r\n", rssroll.ct_html);
 	fflush(stdout);
 	snprintf(fn, sizeof(fn), "%s/main.html", rssroll.htmldir);
