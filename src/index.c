@@ -32,7 +32,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
-#include <cez.h>
+#include <cez-config.h>
+#include <cez-fossil.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdarg.h>

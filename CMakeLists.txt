@@ -19,10 +19,13 @@ set (CMAKE_C_FLAGS "-Wall -Wstrict-prototypes")
 find_package (LibXml2 REQUIRED)
 
 # curl
-find_package (CURL)
+find_package (CURL REQUIRED)
 
 # sqlite
-find_package (Sqlite)
+find_package (Sqlite REQUIRED)
+
+# libcez
+find_package (Libcez REQUIRED)
 
 #
 CHECK_FUNCTION_EXISTS("strlcat" HAVE_STRLCAT)
@@ -33,6 +36,8 @@ configure_file ("${PROJECT_SOURCE_DIR}/config.h.in"
 include_directories (${LIBXML2_INCLUDE_DIR})
 include_directories (${SQLITE_INCLUDE_DIR})
 include_directories (${CURL_INCLUDE_DIRS})
+include_directories (${LIBCEZ_CONFIG_INCLUDE_DIRS})
+include_directories (${LIBCEZ_FOSSIL_INCLUDE_DIRS})
 include_directories (${PROJECT_BINARY_DIR}/src)
 
 #
