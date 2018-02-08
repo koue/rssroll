@@ -1,10 +1,15 @@
+20180207:
+	Update to 0.6
+
+	Install libcez as dependency.
+
 20151124:
 	Update to 0.5
 
 	Added web themes support. New option has been added in the config file.
-	'webtheme' points to the name of the theme in the html directory. 
+	'webtheme' points to the name of the theme in the html directory.
 
 20130404:
 	Update from 0.2 to 0.3
-	
+
 	# sqlite3 PATH_TO_DB "update channels set modified='1111111111'"

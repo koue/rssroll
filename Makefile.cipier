@@ -1,7 +1,7 @@
-# $FreeBSD: head/www/rssroll/Makefile 412351 2016-04-01 14:33:55Z mat $
+# $FreeBSD$
 
 PORTNAME=	rssroll
-PORTVERSION=	0.5
+PORTVERSION=	0.6
 CATEGORIES=	www
 
 MAINTAINER=	koue@chaosophia.net
@@ -12,6 +12,7 @@ LICENSE=	BSD2CLAUSE
 LIB_DEPENDS=	libcurl.so:ftp/curl \
 		libxml2.so:textproc/libxml2 \
 		libsqlite3.so:databases/sqlite3
+#		libcez.a - has no port
 
 USE_GITHUB=	yes
 GH_ACCOUNT=	koue

@@ -3,7 +3,7 @@ To configure:
 	# mkdir build && cd build/ && cmake ../
 
 To build:
-	
+
 	# make
 
 To install:
@@ -28,7 +28,7 @@ To setup:
 	Add more categories into database.
 
 	# sqlite3 PATH_TO_SQLITE_DB "insert into channels (catid, modified, link) values (2, 123456, 'http://www.freebsd.org/security/rss.xml')"
-	Add RSS URL for tracing. 
+	Add RSS URL for tracing.
 
 	# /usr/local/bin/rssroll -d PATH_TO_SQLITE_DB
 	Run rssroll to fetch feeds.
