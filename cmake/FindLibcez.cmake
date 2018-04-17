@@ -1,3 +1,4 @@
+#
 # Copyright (c) 2018 Nikola Kolev <koue@chaosophia.net>
 #
 # Redistribution and use in source and binary forms, with or without
@@ -41,11 +42,11 @@
 #  LIBCEZ_FOUND - libcez found
 
 # Look for libcez config header file.
-find_path(LIBCEZ_CONFIG_INCLUDE_DIR NAMES cez-config.h)
+find_path(LIBCEZ_CONFIG_INCLUDE_DIR NAMES cez_config.h)
 # Look for libcez fossil header file.
-find_path(LIBCEZ_FOSSIL_INCLUDE_DIR NAMES cez-fossil.h)
+find_path(LIBCEZ_FOSSIL_INCLUDE_DIR NAMES cez_fossil.h)
 # Look for libcez misc header file.
-find_path(LIBCEZ_MISC_INCLUDE_DIR NAMES cez-misc.h)
+find_path(LIBCEZ_MISC_INCLUDE_DIR NAMES cez_misc.h)
 
 # Look for libcez config library
 find_library(LIBCEZ_CONFIG_LIBRARIES NAMES cezconfig)

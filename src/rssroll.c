@@ -28,8 +28,8 @@
  *
  */
 
-#include <cez-config.h>
-#include <cez-fossil.h>
+#include <cez_config.h>
+#include <cez_fossil.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
