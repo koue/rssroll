@@ -28,7 +28,6 @@
  *
  */
 
-#include <cez_config.h>
 #include <cez_fossil.h>
 #include <stdio.h>
 #include <string.h>
@@ -157,17 +156,17 @@ fetch_channel(int chan_id, long chan_modified, const char *chan_link) {
 
 	if ((fd = mkstemp(fn)) == -1) {
 		fprintf(stderr, "Cannot create temp file!\n");
-		return 0;
+		return (0);
 	}
 	if (fchmod(fd, 0600)) {
 		fprintf(stderr, "Cannot set permission to temp file!\n");
-		return 0;
+		return (0);
 	}
 
 	if ((bodyfile = fdopen(fd, "w")) == NULL) {
 		curl_easy_cleanup(curl_handle);
 		fprintf(stderr, "Cannot open file for parsing!\n");
-		return 0;
+		return (0);
 	}
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, bodyfile);
 	curl_easy_perform(curl_handle);

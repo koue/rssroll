@@ -48,6 +48,8 @@
 
 #include "config.h"
 
+#define cnf_lookup config_queue_value_get
+
 #ifndef HAVE_STRLCAT
 /*
  * '_cups_strlcat()' - Safely concatenate two strings.
@@ -136,20 +138,8 @@ static gzFile		gz = NULL;
 static char		*rssrollrc = "/usr/local/etc/rssrollrc";
 static unsigned long	callback_result = 0;
 
-struct index_params {
-	int	defcat;
-	int	feeds;
-	char	*ct_html;
-	char	*dbpath;
-	char	*desc;
-	char	*htmldir;
-	char	*name;
-	char	*owner;
-	char 	*url;
-	char	*webtheme;
-};
-
-static struct index_params	rssroll;
+static char *params[] = { "category", "feeds", "ct_html", "dbpath", "desc",
+    "htmldir", "name", "owner", "url", "webtheme", NULL };
 
 typedef	void (*render_cb)(const char *, const st_rss_item_t *);
 
@@ -196,10 +186,6 @@ render_error(const char *fmt, ...)
 	d_printf("<html><head><title>Error</title></head><body>\n");
 	d_printf("<h2>Error</h2><p><b>%s</b><p>\n", s);
 	d_printf("Time: <b>%s</b><br>\n", rfc822_time(time(0)));
-	d_printf("<p>If you believe this is a bug in <i>this</i> server, "
-	    "please send reports with instructions about how to "
-	    "reproduce to <a href=\"mailto:%s\"><b>%s</b></a><p>\n",
-	    rssroll.owner, rssroll.owner);
 	d_printf("</body></html>\n");
 }
 
@@ -224,29 +210,29 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 			if ((b = strstr(a, "%%")) != NULL) {
 				*b = 0;
 				if (!strcmp(a, "RSSROLL_BASEURL"))
-					d_printf("%s", rssroll.url);
+					d_printf("%s", cnf_lookup("url"));
 				else if (!strcmp(a, "RSSROLL_NAME"))
-					d_printf("%s", rssroll.name);
+					d_printf("%s", cnf_lookup("name"));
 				else if (!strcmp(a, "RSSROLL_OWNER"))
-					d_printf("%s", rssroll.owner);
+					d_printf("%s", cnf_lookup("owner"));
 				else if (!strcmp(a, "RSSROLL_CTYPE"))
-					d_printf("%s", rssroll.ct_html);
+					d_printf("%s", cnf_lookup("ct_html"));
 				else if (!strcmp(a, "RSSROLL_CATEGORIES")){
 					db_prepare(&q, "SELECT id, title FROM categories");
 					while(db_step(&q)==SQLITE_ROW) {
 						d_printf("<p><a href='%s?%d'>%s</a></p>",
-							rssroll.url, db_column_int(&q, 0), db_column_text(&q, 1));
+							cnf_lookup("url"), db_column_int(&q, 0), db_column_text(&q, 1));
 					}
 					db_finalize(&q);
 				} else if (!strcmp(a, "PREV")) {
-					if (callback_result == rssroll.feeds)	{
+					if (callback_result == atoi(cnf_lookup("feeds")))	{
 						d_printf("<a href='%s?%ld/%ld'> <<< </a>",
-							rssroll.url, query_category, query_limit + rssroll.feeds);
+							cnf_lookup("url"), query_category, query_limit + atoi(cnf_lookup("feeds")));
 					}
 				} else if (!strcmp(a, "NEXT")) {
 					if (query_limit) {
 						d_printf("<a href='%s?%ld/%ld'> >>> </a>",
-							rssroll.url, query_category, query_limit - rssroll.feeds);
+							cnf_lookup("url"), query_category, query_limit - atoi(cnf_lookup("feeds")));
 					}
 				}
 				else if (r != NULL)
@@ -271,12 +257,12 @@ render_front(const char *m, const st_rss_item_t *e)
 		db_prepare(&q, "SELECT id, modified, link, title, description, pubdate "
 				"FROM feeds WHERE chanid IN (select id from channels where catid = '%ld') "
 				"ORDER BY id DESC LIMIT '%ld', '%d'",
-				query_category, query_limit, rssroll.feeds);
+				query_category, query_limit, atoi(cnf_lookup("feeds")));
 		while(db_step(&q)==SQLITE_ROW) {
 			/* PREV option */
 			callback_result++;
 			snprintf(fn, sizeof(fn), "%s/%s/feed.html",
-					rssroll.htmldir, rssroll.webtheme);
+					cnf_lookup("htmldir"), cnf_lookup("webtheme"));
 			snprintf(rss_item.title, sizeof(rss_item.title), "%s",
 							db_column_text(&q, 3));
 			snprintf(rss_item.url, sizeof(rss_item.url), "%s",
@@ -288,12 +274,12 @@ render_front(const char *m, const st_rss_item_t *e)
 		}
 		db_finalize(&q);
 	} else if (!strcmp(m, "HEADER")) {
-		snprintf(fn, sizeof(fn), "%s/%s/header.html", rssroll.htmldir,
-							rssroll.webtheme);
+		snprintf(fn, sizeof(fn), "%s/%s/header.html", cnf_lookup("htmldir"),
+							cnf_lookup("webtheme"));
 		render_html(fn, NULL, NULL);
 	} else if (!strcmp(m, "FOOTER")) {
-		snprintf(fn, sizeof(fn), "%s/%s/footer.html", rssroll.htmldir,
-							rssroll.webtheme);
+		snprintf(fn, sizeof(fn), "%s/%s/footer.html", cnf_lookup("htmldir"),
+							cnf_lookup("webtheme"));
 		render_html(fn, NULL, NULL);
 	} else
 		d_printf("render_front: unknown macro '%s'<br>\n", m);
@@ -371,53 +357,17 @@ convert_rfc822_time(const char *date)
 	return (t);
 }
 
-int load_config(void) {
-	char *value;
+int
+config_check(void) {
+	int i;
 
-	if ((rssroll.url = config_queue_value_get("url")) == NULL) {
-		render_error("url is missing");
-		return (-1);
+	for (i = 0; params[i] != NULL; ++i) {
+		if (cnf_lookup(params[i]) == NULL) {
+			render_error("%s is missing", params[i]);
+			return (-1);
+		}
 	}
-	if ((rssroll.dbpath = config_queue_value_get("dbpath")) == NULL) {
-		render_error("dbpath is missing");
-		return (-1);
-	}
-	if ((rssroll.name = config_queue_value_get("name")) == NULL) {
-		render_error("name is missing");
-		return (-1);
-	}
-	if ((rssroll.desc = config_queue_value_get("desc")) == NULL) {
-		render_error("desc is missing");
-		return (-1);
-	}
-	if ((rssroll.owner = config_queue_value_get("owner")) == NULL) {
-		render_error("owner is missing");
-		return (-1);
-	}
-	if ((rssroll.ct_html = config_queue_value_get("ct_html")) == NULL) {
-		render_error("ct_html is missing");
-		return (-1);
-	}
-	if ((rssroll.htmldir = config_queue_value_get("htmldir")) == NULL) {
-		render_error("htmldir is missing");
-		return (-1);
-	}
-	if ((rssroll.webtheme = config_queue_value_get("webtheme")) == NULL) {
-		render_error("webtheme is missing");
-		return (-1);
-	}
-	if ((value = config_queue_value_get("feeds")) == NULL) {
-		render_error("feeds is missing");
-		return (-1);
-	} else {
-		rssroll.feeds = atoi(value);
-	}
-	if (( value = config_queue_value_get("category")) == NULL) {
-		render_error("default category is missing");
-		return (-1);
-	} else {
-		rssroll.defcat = atoi(value);
-	}
+
 	return (0);
 }
 
@@ -433,7 +383,7 @@ main(int argc, char *argv[])
 		render_error("error: cannot open config file: %s", rssrollrc);
 		goto done;
 	}
-	if (load_config() == -1)
+	if (config_check() == -1)
 		goto done;
 	if (chdir("/tmp")) {
 		printf("error main: chdir: /tmp: %s", strerror(errno));
@@ -441,8 +391,8 @@ main(int argc, char *argv[])
 		goto done;
 	}
 
-	if (sqlite3_open(rssroll.dbpath, &g.db) != SQLITE_OK) {
-		render_error("cannot load database: %s", rssroll.dbpath);
+	if (sqlite3_open(cnf_lookup("dbpath"), &g.db) != SQLITE_OK) {
+		render_error("cannot load database: %s", cnf_lookup("dbpath"));
 		goto done;
 	}
 
@@ -499,9 +449,9 @@ main(int argc, char *argv[])
 
 	char fn[1024];
 
-	printf("%s\r\n\r\n", rssroll.ct_html);
+	printf("%s\r\n\r\n", cnf_lookup("ct_html"));
 	fflush(stdout);
-	snprintf(fn, sizeof(fn), "%s/main.html", rssroll.htmldir);
+	snprintf(fn, sizeof(fn), "%s/main.html", cnf_lookup("htmldir"));
 	render_html(fn, &render_front, NULL);
 
 done:
