@@ -32,15 +32,8 @@ target_link_libraries (index.cgi
 	-lz
 )
 
-#add_executable (getdata.cgi
-#        configfile.c
-#        getdata.c
-#)
-
-#target_link_libraries (getdata.cgi
-#        ${SQLITE_LIBRARIES}
-#        -lz
-#)
-
 install (TARGETS rssroll
 	DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+
+install (TARGETS index.cgi
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/www/rssroll)

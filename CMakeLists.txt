@@ -40,7 +40,11 @@ include_directories (${PROJECT_BINARY_DIR}/src)
 
 #
 install (FILES rssrollrc
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/etc)
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/etc
+	RENAME rssrollrc.sample)
+
+install (DIRECTORY html css
+	DESTINATION ${CMAKE_INSTALL_PREFIX}/www/rssroll)
 
 #
 add_subdirectory (src)
