@@ -47,24 +47,6 @@ int debug = 0;
 /* rss database store	*/
 Global g;
 
-/* debug message out */
-void
-dmsg(const char *fmt, ...) {
-	if (debug) {
-		va_list ap;
-		time_t t = time(NULL);
-		struct tm *tm = gmtime(&t);
-		fprintf(stdout, "%4.4d.%2.2d.%2.2d %2.2d:%2.2d:%2.2d ",
-		    tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour,
-		    tm->tm_min, tm->tm_sec);
-		va_start(ap, fmt);
-		vfprintf(stdout, fmt, ap);
-		va_end(ap);
-		fprintf(stdout, "\n");
-		fflush(stdout);
-	}
-}
-
 /* curl write function */
 static size_t
 write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
