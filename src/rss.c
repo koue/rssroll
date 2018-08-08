@@ -107,20 +107,20 @@ rss_st_rss_t_sanity_check(st_rss_t *rss)
 static void
 rss_read_copy(char *d, xmlDoc *doc, xmlNode *n)
 {
-	dmsg("rss_read_copy in");
+	dmsg(1,"rss_read_copy in");
 	const char *p = (const char *) xmlNodeGetContent(n);
 	if (p)
 		strncpy (d, p, RSSMAXBUFSIZE)[RSSMAXBUFSIZE-1] = 0;
 	else
 		*d = 0;
-	dmsg("rss_read_copy p: %s", p);
-	dmsg("rss_read_copy ouy");
+	dmsg(1,"rss_read_copy p: %s", p);
+	dmsg(1,"rss_read_copy ouy");
 }
 
 int
 rss_close(st_rss_t *rss)
 {
-	dmsg("rss_close");
+	dmsg(1,"rss_close");
 	if (rss) {
 		free (rss);
 		rss = NULL;
@@ -136,7 +136,7 @@ rss_open_rss(st_rss_t *rss)
 	xmlNode *node;
 	int rdf = 0;
 
-	dmsg("rss_open_rss");
+	dmsg(1,"rss_open_rss");
 	doc = xmlParseFile (rss->url);
 	if (!doc) {
 		fprintf(stderr, "ERROR: cannot read %s\n", rss->url);
@@ -148,7 +148,7 @@ rss_open_rss(st_rss_t *rss)
 		fprintf (stderr, "ERROR: empty document %s\n", rss->url);
 		return (NULL);
 	}
-	dmsg("rss->url: %s", rss->url);
+	dmsg(1,"rss->url: %s", rss->url);
 
 	// rdf?
 	// TODO: move this to rss_demux()
@@ -157,7 +157,7 @@ rss_open_rss(st_rss_t *rss)
 	  !strcmp ((char *) node->name, "RDF")))
 		rdf = 1;
 
-	dmsg("node->name: %s", (char *) node->name);
+	dmsg(1,"node->name: %s", (char *) node->name);
 
 	node = node->xmlChildrenNode;
 	while (node && xmlIsBlankNode(node))
@@ -183,7 +183,7 @@ rss_open_rss(st_rss_t *rss)
 		if (!node)
 			break;
 
-		dmsg("node->name: %s", (char *) node->name);
+		dmsg(1,"node->name: %s", (char *) node->name);
 		if (!strcmp ((char *) node->name, "title"))
 			rss_read_copy (rss->title, doc, node->xmlChildrenNode);
 		else if (!strcmp ((char *) node->name, "description"))
@@ -196,7 +196,7 @@ rss_open_rss(st_rss_t *rss)
 			xmlNode *pnode = node->xmlChildrenNode;
 
 			while (pnode) {
-				dmsg("pnode->name: %s", (char *) pnode->name);
+				dmsg(1,"pnode->name: %s", (char *) pnode->name);
 				if (!strcmp ((char *) pnode->name, "title"))
 					rss_read_copy(rss->title, doc, pnode->xmlChildrenNode);
 				else if (!strcmp ((char *) pnode->name, "description"))
@@ -224,7 +224,7 @@ rss_open_rss(st_rss_t *rss)
 				if (!pnode)
 					break;
 
-				dmsg("%s\n", (char *) pnode->name);
+				dmsg(1,"%s\n", (char *) pnode->name);
 				if (!strcmp ((char *) pnode->name, "title")) {
 					rss_read_copy (item->title, doc, pnode->xmlChildrenNode);
 					found = 1;
@@ -266,7 +266,7 @@ rss_open_rss(st_rss_t *rss)
 	node = node->next;
 	}
 
-	if(debug) {
+	if(debug > 1) {
 		rss_st_rss_t_sanity_check (rss);
 		fflush(stdout);
 	}
@@ -281,7 +281,7 @@ rss_open_atom(st_rss_t *rss)
 	xmlNode *node;
 	const char *p = NULL;
 
-	dmsg("rss_open_atom");
+	dmsg(1,"rss_open_atom");
 
 	doc = xmlParseFile(rss->url);
 	if (!doc) {
@@ -375,7 +375,7 @@ rss_demux(const char *fname)
 	int version = -1;
 	char *p = NULL;
 
-	dmsg("rss_demux %s", fname);
+	dmsg(1,"rss_demux %s", fname);
 
 	if (!(doc = xmlParseFile(fname))) {
 		fprintf(stderr, "ERROR: cannot read %s\n", fname);
@@ -426,7 +426,7 @@ rss_open(const char *fname)
 {
 	st_rss_t *rss = NULL;
 
-	dmsg("rss_open %s\n", fname);
+	dmsg(1,"rss_open %s\n", fname);
 	if (!(rss = malloc(sizeof (st_rss_t))))
 		return (NULL);
 
@@ -456,9 +456,9 @@ rss_open(const char *fname)
 
 /* debug message out */
 void
-dmsg(const char *fmt, ...)
+dmsg(int verbose, const char *fmt, ...)
 {
-	if (debug) {
+	if (debug > verbose) {
 		va_list ap;
 		time_t t = time(NULL);
 		struct tm *tm = gmtime(&t);

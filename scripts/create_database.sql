@@ -1,7 +1,8 @@
 CREATE TABLE categories (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	title VARCHAR(100),
-	description VARCHAR(100)
+	description VARCHAR(100),
+	UNIQUE(title)
 );
 
 CREATE TABLE channels (
@@ -11,7 +12,8 @@ CREATE TABLE channels (
 	link VARCHAR(100),
 	language VARCHAR(20),
 	title VARCHAR(100),
-	description VARCHAR(100)
+	description VARCHAR(100),
+	UNIQUE(link)
 );
 
 CREATE TABLE feeds (

@@ -89,6 +89,6 @@ extern const char *rss_get_version_s_by_magic(const char *m);
 extern char *rss_utf8_enc(const char *in, const char *encoding);
 
 extern int debug;
-void dmsg(const char *fmt, ...);
+void dmsg(int, const char *fmt, ...);
 
 #endif //  RSS_H

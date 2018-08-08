@@ -9,6 +9,9 @@ set (PACKAGE_URL "https://github.com/koue/rssroll")
 set (PACKAGE_BUGREPORT "https://github.com/koue/rssroll/issues")
 
 #
+enable_testing()
+
+#
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 include (${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 
@@ -48,3 +51,4 @@ install (DIRECTORY html css
 
 #
 add_subdirectory (src)
+add_subdirectory (tests)
