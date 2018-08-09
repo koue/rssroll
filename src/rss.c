@@ -212,7 +212,6 @@ rss_open_rss(st_rss_t *rss)
 		    !strcmp ((char *) node->name, "entry")) {
 			xmlNode *pnode = node->xmlChildrenNode;
 			st_rss_item_t *item = &rss->item[rss->item_count];
-			int found = 0;
 			char link[RSSMAXBUFSIZE], guid[RSSMAXBUFSIZE];
 
 			*link = *guid = 0;
@@ -227,22 +226,17 @@ rss_open_rss(st_rss_t *rss)
 				dmsg(1,"%s\n", (char *) pnode->name);
 				if (!strcmp ((char *) pnode->name, "title")) {
 					rss_read_copy (item->title, doc, pnode->xmlChildrenNode);
-					found = 1;
 				} else if (!strcmp ((char *) pnode->name, "link")) {
 					rss_read_copy (link, doc, pnode->xmlChildrenNode);
-					found = 1;
 				} else if (!strcmp ((char *) pnode->name, "guid") && (!(*link))) {
 					rss_read_copy (guid, doc, pnode->xmlChildrenNode);
-					found = 1;
 				} else if (!strcmp ((char *) pnode->name, "description")) {
 					rss_read_copy (item->desc, doc, pnode->xmlChildrenNode);
-					found = 1;
 				} else if (!strcasecmp ((char *) pnode->name, "date") ||
 				    !strcasecmp ((char *) pnode->name, "pubDate") ||
 				    !strcasecmp ((char *) pnode->name, "dc:date") ||
 				    !strcasecmp ((char *) pnode->name, "cropDate")) {
 					item->date = strptime2((const char *) xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
-					found = 1;
 				}
 
 				pnode = pnode->next;
@@ -322,7 +316,6 @@ rss_open_atom(st_rss_t *rss)
 		else if ((!strcmp ((char *) node->name, "entry"))) {
 			xmlNode *pnode = node->xmlChildrenNode;
 			st_rss_item_t *item = &rss->item[rss->item_count];
-			int found = 0;
 			char link[RSSMAXBUFSIZE];
 
 			*link = 0;
@@ -336,20 +329,16 @@ rss_open_atom(st_rss_t *rss)
 
 				if (!strcmp((char *) pnode->name, "title")) {
 					rss_read_copy(item->title, doc, pnode->xmlChildrenNode);
-					found = 1;
 				} else if (!strcmp((char *) pnode->name, "link") && (!(*link))) {
 					p = (const char *) xml_get_value(pnode, "href");
 					if (p) {
 						strncpy (link, p, RSSMAXBUFSIZE)[RSSMAXBUFSIZE-1] = 0;
-						found = 1;
 					}
 				} else if (!strcmp((char *) pnode->name, "content")) {
 					rss_read_copy (item->desc, doc, pnode->xmlChildrenNode);
-					found = 1;
 				} else if (!strcmp ((char *) pnode->name, "modified") ||
 				    !strcmp ((char *) pnode->name, "updated")) {
 					item->date = strptime2((const char *) xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
-					found = 1;
 				}
 			pnode = pnode->next;
 			}
