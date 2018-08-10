@@ -129,8 +129,112 @@ rss_close(st_rss_t *rss)
 	return (0);
 }
 
+static void
+rss_channel(st_rss_t *rss, xmlDoc *doc, xmlNode *pnode)
+{
+	while (pnode) {
+		dmsg(1,"pnode->name: %s", (char *) pnode->name);
+		if (!strcmp ((char *) pnode->name, "title"))
+			rss_read_copy(rss->title, doc, pnode->xmlChildrenNode);
+		else if (!strcmp ((char *) pnode->name, "description"))
+			rss_read_copy (rss->desc, doc, pnode->xmlChildrenNode);
+		else if (!strcmp ((char *) pnode->name, "date") ||
+		    !strcmp ((char *) pnode->name, "pubDate") ||
+		    !strcmp ((char *) pnode->name, "dc:date"))
+			rss->date = strptime2((const char *) xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
+
+		pnode = pnode->next;
+	}
+}
+
+static void
+rss_entry(st_rss_item_t *item, xmlDoc *doc, xmlNode *pnode)
+{
+	char link[RSSMAXBUFSIZE], guid[RSSMAXBUFSIZE];
+	const char *p = NULL;
+
+	*link = *guid = 0;
+
+	while (pnode) {
+		while (pnode && xmlIsBlankNode(pnode))
+			pnode = pnode->next;
+
+		if (!pnode)
+			break;
+
+		dmsg(1,"%s\n", (char *) pnode->name);
+		if (!strcmp ((char *) pnode->name, "title")) {
+			rss_read_copy (item->title, doc, pnode->xmlChildrenNode);
+		} else if (!strcmp ((char *) pnode->name, "link")) {
+			p = (const char *) xml_get_value(pnode, "href");
+			if (p) {
+				strncpy(link, p, RSSMAXBUFSIZE)[RSSMAXBUFSIZE-1] = 0;
+			} else {
+				rss_read_copy (link, doc, pnode->xmlChildrenNode);
+			}
+		} else if (!strcmp ((char *) pnode->name, "guid") && (!(*link))) {
+			rss_read_copy (guid, doc, pnode->xmlChildrenNode);
+		} else if (!strcmp ((char *) pnode->name, "description")) {
+			rss_read_copy (item->desc, doc, pnode->xmlChildrenNode);
+		} else if (!strcmp ((char *) pnode->name, "content")) {
+			rss_read_copy (item->desc, doc, pnode->xmlChildrenNode);
+		} else if (!strcasecmp ((char *) pnode->name, "date") ||
+		    !strcasecmp ((char *) pnode->name, "pubDate") ||
+		    !strcasecmp ((char *) pnode->name, "dc:date") ||
+		    !strcmp ((char *) pnode->name, "modified") ||
+		    !strcmp ((char *) pnode->name, "updated") ||
+		    !strcasecmp ((char *) pnode->name, "cropDate")) {
+			item->date = strptime2((const char *) xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
+		}
+
+		pnode = pnode->next;
+	}
+
+	// some feeds use the guid tag for the link
+	if (*link)
+		strcpy (item->url, link);
+	else if (*guid)
+		strcpy (item->url, guid);
+	else
+		*(item->url) = 0;
+}
+
+static void
+rss_head(st_rss_t *rss, xmlDoc *doc, xmlNode *node, int rdf)
+{
+	while (node) {
+		while (node && xmlIsBlankNode(node))
+			node = node->next;
+
+		if (!node)
+			break;
+
+		dmsg(1,"node->name: %s", (char *) node->name);
+		if (!strcmp ((char *) node->name, "title"))
+			rss_read_copy (rss->title, doc, node->xmlChildrenNode);
+		else if (!strcmp ((char *) node->name, "description"))
+			rss_read_copy (rss->desc, doc, node->xmlChildrenNode);
+		else if (!strcmp ((char *) node->name, "date") ||
+		    !strcmp ((char *) node->name, "pubDate") ||
+		    !strcmp ((char *) node->name, "modified") ||
+		    !strcmp ((char *) node->name, "updated") ||
+		    !strcmp ((char *) node->name, "dc:date"))
+			rss->date = strptime2((const char *) xmlNodeListGetString(node->xmlChildrenNode->doc, node->xmlChildrenNode, 1));
+		else if (!strcmp ((char *) node->name, "channel") && rdf) {
+			rss_channel(rss, doc, node->xmlChildrenNode);
+		} else if (!strcmp ((char *) node->name, "item") ||
+		    !strcmp ((char *) node->name, "entry")) {
+			rss_entry(&rss->item[rss->item_count], doc, node->xmlChildrenNode);
+			rss->item_count++;
+			if (rss->item_count == RSSMAXITEM)
+				break;
+		}
+	node = node->next;
+	}
+}
+
 static st_rss_t *
-rss_open_rss(st_rss_t *rss)
+rss_parse(st_rss_t *rss)
 {
 	xmlDoc *doc;
 	xmlNode *node;
@@ -176,183 +280,11 @@ rss_open_rss(st_rss_t *rss)
 	if (!rdf) // document is RSS
 		node = node->xmlChildrenNode;
 
-	while (node) {
-		while (node && xmlIsBlankNode(node))
-			node = node->next;
-
-		if (!node)
-			break;
-
-		dmsg(1,"node->name: %s", (char *) node->name);
-		if (!strcmp ((char *) node->name, "title"))
-			rss_read_copy (rss->title, doc, node->xmlChildrenNode);
-		else if (!strcmp ((char *) node->name, "description"))
-			rss_read_copy (rss->desc, doc, node->xmlChildrenNode);
-		else if (!strcmp ((char *) node->name, "date") ||
-		    !strcmp ((char *) node->name, "pubDate") ||
-		    !strcmp ((char *) node->name, "dc:date"))
-			rss->date = strptime2((const char *) xmlNodeListGetString(node->xmlChildrenNode->doc, node->xmlChildrenNode, 1));
-		else if (!strcmp ((char *) node->name, "channel") && rdf) {
-			xmlNode *pnode = node->xmlChildrenNode;
-
-			while (pnode) {
-				dmsg(1,"pnode->name: %s", (char *) pnode->name);
-				if (!strcmp ((char *) pnode->name, "title"))
-					rss_read_copy(rss->title, doc, pnode->xmlChildrenNode);
-				else if (!strcmp ((char *) pnode->name, "description"))
-					rss_read_copy (rss->desc, doc, pnode->xmlChildrenNode);
-				else if (!strcmp ((char *) pnode->name, "date") ||
-				    !strcmp ((char *) pnode->name, "pubDate") ||
-				    !strcmp ((char *) pnode->name, "dc:date"))
-					rss->date = strptime2((const char *) xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
-
-				pnode = pnode->next;
-			}
-		} else if (!strcmp ((char *) node->name, "item") ||
-		    !strcmp ((char *) node->name, "entry")) {
-			xmlNode *pnode = node->xmlChildrenNode;
-			st_rss_item_t *item = &rss->item[rss->item_count];
-			char link[RSSMAXBUFSIZE], guid[RSSMAXBUFSIZE];
-
-			*link = *guid = 0;
-
-			while (pnode) {
-				while (pnode && xmlIsBlankNode(pnode))
-					pnode = pnode->next;
-
-				if (!pnode)
-					break;
-
-				dmsg(1,"%s\n", (char *) pnode->name);
-				if (!strcmp ((char *) pnode->name, "title")) {
-					rss_read_copy (item->title, doc, pnode->xmlChildrenNode);
-				} else if (!strcmp ((char *) pnode->name, "link")) {
-					rss_read_copy (link, doc, pnode->xmlChildrenNode);
-				} else if (!strcmp ((char *) pnode->name, "guid") && (!(*link))) {
-					rss_read_copy (guid, doc, pnode->xmlChildrenNode);
-				} else if (!strcmp ((char *) pnode->name, "description")) {
-					rss_read_copy (item->desc, doc, pnode->xmlChildrenNode);
-				} else if (!strcasecmp ((char *) pnode->name, "date") ||
-				    !strcasecmp ((char *) pnode->name, "pubDate") ||
-				    !strcasecmp ((char *) pnode->name, "dc:date") ||
-				    !strcasecmp ((char *) pnode->name, "cropDate")) {
-					item->date = strptime2((const char *) xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
-				}
-
-				pnode = pnode->next;
-			}
-
-			// some feeds use the guid tag for the link
-			if (*link)
-				strcpy (item->url, link);
-			else if (*guid)
-				strcpy (item->url, guid);
-			else
-				*(item->url) = 0;
-
-			rss->item_count++;
-
-			if (rss->item_count == RSSMAXITEM)
-				break;
-		}
-
-	// rss->item_count++;
-	node = node->next;
-	}
-
+	rss_head(rss, doc, node, rdf);
 	if(debug > 1) {
 		rss_st_rss_t_sanity_check (rss);
 		fflush(stdout);
 	}
-
-	return (rss);
-}
-
-static st_rss_t *
-rss_open_atom(st_rss_t *rss)
-{
-	xmlDoc *doc;
-	xmlNode *node;
-	const char *p = NULL;
-
-	dmsg(1,"rss_open_atom");
-
-	doc = xmlParseFile(rss->url);
-	if (!doc) {
-		fprintf (stderr, "ERROR: cannot read %s\n", rss->url);
-		return (NULL);
-	}
-
-	node = xmlDocGetRootElement(doc);
-	if (!node) {
-		fprintf (stderr, "ERROR: empty document %s\n", rss->url);
-		return (NULL);
-	}
-
-	node = node->xmlChildrenNode;
-	while (node && xmlIsBlankNode (node))
-		node = node->next;
-	if (!node) {
-		return (NULL);
-	}
-
-	while (node) {
-		while (node && xmlIsBlankNode (node))
-			node = node->next;
-
-		if (!node)
-			break;
-
-		if (!strcmp((char *) node->name, "title"))
-			rss_read_copy (rss->title, doc, node->xmlChildrenNode);
-		else if (!strcmp ((char *) node->name, "description"))
-			rss_read_copy (rss->desc, doc, node->xmlChildrenNode);
-		else if (!strcmp ((char *) node->name, "date") ||
-		    !strcmp ((char *) node->name, "pubDate") ||
-		    !strcmp ((char *) node->name, "dc:date") ||
-		    !strcmp ((char *) node->name, "modified") ||
-		    !strcmp ((char *) node->name, "updated"))
-			rss->date = strptime2((const char *) xmlNodeListGetString(node->xmlChildrenNode->doc, node->xmlChildrenNode, 1));
-		else if ((!strcmp ((char *) node->name, "entry"))) {
-			xmlNode *pnode = node->xmlChildrenNode;
-			st_rss_item_t *item = &rss->item[rss->item_count];
-			char link[RSSMAXBUFSIZE];
-
-			*link = 0;
-
-			while (pnode) {
-				while (pnode && xmlIsBlankNode(pnode))
-				pnode = pnode->next;
-
-				if (!pnode)
-					break;
-
-				if (!strcmp((char *) pnode->name, "title")) {
-					rss_read_copy(item->title, doc, pnode->xmlChildrenNode);
-				} else if (!strcmp((char *) pnode->name, "link") && (!(*link))) {
-					p = (const char *) xml_get_value(pnode, "href");
-					if (p) {
-						strncpy (link, p, RSSMAXBUFSIZE)[RSSMAXBUFSIZE-1] = 0;
-					}
-				} else if (!strcmp((char *) pnode->name, "content")) {
-					rss_read_copy (item->desc, doc, pnode->xmlChildrenNode);
-				} else if (!strcmp ((char *) pnode->name, "modified") ||
-				    !strcmp ((char *) pnode->name, "updated")) {
-					item->date = strptime2((const char *) xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
-				}
-			pnode = pnode->next;
-			}
-		if (*link)
-			strcpy(item->url, link);
-
-		rss->item_count++;
-
-		if (rss->item_count == RSSMAXITEM)
-			break;
-		}
-	node = node->next;
-	}
-
 	return (rss);
 }
 
@@ -429,18 +361,7 @@ rss_open(const char *fname)
 		fprintf (stderr, "ERROR: uknown feed format %s.\n", rss->url);
 		return (NULL);
 	}
-	switch (rss->version) {
-		case ATOM_V0_1:
-		case ATOM_V0_2:
-		case ATOM_V0_3:
-			return rss_open_atom(rss);
-		default:
-			return rss_open_rss(rss);
-	}
-	free(rss);
-	rss = NULL;
-
-	return (NULL);
+	return rss_parse(rss);
 }
 
 /* debug message out */
