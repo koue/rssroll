@@ -272,13 +272,15 @@ rss_parse(st_rss_t *rss)
 		return (NULL);
 	}
 
-	if (strcmp ((char *) node->name, "channel")) {
-		fprintf (stderr, "ERROR: bad document: did not immediately find the RSS element\n");
-		return (NULL);
-	}
+	if (rss->version < 8) {
+		if (strcmp ((char *) node->name, "channel")) {
+			fprintf (stderr, "ERROR: bad document: did not immediately find the RSS element\n");
+			return (NULL);
+		}
 
-	if (!rdf) // document is RSS
-		node = node->xmlChildrenNode;
+		if (!rdf) // document is RSS
+			node = node->xmlChildrenNode;
+	}
 
 	rss_head(rss, doc, node, rdf);
 	if(debug > 1) {
