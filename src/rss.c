@@ -166,11 +166,14 @@ rss_entry(st_rss_item_t *item, xmlDoc *doc, xmlNode *pnode)
 		if (!strcmp ((char *) pnode->name, "title")) {
 			rss_read_copy (item->title, doc, pnode->xmlChildrenNode);
 		} else if (!strcmp ((char *) pnode->name, "link")) {
-			p = (const char *) xml_get_value(pnode, "href");
+			p = (const char *) xml_get_value(pnode, "rel");	// atom
 			if (p) {
-				strncpy(link, p, RSSMAXBUFSIZE)[RSSMAXBUFSIZE-1] = 0;
+				if (strcmp(p, "alternate") == 0) {
+					p = (const char *) xml_get_value(pnode, "href");
+					strncpy(link, p, RSSMAXBUFSIZE)[RSSMAXBUFSIZE-1] = 0;
+				}
 			} else {
-				rss_read_copy (link, doc, pnode->xmlChildrenNode);
+				rss_read_copy (link, doc, pnode->xmlChildrenNode); //rss
 			}
 		} else if (!strcmp ((char *) pnode->name, "guid") && (!(*link))) {
 			rss_read_copy (guid, doc, pnode->xmlChildrenNode);
