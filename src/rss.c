@@ -203,7 +203,7 @@ rss_entry(st_rss_item_t *item, xmlDoc *doc, xmlNode *pnode)
 }
 
 static void
-rss_head(st_rss_t *rss, xmlDoc *doc, xmlNode *node, int rdf)
+rss_head(st_rss_t *rss, xmlDoc *doc, xmlNode *node)
 {
 	while (node) {
 		while (node && xmlIsBlankNode(node))
@@ -223,7 +223,7 @@ rss_head(st_rss_t *rss, xmlDoc *doc, xmlNode *node, int rdf)
 		    !strcmp ((char *) node->name, "updated") ||
 		    !strcmp ((char *) node->name, "dc:date"))
 			rss->date = strptime2((const char *) xmlNodeListGetString(node->xmlChildrenNode->doc, node->xmlChildrenNode, 1));
-		else if (!strcmp ((char *) node->name, "channel") && rdf) {
+		else if (!strcmp ((char *) node->name, "channel") && (rss->version == RSS_V1_0)) {
 			rss_channel(rss, doc, node->xmlChildrenNode);
 		} else if (!strcmp ((char *) node->name, "item") ||
 		    !strcmp ((char *) node->name, "entry")) {
@@ -241,7 +241,6 @@ rss_parse(st_rss_t *rss)
 {
 	xmlDoc *doc;
 	xmlNode *node;
-	int rdf = 0;
 
 	dmsg(1,"rss_open_rss");
 	doc = xmlParseFile (rss->url);
@@ -257,13 +256,6 @@ rss_parse(st_rss_t *rss)
 	}
 	dmsg(1,"rss->url: %s", rss->url);
 
-	// rdf?
-	// TODO: move this to rss_demux()
-	if (strcmp ((char *) node->name, "rss") != 0 &&
-	  (!strcmp ((char *) node->name, "rdf") ||
-	  !strcmp ((char *) node->name, "RDF")))
-		rdf = 1;
-
 	dmsg(1,"node->name: %s", (char *) node->name);
 
 	node = node->xmlChildrenNode;
@@ -275,17 +267,17 @@ rss_parse(st_rss_t *rss)
 		return (NULL);
 	}
 
-	if (rss->version < 8) {
+	if (rss->version < ATOM_V0_1) {
 		if (strcmp ((char *) node->name, "channel")) {
 			fprintf (stderr, "ERROR: bad document: did not immediately find the RSS element\n");
 			return (NULL);
 		}
 
-		if (!rdf) // document is RSS
+		if (rss->version != RSS_V1_0) // document is RSS
 			node = node->xmlChildrenNode;
 	}
 
-	rss_head(rss, doc, node, rdf);
+	rss_head(rss, doc, node);
 	if(debug > 1) {
 		rss_st_rss_t_sanity_check (rss);
 		fflush(stdout);
