@@ -154,7 +154,9 @@ fetch_channel(int chan_id, long chan_modified, const char *chan_link) {
 	curl_easy_perform(curl_handle);
 	curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
 	fclose(bodyfile);
+	curl_slist_free_all(if_chan_modified);
 	curl_easy_cleanup(curl_handle);
+	curl_global_cleanup();
 	if (http_code != 304)
 		parse_body(chan_id, fn);
 	else {

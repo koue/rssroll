@@ -30,7 +30,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "rss.h"
 
 time_t
-strptime2(const char *s)
+strptime2(char *s)
 {
 	int i = 0;
 	char y[100], m[100], d[100];
@@ -56,6 +56,7 @@ strptime2(const char *s)
 	} else {					// YYYYMMDDTHHMMSS
 		// sscanf (s, " %4s%2s%2sT", y, m, d);
 	}
+	free(s);
 
 	memset (&time_tag, 0, sizeof (struct tm));
 
@@ -76,7 +77,7 @@ strptime2(const char *s)
 }
 
 
-const unsigned char *
+unsigned char *
 xml_get_value(xmlNode *n, const char *name)
 {
 	if (n)
@@ -108,13 +109,14 @@ static void
 rss_read_copy(char *d, xmlDoc *doc, xmlNode *n)
 {
 	dmsg(1,"rss_read_copy in");
-	const char *p = (const char *) xmlNodeGetContent(n);
+	char *p = (char *) xmlNodeGetContent(n);
 	if (p)
 		strncpy (d, p, RSSMAXBUFSIZE)[RSSMAXBUFSIZE-1] = 0;
 	else
 		*d = 0;
 	dmsg(1,"rss_read_copy p: %s", p);
 	dmsg(1,"rss_read_copy ouy");
+	free(p);
 }
 
 int
@@ -141,7 +143,7 @@ rss_channel(st_rss_t *rss, xmlDoc *doc, xmlNode *pnode)
 		else if (!strcmp ((char *) pnode->name, "date") ||
 		    !strcmp ((char *) pnode->name, "pubDate") ||
 		    !strcmp ((char *) pnode->name, "dc:date"))
-			rss->date = strptime2((const char *) xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
+			rss->date = strptime2((char *) xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
 
 		pnode = pnode->next;
 	}
@@ -151,7 +153,7 @@ static void
 rss_entry(st_rss_item_t *item, xmlDoc *doc, xmlNode *pnode)
 {
 	char link[RSSMAXBUFSIZE], guid[RSSMAXBUFSIZE];
-	const char *p = NULL;
+	char *p = NULL, *href = NULL;
 
 	*link = *guid = 0;
 
@@ -166,12 +168,14 @@ rss_entry(st_rss_item_t *item, xmlDoc *doc, xmlNode *pnode)
 		if (!strcmp ((char *) pnode->name, "title")) {
 			rss_read_copy (item->title, doc, pnode->xmlChildrenNode);
 		} else if (!strcmp ((char *) pnode->name, "link")) {
-			p = (const char *) xml_get_value(pnode, "rel");	// atom
+			p = (char *) xml_get_value(pnode, "rel");	// atom
 			if (p) {
 				if (strcmp(p, "alternate") == 0) {
-					p = (const char *) xml_get_value(pnode, "href");
-					strncpy(link, p, RSSMAXBUFSIZE)[RSSMAXBUFSIZE-1] = 0;
+					href = (char *) xml_get_value(pnode, "href");
+					strncpy(link, href, RSSMAXBUFSIZE)[RSSMAXBUFSIZE-1] = 0;
+					free(href);
 				}
+				free(p);
 			} else {
 				rss_read_copy (link, doc, pnode->xmlChildrenNode); //rss
 			}
@@ -187,7 +191,7 @@ rss_entry(st_rss_item_t *item, xmlDoc *doc, xmlNode *pnode)
 		    !strcmp ((char *) pnode->name, "modified") ||
 		    !strcmp ((char *) pnode->name, "updated") ||
 		    !strcasecmp ((char *) pnode->name, "cropDate")) {
-			item->date = strptime2((const char *) xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
+			item->date = strptime2((char *) xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
 		}
 
 		pnode = pnode->next;
@@ -222,7 +226,7 @@ rss_head(st_rss_t *rss, xmlDoc *doc, xmlNode *node)
 		    !strcmp ((char *) node->name, "modified") ||
 		    !strcmp ((char *) node->name, "updated") ||
 		    !strcmp ((char *) node->name, "dc:date"))
-			rss->date = strptime2((const char *) xmlNodeListGetString(node->xmlChildrenNode->doc, node->xmlChildrenNode, 1));
+			rss->date = strptime2((char *) xmlNodeListGetString(node->xmlChildrenNode->doc, node->xmlChildrenNode, 1));
 		else if (!strcmp ((char *) node->name, "channel") && (rss->version == RSS_V1_0)) {
 			rss_channel(rss, doc, node->xmlChildrenNode);
 		} else if (!strcmp ((char *) node->name, "item") ||
@@ -282,6 +286,7 @@ rss_parse(st_rss_t *rss)
 		rss_st_rss_t_sanity_check (rss);
 		fflush(stdout);
 	}
+	xmlFreeDoc(doc);
 	return (rss);
 }
 
@@ -294,32 +299,29 @@ rss_demux(const char *fname)
 	char *p = NULL;
 
 	dmsg(1,"rss_demux %s", fname);
-
 	if (!(doc = xmlParseFile(fname))) {
 		fprintf(stderr, "ERROR: cannot read %s\n", fname);
-		return (-1);
+		goto done;
 	}
 
 	node = xmlDocGetRootElement(doc);
 	if (!node)
-		return (-1);
+		goto done;
 	if (!(char *) node->name )
-		return (-1);
+		goto done;
 	if (!strcmp((char *) node->name, "html")) // not xml
-		return (-1);
+		goto done;
 	if (!strcmp((char *) node->name, "feed")) {
 		version = ATOM_V0_1;	//default
-
 		if (!(p = (char *) xml_get_value(node, "version")))
-			return (version);
+			goto done;
 		if (!strcmp(p, "0.3"))
 			version = ATOM_V0_3;
 		else if (!strcmp(p, "0.2"))
 			version = ATOM_V0_2;
-		return (version);
 	} else if (!strcmp((char *) node->name, "rss")) {
 		if (!(p = (char *) xml_get_value(node, "version")))
-			return (-1);
+			goto done;
 		if (!strcmp(p, "0.91"))
 			version = RSS_V0_91;
 		else if (!strcmp(p, "0.92"))
@@ -330,13 +332,15 @@ rss_demux(const char *fname)
 			version = RSS_V0_94;
 		else if (!strcmp(p, "2") || !strcmp(p, "2.0") || !strcmp(p, "2.00"))
 			version = RSS_V2_0;
-		return (version);
 	} else if (!strcmp((char *) node->name, "rdf") || !strcmp((char *) node->name, "RDF")) {
 		version = RSS_V1_0;
-		return (version);
 	}
 
-	return (-1);
+done:
+	if (p != NULL)
+		free(p);
+	xmlFreeDoc(doc);
+	return (version);
 }
 
 st_rss_t *
