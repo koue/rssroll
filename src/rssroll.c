@@ -58,6 +58,7 @@ write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
 void
 add_feed(int chan_id, char *item_url, char *item_title, char *item_desc,
 							time_t item_date) {
+	dmsg(0, "%s: %s", __func__, item_url);
 	db_multi_exec("INSERT INTO feeds (chanid, modified, link, title, "
 					"description, pubdate) "
 			"VALUES (%d, 0, '%q', '%q', '%q', '%ld')",
@@ -112,7 +113,7 @@ parse_body(int chan_id, char *rssfile) {
 }
 
 /* fetch rss file */
-int
+void
 fetch_channel(int chan_id, long chan_modified, const char *chan_link) {
 	CURL *curl_handle;
 	struct curl_slist *if_chan_modified = NULL;
@@ -121,7 +122,7 @@ fetch_channel(int chan_id, long chan_modified, const char *chan_link) {
 	long	http_code = 0;
 	int fd;
 
-	dmsg(0,"fetch_channel - %d, %ld, %s", chan_id, chan_modified, chan_link);
+	dmsg(0,"%s: %d, %ld, %s", __func__, chan_id, chan_modified, chan_link);
 
 	strftime(chan_last_modified_time, sizeof(chan_last_modified_time),
 		 "If-Modified-Since: %a, %d %b %Y %T %Z",
@@ -137,34 +138,39 @@ fetch_channel(int chan_id, long chan_modified, const char *chan_link) {
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
 
 	if ((fd = mkstemp(fn)) == -1) {
-		fprintf(stderr, "Cannot create temp file!\n");
-		return (0);
+		fprintf(stderr, "%s: Cannot create temp file: %s\n", __func__,
+								chan_link);
+		goto cleanup;
 	}
 	if (fchmod(fd, 0600)) {
-		fprintf(stderr, "Cannot set permission to temp file!\n");
-		return (0);
+		fprintf(stderr, "%s: Cannot set permission to temp file: %s\n",
+							__func__,  chan_link);
+		goto done;
 	}
 
 	if ((bodyfile = fdopen(fd, "w")) == NULL) {
-		curl_easy_cleanup(curl_handle);
-		fprintf(stderr, "Cannot open file for parsing!\n");
-		return (0);
+		fprintf(stderr, "%s: Cannot open file for parsing: %s\n",
+							__func__, chan_link);
+		goto done;
 	}
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, bodyfile);
 	curl_easy_perform(curl_handle);
 	curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
 	fclose(bodyfile);
-	curl_slist_free_all(if_chan_modified);
-	curl_easy_cleanup(curl_handle);
-	curl_global_cleanup();
 	if (http_code != 304)
 		parse_body(chan_id, fn);
 	else {
-		dmsg(0,"channel: id - %d, link - %s has not been changed.",
-							 chan_id, chan_link);
+		dmsg(0,"%s: id - %d, link - %s has not been changed.",
+						__func__, chan_id, chan_link);
 	}
+done:
 	unlink(fn);
-	return (1);
+cleanup:
+	dmsg(0, "%s: cleanup", __func__);
+	unlink(fn);
+	curl_slist_free_all(if_chan_modified);
+	curl_easy_cleanup(curl_handle);
+	curl_global_cleanup();
 }
 
 static void
@@ -206,11 +212,8 @@ main(int argc, char** argv){
 	dmsg(0,"database successfully loaded.");
 	db_prepare(&q, "SELECT id, modified, link FROM channels");
 	while(db_step(&q)==SQLITE_ROW) {
-		if (!fetch_channel(db_column_int(&q, 0), (long)db_column_int64(&q, 1),
-						db_column_text(&q, 2))) {
-			fprintf(stderr, "Error: cannot fetch channel %s.\n",
+		fetch_channel(db_column_int(&q, 0), (long)db_column_int64(&q, 1),
 							db_column_text(&q, 2));
-		}
 	}
 	db_finalize(&q);
 	sqlite3_close(g.db);
