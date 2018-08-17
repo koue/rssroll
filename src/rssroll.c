@@ -40,7 +40,7 @@
 
 #include "rss.h"
 
-#define RSSROLL_VERSION	"rssroll/0.6"
+#define RSSROLL_VERSION	"rssroll/0.6.1"
 
 int debug = 0;
 

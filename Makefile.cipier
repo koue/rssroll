@@ -1,7 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	rssroll
-PORTVERSION=	0.6
+PORTVERSION=	0.6.1
 CATEGORIES=	www
 #MASTER_SITES=	http://git.chaosophia.net/rssroll/snapshot/:rssroll \
 		http://git.chaosophia.net/libcez/snapshot/:libcez
