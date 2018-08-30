@@ -58,7 +58,7 @@ strptime2(char *s)
 	}
 	free(s);
 
-	memset (&time_tag, 0, sizeof (struct tm));
+	memset(&time_tag, 0, sizeof(struct tm));
 
 	if (*y)
 		time_tag.tm_year = strtol (y, NULL, 10) - 1900;
@@ -71,7 +71,7 @@ strptime2(char *s)
 	if (*min)
 		time_tag.tm_min = strtol (min, NULL, 10);
 
-	t = mktime (&time_tag);
+	t = mktime(&time_tag);
 
 	return (t);
 }
@@ -81,18 +81,16 @@ unsigned char *
 xml_get_value(xmlNode *n, const char *name)
 {
 	if (n)
-		if (xmlHasProp (n, (const unsigned char *) name))
-			return (xmlGetProp(n, (const unsigned char *) name));
+		if (xmlHasProp(n, (const unsigned char *)name))
+			return (xmlGetProp(n, (const unsigned char *)name));
 	return (NULL);
 }
 
 void
 rss_st_rss_t_sanity_check(st_rss_t *rss)
 {
-	int i = 0;
-
-	for (; i < rss->item_count; i++)
-		printf ("pos: %d\n"
+	for (int i = 0; i < rss->item_count; i++)
+		printf("pos: %d\n"
 			"title: %s\n"
 			"url: %s\n"
 			"date: %ld\n"
@@ -102,29 +100,30 @@ rss_st_rss_t_sanity_check(st_rss_t *rss)
 		rss->item[i].url,
 		rss->item[i].date,
 		rss->item[i].desc);
-	printf ("rss->item_count: %d\n\n", rss->item_count);
+	printf("rss->item_count: %d\n\n", rss->item_count);
 }
 
 static void
 rss_read_copy(char *d, xmlDoc *doc, xmlNode *n)
 {
-	dmsg(1,"rss_read_copy in");
-	char *p = (char *) xmlNodeGetContent(n);
+	dmsg(1, "%s: start", __func__);
+	char *p = (char *)xmlNodeGetContent(n);
 	if (p)
-		strncpy (d, p, RSSMAXBUFSIZE)[RSSMAXBUFSIZE-1] = 0;
+		strncpy(d, p, RSSMAXBUFSIZE)[RSSMAXBUFSIZE-1] = 0;
 	else
 		*d = 0;
-	dmsg(1,"rss_read_copy p: %s", p);
-	dmsg(1,"rss_read_copy ouy");
-	free(p);
+	dmsg(1, "%s: p: %s", __func__, p);
+	if (p)
+		free(p);
+	dmsg(1, "%s: end", __func__);
 }
 
 int
 rss_close(st_rss_t *rss)
 {
-	dmsg(1,"rss_close");
+	dmsg(1, __func__);
 	if (rss) {
-		free (rss);
+		free(rss);
 		rss = NULL;
 	}
 
@@ -134,19 +133,21 @@ rss_close(st_rss_t *rss)
 static void
 rss_channel(st_rss_t *rss, xmlDoc *doc, xmlNode *pnode)
 {
+	dmsg(1, "%s: start", __func__);
 	while (pnode) {
-		dmsg(1,"pnode->name: %s", (char *) pnode->name);
-		if (!strcmp ((char *) pnode->name, "title"))
+		dmsg(1, "%s: pnode->name: %s", __func__, (char *) pnode->name);
+		if (strcmp((char *)pnode->name, "title") == 0)
 			rss_read_copy(rss->title, doc, pnode->xmlChildrenNode);
-		else if (!strcmp ((char *) pnode->name, "description"))
+		else if (strcmp((char *)pnode->name, "description") == 0)
 			rss_read_copy (rss->desc, doc, pnode->xmlChildrenNode);
-		else if (!strcmp ((char *) pnode->name, "date") ||
-		    !strcmp ((char *) pnode->name, "pubDate") ||
-		    !strcmp ((char *) pnode->name, "dc:date"))
-			rss->date = strptime2((char *) xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
+		else if (strcmp((char *)pnode->name, "date") == 0||
+		    strcmp((char *)pnode->name, "pubDate") == 0 ||
+		    strcmp((char *) pnode->name, "dc:date") == 0)
+			rss->date = strptime2((char *)xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
 
 		pnode = pnode->next;
 	}
+	dmsg(1, "%s: end", __func__);
 }
 
 static void
@@ -157,6 +158,7 @@ rss_entry(st_rss_item_t *item, xmlDoc *doc, xmlNode *pnode)
 
 	*link = *guid = 0;
 
+	dmsg(1, "%s: start", __func__);
 	while (pnode) {
 		while (pnode && xmlIsBlankNode(pnode))
 			pnode = pnode->next;
@@ -164,10 +166,10 @@ rss_entry(st_rss_item_t *item, xmlDoc *doc, xmlNode *pnode)
 		if (pnode == NULL)
 			break;
 
-		dmsg(1,"%s\n", (char *)pnode->name);
-		if (!strcmp((char *)pnode->name, "title")) {
+		dmsg(1, "%s\n", (char *)pnode->name);
+		if (strcmp((char *)pnode->name, "title") == 0) {
 			rss_read_copy(item->title, doc, pnode->xmlChildrenNode);
-		} else if (!strcmp((char *)pnode->name, "link")) {
+		} else if (strcmp((char *)pnode->name, "link") == 0) {
 			p = (char *)xml_get_value(pnode, "rel");	// atom
 			if (p) {
 				if (strcmp(p, "alternate") == 0) {
@@ -179,7 +181,7 @@ rss_entry(st_rss_item_t *item, xmlDoc *doc, xmlNode *pnode)
 			} else {
 				rss_read_copy(link, doc, pnode->xmlChildrenNode); //rss
 			}
-		} else if (!strcmp((char *)pnode->name, "guid") && (!(*link))) {
+		} else if (strcmp((char *)pnode->name, "guid") == 0 && (!(*link))) {
 			rss_read_copy(guid, doc, pnode->xmlChildrenNode);
 		} else if (!strcmp((char *)pnode->name, "description")) {
 			rss_read_copy(item->desc, doc, pnode->xmlChildrenNode);
@@ -204,11 +206,13 @@ rss_entry(st_rss_item_t *item, xmlDoc *doc, xmlNode *pnode)
 		strlcpy(item->url, guid, sizeof(item->url));
 	else
 		*(item->url) = 0;
+	dmsg(1, "%s: end", __func__);
 }
 
 static void
 rss_head(st_rss_t *rss, xmlDoc *doc, xmlNode *node)
 {
+	dmsg(1, "%s: start", __func__);
 	while (node) {
 		while (node && xmlIsBlankNode(node))
 			node = node->next;
@@ -216,7 +220,7 @@ rss_head(st_rss_t *rss, xmlDoc *doc, xmlNode *node)
 		if (node == NULL)
 			break;
 
-		dmsg(1,"node->name: %s", (char *)node->name);
+		dmsg(1, "%s: node->name: %s", __func__, (char *)node->name);
 		if (!strcmp((char *)node->name, "title"))
 			rss_read_copy(rss->title, doc, node->xmlChildrenNode);
 		else if (!strcmp((char *)node->name, "description"))
@@ -238,6 +242,7 @@ rss_head(st_rss_t *rss, xmlDoc *doc, xmlNode *node)
 		}
 	node = node->next;
 	}
+	dmsg(1, "%s: end", __func__);
 }
 
 static st_rss_t *
@@ -246,48 +251,44 @@ rss_parse(st_rss_t *rss)
 	xmlDoc *doc;
 	xmlNode *node;
 
-	dmsg(1,"%s: start", __func__);
+	dmsg(1, "%s: start", __func__);
 	if ((doc = xmlParseFile(rss->url)) == NULL) {
 		fprintf(stderr, "%s: cannot read %s\n", __func__, rss->url);
 		return (NULL);
-	}
-	if ((node = xmlDocGetRootElement(doc)) == NULL) {
+	} else if ((node = xmlDocGetRootElement(doc)) == NULL) {
 		fprintf (stderr, "%s: empty document %s\n", __func__, rss->url);
 		xmlFreeDoc(doc);
 		return (NULL);
 	}
 
-	dmsg(1,"%s: rss->url %s", __func__, rss->url);
-	dmsg(1,"%s: node->name: %s", __func__, (char *)node->name);
+	dmsg(1, "%s: rss->url %s", __func__, rss->url);
+	dmsg(1, "%s: node->name: %s", __func__, (char *)node->name);
 
 	node = node->xmlChildrenNode;
 	while (node && xmlIsBlankNode(node))
 		node = node->next;
 
 	if (node == NULL) {
-		fprintf (stderr, "%s: bad document %s\n", __func__,
-								rss->url);
+		fprintf(stderr, "%s: bad document %s\n", __func__, rss->url);
 		xmlFreeDoc(doc);
 		return (NULL);
-	}
-
-	if (rss->version < ATOM_V0_1) {
+	} else if (rss->version < ATOM_V0_1) {
 		if (strcmp((char *)node->name, "channel")) {
 			fprintf (stderr, "%s: bad document: channel missing %s\n",
 							__func__, rss->url);
 			return (NULL);
-		}
-		if (rss->version != RSS_V1_0) // document is RSS
+		} else if (rss->version != RSS_V1_0) // document is RSS
 			node = node->xmlChildrenNode;
 	}
 
 	rss_head(rss, doc, node);
-	if(debug > 1) {
+	if (debug > 1) {
 		rss_st_rss_t_sanity_check(rss);
 		fflush(stdout);
 	}
 
 	xmlFreeDoc(doc);
+	dmsg(1, "%s: end", __func__);
 	return (rss);
 }
 
@@ -299,31 +300,30 @@ rss_demux(const char *fname)
 	int version = -1;
 	char *p = NULL;
 
-	dmsg(1,"%s: start %s", __func__, fname);
+	dmsg(1, "%s: start %s", __func__, fname);
 	if ((doc = xmlParseFile(fname)) == NULL) {
 		fprintf(stderr, "%s: cannot read %s\n", __func__, fname);
 		goto done;
 	}
 
-	node = xmlDocGetRootElement(doc);
-	if (node == NULL)
+	if ((node = xmlDocGetRootElement(doc)) == NULL)
 		goto done;
-	if ((char *)node->name == NULL)
+	else if ((char *)node->name == NULL)
 		goto done;
-	if (strcmp((char *)node->name, "html") == 0) // not xml
+	else if (strcmp((char *)node->name, "html") == 0) // not xml
 		goto done;
-	if (strcmp((char *)node->name, "feed") == 0) {
+	else if (strcmp((char *)node->name, "feed") == 0) {
 		version = ATOM_V0_1;	//default
 		if ((p = (char *)xml_get_value(node, "version")) == NULL)
 			goto done;
-		if (strcmp(p, "0.3") == 0)
+		else if (strcmp(p, "0.3") == 0)
 			version = ATOM_V0_3;
 		else if (strcmp(p, "0.2") == 0)
 			version = ATOM_V0_2;
 	} else if (strcmp((char *)node->name, "rss") == 0) {
 		if ((p = (char *)xml_get_value(node, "version")) == NULL)
 			goto done;
-		if (strcmp(p, "0.91") == 0)
+		else if (strcmp(p, "0.91") == 0)
 			version = RSS_V0_91;
 		else if (strcmp(p, "0.92") == 0)
 			version = RSS_V0_92;
@@ -342,6 +342,7 @@ done:
 	if (p != NULL)
 		free(p);
 	xmlFreeDoc(doc);
+	dmsg(1, "%s: end", __func__);
 	return (version);
 }
 
@@ -350,8 +351,9 @@ rss_open(const char *fname)
 {
 	st_rss_t *rss = NULL;
 
-	dmsg(1,"rss_open %s\n", fname);
-	if (!(rss = malloc(sizeof (st_rss_t))))
+	dmsg(1, "%s: start", __func__);
+	dmsg(1, "%s: %s", __func__, fname);
+	if ((rss = malloc(sizeof(st_rss_t))) == NULL)
 		return (NULL);
 
 	memset(rss, 0, sizeof(st_rss_t));
@@ -361,9 +363,10 @@ rss_open(const char *fname)
 	rss->version = rss_demux(fname);
 
 	if (rss->version == -1) {
-		fprintf (stderr, "ERROR: uknown feed format %s.\n", rss->url);
+		fprintf(stderr, "ERROR: uknown feed format %s.\n", rss->url);
 		return (NULL);
 	}
+	dmsg(1, "%s: end", __func__);
 	return rss_parse(rss);
 }
 
