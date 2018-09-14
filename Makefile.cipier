@@ -25,7 +25,7 @@ GH_TAGNAME=	${CEZ_VERSION}:libcez
 USES=		sqlite:3
 USE_GNOME=	libxml2
 
-CLFAGS+=	-I${WRKSRC_libcez}/src/config \
+CFLAGS+=	-I${WRKSRC_libcez}/src/config \
 		-I${WRKSRC_libcez}/src/fossil
 
 LDFLAGS+=	-L${WRKSRC_libcez}/src/config \
