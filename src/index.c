@@ -46,8 +46,6 @@
 
 #include "rss.h"
 
-#include "config.h"
-
 #define cnf_lookup config_queue_value_get
 
 Global g;
@@ -56,7 +54,7 @@ static char		query_string[10];
 unsigned long		query_category = 1;
 unsigned long		query_limit = 0;
 static gzFile		gz = NULL;
-static char		*rssrollrc = "/usr/local/etc/rssrollrc";
+static char		*rssrollrc = "/etc/rssrollrc";
 static unsigned long	callback_result = 0;
 
 static char *params[] = { "category", "feeds", "ct_html", "dbpath", "desc",
