@@ -1,0 +1,7 @@
+src/*.o
+src/rssroll
+src/index.cgi
+src/.depend*
+src/*.core
+tidy.txt
+compile_commands.json
