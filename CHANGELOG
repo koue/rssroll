@@ -1,8 +1,14 @@
 # rssroll CHANGELOG
-# v 0.6
+# v 0.6.2
 # Nikola Kolev <koue@chaosophia.net>
 # http://chaosophia.net/rssroll/
 #
+
+Changes 0.6.2	(2018.09.14):
+
+- Drop cmake. Start using FreeBSD make.
+- Install all files in '/var/www'.
+- Create chroot environment.
 
 Changes 0.6	(2018.02.07):
 

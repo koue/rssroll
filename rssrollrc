@@ -14,7 +14,7 @@ owner=dont@blame.me
 ct_html=Content-Type: text/html; charset=utf-8
 
 # path to the html files
-htmldir=/usr/local/www/data/rssroll/html
+htmldir=/opt/rssroll/html
 
 # web theme
 webtheme=flak

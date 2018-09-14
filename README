@@ -1,5 +1,5 @@
 	rssroll - rss collector written in c
-	version 0.6.1 of 17 August 2018
+	version 0.6.2 of 14 September 2018
 
 rssroll is rss crawler which fetchs rss feeds and stores them into sqlite3 database.
 There is web interface for browsing stored feeds which are grouped by category.

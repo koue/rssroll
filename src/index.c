@@ -57,8 +57,8 @@ static gzFile		gz = NULL;
 static char		*rssrollrc = "/etc/rssrollrc";
 static unsigned long	callback_result = 0;
 
-static char *params[] = { "category", "feeds", "ct_html", "dbpath", "desc",
-    "htmldir", "name", "owner", "url", "webtheme", NULL };
+static char *params[] = { "category", "feeds", "ct_html", "dbpath", "htmldir",
+    "name", "owner", "url", "webtheme", NULL };
 
 typedef	void (*render_cb)(const char *, const st_rss_item_t *);
 

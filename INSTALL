@@ -1,21 +1,27 @@
-To configure:
-
-	# mkdir build && cd build/ && cmake ../
-
 To build:
 
 	# make
 
+To test:
+
+	# make test
+
+To create chroot tree:
+
+	# make chroot
+
+	Will create chroot tree with all libraries in '/var/www'. Use Makefile
+	as reference.
+
 To install:
 
 	# make install
-	# cp src/index.cgi /path/to/www/cgi
-	# cp -rv html /path/to/www/rssroll/files/
 
+	Install all files in '/var/www'.
 
 To setup:
 
-	# vi /usr/local/etc/rssrollrc
+	# vi /var/www/etc/rssrollrc
 	Edit config file and add proper options.
 
 	# sqlite3 PATH_TO_SQLITE_DB < scripts/create_database.sql
@@ -30,10 +36,10 @@ To setup:
 	# sqlite3 PATH_TO_SQLITE_DB "insert into channels (catid, modified, link) values (2, 123456, 'http://www.freebsd.org/security/rss.xml')"
 	Add RSS URL for tracing.
 
-	# /usr/local/bin/rssroll -d PATH_TO_SQLITE_DB
+	# chroot -u www -g www /var/www /bin/rssroll -d PATH_TO_SQLITE_DB
 	Run rssroll to fetch feeds.
 
 	Load index.cgi into your web browser.
 
 	Add rssroll into crontab
-	51	9,17	*	*	*	root	/usr/local/bin/rssroll -d PATH_TO_SQLITE_DB
+	51	9,17	*	*	*	root	chroot -u www -g www /var/www /bin/rssroll -d PATH_TO_SQLITE_DB
