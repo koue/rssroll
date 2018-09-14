@@ -28,21 +28,21 @@
  *
  */
 
-#include <sys/file.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <time.h>
 #include <cez_config.h>
 #include <cez_fossil.h>
 #include <ctype.h>
 #include <errno.h>
+#include <sqlite3.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/file.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 #include <zlib.h>
-#include <sqlite3.h>
 
 #include "rss.h"
 
@@ -64,7 +64,7 @@ typedef	void (*render_cb)(const char *, const st_rss_item_t *);
 
 static void	 render_error(const char *fmt, ...);
 static int	 render_html(const char *html_fn, render_cb r,
-						const st_rss_item_t *e);
+		     const st_rss_item_t *e);
 static void	 render_front(const char *m, const st_rss_item_t *e);
 static void	 render_front_feed(const char *m, const st_rss_item_t *e);
 static const char *rfc822_time(time_t t);
@@ -79,16 +79,19 @@ d_printf(const char *fmt, ...)
 	va_start(ap, fmt);
 	r = vsnprintf(s, sizeof(s), fmt, ap);
 	va_end(ap);
-	if (r < 0 || r >= sizeof(s))
+	if (r < 0 || r >= sizeof(s)) {
 		printf("error d_printf: vsnprintf: r %d (%d)", r,
-							(int)sizeof(s));
+		    (int)sizeof(s));
+	}
 	if (gz != NULL) {
 		r = gzputs(gz, s);
-		if (r != strlen(s))
+		if (r != strlen(s)) {
 			printf("error d_printf: gzputs: r %d (%d)",
 			    r, (int)strlen(s));
-	} else
+		}
+	} else {
 		fprintf(stdout, "%s", s);
+	}
 }
 
 static void
@@ -115,9 +118,9 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 	char s[8192];
 	Stmt q;
 
-	if ((f = fopen(html_fn, "r")) == NULL) {
+	if ((f = fopen(html_fn, "re")) == NULL) {
 		d_printf("ERROR: fopen: %s: %s<br>\n", html_fn,
-							strerror(errno));
+		    strerror(errno));
 		return (1);
 	}
 	while (fgets(s, sizeof(s), f)) {
@@ -128,34 +131,35 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 			a = b + 2;
 			if ((b = strstr(a, "%%")) != NULL) {
 				*b = 0;
-				if (!strcmp(a, "RSSROLL_BASEURL"))
+				if (strcmp(a, "RSSROLL_BASEURL") == 0) {
 					d_printf("%s", cnf_lookup("url"));
-				else if (!strcmp(a, "RSSROLL_NAME"))
+				} else if (strcmp(a, "RSSROLL_NAME") == 0) {
 					d_printf("%s", cnf_lookup("name"));
-				else if (!strcmp(a, "RSSROLL_OWNER"))
+				} else if (strcmp(a, "RSSROLL_OWNER") == 0) {
 					d_printf("%s", cnf_lookup("owner"));
-				else if (!strcmp(a, "RSSROLL_CTYPE"))
+				} else if (strcmp(a, "RSSROLL_CTYPE") == 0) {
 					d_printf("%s", cnf_lookup("ct_html"));
-				else if (!strcmp(a, "RSSROLL_CATEGORIES")){
+				} else if (strcmp(a, "RSSROLL_CATEGORIES") == 0) {
 					db_prepare(&q, "SELECT id, title FROM categories");
 					while(db_step(&q)==SQLITE_ROW) {
 						d_printf("<p><a href='%s?%d'>%s</a></p>",
-							cnf_lookup("url"), db_column_int(&q, 0), db_column_text(&q, 1));
+						    cnf_lookup("url"), db_column_int(&q, 0), db_column_text(&q, 1));
 					}
 					db_finalize(&q);
-				} else if (!strcmp(a, "PREV")) {
-					if (callback_result == atoi(cnf_lookup("feeds")))	{
+				} else if (strcmp(a, "PREV") == 0) {
+					if (callback_result == strtol(cnf_lookup("feeds"), (char **)NULL, 10)) {
 						d_printf("<a href='%s?%ld/%ld'> <<< </a>",
-							cnf_lookup("url"), query_category, query_limit + atoi(cnf_lookup("feeds")));
+						    cnf_lookup("url"), query_category, query_limit + strtol(cnf_lookup("feeds"), (char **)NULL, 10));
 					}
-				} else if (!strcmp(a, "NEXT")) {
+				} else if (strcmp(a, "NEXT") == 0) {
 					if (query_limit) {
 						d_printf("<a href='%s?%ld/%ld'> >>> </a>",
-							cnf_lookup("url"), query_category, query_limit - atoi(cnf_lookup("feeds")));
+						    cnf_lookup("url"), query_category, query_limit - strtol(cnf_lookup("feeds"), (char **)NULL, 10));
 					}
 				}
-				else if (r != NULL)
+				else if (r != NULL) {
 					(*r)(a, e);
+				}
 				a = b + 2;
 			}
 		}
@@ -172,55 +176,57 @@ render_front(const char *m, const st_rss_item_t *e)
 	Stmt q;
 	st_rss_item_t	rss_item;
 
-	if (!strcmp(m, "FEEDS")) {
+	if (strcmp(m, "FEEDS") == 0) {
 		db_prepare(&q, "SELECT id, modified, link, title, description, pubdate "
 				"FROM feeds WHERE chanid IN (select id from channels where catid = '%ld') "
 				"ORDER BY id DESC LIMIT '%ld', '%d'",
-				query_category, query_limit, atoi(cnf_lookup("feeds")));
-		while(db_step(&q)==SQLITE_ROW) {
+				query_category, query_limit, strtol(cnf_lookup("feeds"), (char **)NULL, 10));
+		while (db_step(&q)==SQLITE_ROW) {
 			/* PREV option */
 			callback_result++;
 			snprintf(fn, sizeof(fn), "%s/%s/feed.html",
-					cnf_lookup("htmldir"), cnf_lookup("webtheme"));
+			    cnf_lookup("htmldir"), cnf_lookup("webtheme"));
 			snprintf(rss_item.title, sizeof(rss_item.title), "%s",
-							db_column_text(&q, 3));
+			    db_column_text(&q, 3));
 			snprintf(rss_item.url, sizeof(rss_item.url), "%s",
-							db_column_text(&q, 2));
+			    db_column_text(&q, 2));
 			snprintf(rss_item.desc, sizeof(rss_item.desc), "%s",
-							db_column_text(&q, 4));
+			    db_column_text(&q, 4));
 			rss_item.date = db_column_int64(&q, 5);
 			render_html(fn, &render_front_feed, &rss_item);
 		}
 		db_finalize(&q);
-	} else if (!strcmp(m, "HEADER")) {
+	} else if (strcmp(m, "HEADER") == 0) {
 		snprintf(fn, sizeof(fn), "%s/%s/header.html", cnf_lookup("htmldir"),
-							cnf_lookup("webtheme"));
+		    cnf_lookup("webtheme"));
 		render_html(fn, NULL, NULL);
-	} else if (!strcmp(m, "FOOTER")) {
+	} else if (strcmp(m, "FOOTER") == 0) {
 		snprintf(fn, sizeof(fn), "%s/%s/footer.html", cnf_lookup("htmldir"),
-							cnf_lookup("webtheme"));
+		    cnf_lookup("webtheme"));
 		render_html(fn, NULL, NULL);
-	} else
+	} else {
 		d_printf("render_front: unknown macro '%s'<br>\n", m);
+	}
 }
 
 static void
 render_front_feed(const char *m, const st_rss_item_t *e)
 {
-	if (!strcmp(m, "PUBDATE")) {
+	if (strcmp(m, "PUBDATE") == 0) {
 		d_printf("%s", ctime(&e->date));
-	} else  if (!strcmp(m, "TITLE")) {
+	} else if (strcmp(m, "TITLE") == 0) {
 		d_printf("%s", e->title);
-	} else if (!strcmp(m, "DESCRIPTION")) {
+	} else if (strcmp(m, "DESCRIPTION") == 0) {
 		d_printf("%s", e->desc);
-	} else if (!strcmp(m, "URL")) {
+	} else if (strcmp(m, "URL") == 0) {
 		d_printf("%s", e->url);
-	} else if (!strcmp(m, "CHANNEL")) {
+	} else if (strcmp(m, "CHANNEL") == 0) {
 		char domain[64];
 		sscanf(e->url, "%*[^//]//%63[^/]", domain);
 		d_printf("%s", domain);
-	} else
+	} else {
 		d_printf("render_front_feed: unknown macro '%s'<br>\n", m);
+	}
 }
 
 static const char *
@@ -249,35 +255,18 @@ rfc822_time(time_t t)
 static time_t
 convert_rfc822_time(const char *date)
 {
-	const char *mns[13] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul",
-	    "Aug", "Sep", "Oct", "Nov", "Dec", NULL };
-	char wd[4], mn[4], zone[16];
-	int d, h, m, s, y, i;
 	struct tm tm;
 	time_t t;
 
-	if (sscanf(date, "%3s, %d %3s %d %d:%d:%d %15s",
-	    wd, &d, mn, &y, &h, &m, &s, zone) != 8)
-		return (0);
-	for (i = 0; mns[i] != NULL; ++i)
-		if (!strcmp(mns[i], mn))
-			break;
-	if (mns[i] == NULL)
-		return (0);
-	memset(&tm, 0, sizeof(tm));
-	tm.tm_year = y - 1900;
-	tm.tm_mon = i;
-	tm.tm_mday = d;
-	tm.tm_hour = h;
-	tm.tm_min = m;
-	tm.tm_sec = s;
-	tm.tm_zone = zone;
+	strptime(date, "%a, %e %h %Y %H:%M:%S %z", &tm);
+
 	t = mktime(&tm);
 	return (t);
 }
 
 int
-config_check(void) {
+config_check(void)
+{
 	int i;
 
 	for (i = 0; params[i] != NULL; ++i) {
@@ -291,7 +280,7 @@ config_check(void) {
 }
 
 int
-main(int argc, char *argv[])
+main(void)
 {
 	const char *s, *query_args;
 	time_t if_modified_since = 0;
@@ -302,8 +291,9 @@ main(int argc, char *argv[])
 		render_error("error: cannot open config file: %s", rssrollrc);
 		goto done;
 	}
-	if (config_check() == -1)
+	if (config_check() == -1) {
 		goto done;
+	}
 	if (chdir("/tmp")) {
 		printf("error main: chdir: /tmp: %s", strerror(errno));
 		render_error("chdir: /tmp: %s", strerror(errno));
@@ -347,22 +337,25 @@ main(int argc, char *argv[])
 
 	if ((s = getenv("IF_MODIFIED_SINCE")) != NULL) {
 		if_modified_since = convert_rfc822_time(s);
-		if (!if_modified_since)
+		if (if_modified_since <= 0) {
 			if_modified_since =
 			    (time_t)strtoul(s, NULL, 10);
-		if (!if_modified_since)
+		}
+		if (if_modified_since <= 0) {
 			printf("warning main: invalid IF_MODIFIED_SINCE '%s'", s);
+		}
 	}
 	if ((s = getenv("HTTP_ACCEPT_ENCODING")) != NULL) {
 		char *p = strstr(s, "gzip");
 
-		if (p != NULL && (strncmp(p, "gzip;q=0", 8) ||
-		    atoi(p + 7) > 0.0)) {
+		if (p != NULL && ((strncmp(p, "gzip;q=0", 8) != 0) ||
+		    strtol(p + 7, (char **)NULL, 10)  > 0.0)) {
 			gz = gzdopen(fileno(stdout), "wb9");
-			if (gz == NULL)
+			if (gz == NULL) {
 				printf("error main: gzdopen");
-			else
+			} else {
 				printf("Content-Encoding: gzip\r\n");
+			}
 		}
 	}
 
@@ -375,11 +368,13 @@ main(int argc, char *argv[])
 
 done:
 	if (gz != NULL) {
-		if (gzclose(gz) != Z_OK)
+		if (gzclose(gz) != Z_OK) {
 			printf("error main: gzclose");
+		}
 		gz = NULL;
-	} else
+	} else {
 		fflush(stdout);
+	}
 
 	config_queue_purge();
 	sqlite3_close(g.db);
