@@ -10,7 +10,7 @@ CFLAGS+=	-Werror \
 		-I/usr/local/include/libxml2
 LDFLAGS+=	-L/usr/local/lib
 LDADD.rssroll=	-lz -lcezconfig -lcezfossil -lsqlite3 -lxml2 -lcurl
-LDADD.index.cgi=-lz -lcezconfig -lcezfossil -lsqlite3
+LDADD.index.cgi=-lz -lcezconfig -lcezfossil -lcezmisc -lsqlite3
 
 MAN=
 

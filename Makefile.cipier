@@ -15,7 +15,7 @@ LICENSE=	BSD2CLAUSE
 
 LIB_DEPENDS=	libcurl.so:ftp/curl
 
-CEZ_VERSION=	1.01
+CEZ_VERSION=	1.04
 USE_GITHUB=	yes
 GH_ACCOUNT=	koue
 GH_PROJECT=	rssroll:rssroll \
@@ -26,10 +26,12 @@ USES=		sqlite:3
 USE_GNOME=	libxml2
 
 CFLAGS+=	-I${WRKSRC_libcez}/src/config \
-		-I${WRKSRC_libcez}/src/fossil
+		-I${WRKSRC_libcez}/src/fossil \
+		-I${WRKSRC_libcez}/src/misc
 
 LDFLAGS+=	-L${WRKSRC_libcez}/src/config \
-		-L${WRKSRC_libcez}/src/fossil
+		-L${WRKSRC_libcez}/src/fossil \
+		-L${WRKSRC_libcez}/src/misc
 
 PLIST_SUB+=	WWWOWN=${WWWOWN} WWWGRP=${WWWGRP}
 

@@ -30,6 +30,7 @@
 
 #include <cez_config.h>
 #include <cez_fossil.h>
+#include <cez_misc.h>
 #include <ctype.h>
 #include <errno.h>
 #include <sqlite3.h>
@@ -67,7 +68,6 @@ static int	 render_html(const char *html_fn, render_cb r,
 		     const st_rss_item_t *e);
 static void	 render_front(const char *m, const st_rss_item_t *e);
 static void	 render_front_feed(const char *m, const st_rss_item_t *e);
-static const char *rfc822_time(time_t t);
 
 static void
 d_printf(const char *fmt, ...)
@@ -227,41 +227,6 @@ render_front_feed(const char *m, const st_rss_item_t *e)
 	} else {
 		d_printf("render_front_feed: unknown macro '%s'<br>\n", m);
 	}
-}
-
-static const char *
-rfc822_time(time_t t)
-{
-	static char s[30], *p;
-
-	p = ctime(&t);
-	if (p == NULL || strlen(p) != 25) {
-		strlcpy(s, "<invalid-time>", sizeof(s));
-		return (s);
-	}
-	/* Thu Nov 24 18:22:48 1986\n */
-	/* Wed, 02 Oct 2002 13:00:00 GMT */
-	strlcpy(s, p, 4);
-	strlcat(s, ", ", 6);
-	strlcat(s, p + 8, 9);
-	strlcat(s, p + 4, 13);
-	strlcat(s, p + 20, 17);
-	strlcat(s, " ", 18);
-	strlcat(s, p + 11, 26);
-	strlcat(s, " GMT", 30);
-	return (s);
-}
-
-static time_t
-convert_rfc822_time(const char *date)
-{
-	struct tm tm;
-	time_t t;
-
-	strptime(date, "%a, %e %h %Y %H:%M:%S %z", &tm);
-
-	t = mktime(&tm);
-	return (t);
 }
 
 int
