@@ -17,7 +17,4 @@ Status:
 -------
 master | develop
 -------|--------
-[![Build Status](https://cipier.net/status/koue/rssroll/master)]
-(https://cipier.net/status/koue/rssroll/master) |
-[![Build Status](https://cipier.net/status/koue/rssroll/develop)]
-(https://cipier.net/status/koue/rssroll/develop)
+[![Build Status](https://cipier.net/status/koue/rssroll/master)](https://cipier.net/status/koue/rssroll/master) | [![Build Status](https://cipier.net/status/koue/rssroll/develop)](https://cipier.net/status/koue/rssroll/develop)
