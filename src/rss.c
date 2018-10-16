@@ -98,7 +98,7 @@ rss_st_rss_t_sanity_check(st_rss_t *rss)
 		i,
 		rss->item[i].title,
 		rss->item[i].url,
-		rss->item[i].date,
+		(long)rss->item[i].date,
 		rss->item[i].desc);
 	printf("rss->item_count: %d\n\n", rss->item_count);
 }

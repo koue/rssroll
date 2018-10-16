@@ -118,7 +118,7 @@ parse_body(int chan_id, char *rssfile)
 
 /* fetch rss file */
 void
-fetch_channel(int chan_id, long chan_modified, const char *chan_link)
+fetch_channel(int chan_id, time_t chan_modified, const char *chan_link)
 {
 	CURL *curl_handle;
 	struct curl_slist *if_chan_modified = NULL;
@@ -219,7 +219,7 @@ main(int argc, char** argv)
 	dmsg(0,"database successfully loaded.");
 	db_prepare(&q, "SELECT id, modified, link FROM channels");
 	while (db_step(&q)==SQLITE_ROW) {
-		fetch_channel(db_column_int(&q, 0), (long)db_column_int64(&q, 1),
+		fetch_channel(db_column_int(&q, 0), (time_t)db_column_int64(&q, 1),
 		    db_column_text(&q, 2));
 	}
 	db_finalize(&q);
