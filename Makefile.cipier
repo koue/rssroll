@@ -36,7 +36,9 @@ LDFLAGS+=	-L${WRKSRC_libcez}/src/fossil \
 PLIST_SUB+=	WWWOWN=${WWWOWN} WWWGRP=${WWWGRP}
 
 pre-configure:
-	@(cd ${WRKSRC_libcez} && ${SETENV} ${MAKE_ENV} ${MAKE})
+	@(cd ${WRKSRC_libcez}/src/fossil && ${SETENV} ${MAKE_ENV} ${MAKE})
+	@(cd ${WRKSRC_libcez}/src/misc && ${SETENV} ${MAKE_ENV} ${MAKE})
+	@(cd ${WRKSRC_libcez}/src/queue && ${SETENV} ${MAKE_ENV} ${MAKE})
 
 post-patch:
 	@${REINPLACE_CMD} -e "s|/etc/rssrollrc|${PREFIX}/etc/rssrollrc|" \
