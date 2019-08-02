@@ -1,7 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	rssroll
-PORTVERSION=	0.6.2
+PORTVERSION=	0.6.3
 CATEGORIES=	www
 #MASTER_SITES=	http://git.chaosophia.net/rssroll/snapshot/:rssroll \
 		http://git.chaosophia.net/libcez/snapshot/:libcez
@@ -15,7 +15,7 @@ LICENSE=	BSD2CLAUSE
 
 LIB_DEPENDS=	libcurl.so:ftp/curl
 
-CEZ_VERSION=	1.05
+CEZ_VERSION=	1.09
 USE_GITHUB=	yes
 GH_ACCOUNT=	koue
 GH_PROJECT=	rssroll:rssroll \
@@ -25,18 +25,22 @@ GH_TAGNAME=	${CEZ_VERSION}:libcez
 USES=		sqlite:3
 USE_GNOME=	libxml2
 
-CFLAGS+=	-I${WRKSRC_libcez}/src/config \
-		-I${WRKSRC_libcez}/src/fossil \
-		-I${WRKSRC_libcez}/src/misc
+CFLAGS+=	-I${WRKSRC_libcez}/src/fossil \
+		-I${WRKSRC_libcez}/src/misc \
+		-I${WRKSRC_libcez}/src/queue
 
-LDFLAGS+=	-L${WRKSRC_libcez}/src/config \
-		-L${WRKSRC_libcez}/src/fossil \
-		-L${WRKSRC_libcez}/src/misc
+LDFLAGS+=	-L${WRKSRC_libcez}/src/fossil \
+		-L${WRKSRC_libcez}/src/misc \
+		-L${WRKSRC_libcez}/src/queue
 
 PLIST_SUB+=	WWWOWN=${WWWOWN} WWWGRP=${WWWGRP}
 
 pre-configure:
 	@(cd ${WRKSRC_libcez} && ${SETENV} ${MAKE_ENV} ${MAKE})
+
+post-patch:
+	@${REINPLACE_CMD} -e "s|/etc/rssrollrc|${PREFIX}/etc/rssrollrc|" \
+		${WRKSRC}/src/index.c
 
 do-install:
 	${INSTALL_PROGRAM} ${WRKSRC}/src/rssroll ${STAGEDIR}${PREFIX}/bin

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2012-2019 Nikola Kolev <koue@chaosophia.net>
  * Copyright (c) 2004-2006 Daniel Hartmeier. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,9 +28,9 @@
  *
  */
 
-#include <cez_config.h>
 #include <cez_fossil.h>
 #include <cez_misc.h>
+#include <cez_queue.h>
 #include <ctype.h>
 #include <errno.h>
 #include <sqlite3.h>
@@ -47,8 +47,6 @@
 
 #include "rss.h"
 
-#define cnf_lookup config_queue_value_get
-
 Global g;
 
 static char		query_string[10];
@@ -58,8 +56,9 @@ static gzFile		gz = NULL;
 static char		*rssrollrc = "/etc/rssrollrc";
 static unsigned long	callback_result = 0;
 
-static char *params[] = { "category", "feeds", "ct_html", "dbpath", "htmldir",
-    "name", "owner", "url", "webtheme", NULL };
+static struct 		cez_queue config;
+static const char *params[] = { "category", "feeds", "ct_html", "dbpath",
+    "htmldir", "name", "owner", "url", "webtheme", NULL };
 
 typedef	void (*render_cb)(const char *, const st_rss_item_t *);
 
@@ -132,29 +131,29 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 			if ((b = strstr(a, "%%")) != NULL) {
 				*b = 0;
 				if (strcmp(a, "RSSROLL_BASEURL") == 0) {
-					d_printf("%s", cnf_lookup("url"));
+					d_printf("%s", cez_queue_get(&config, "url"));
 				} else if (strcmp(a, "RSSROLL_NAME") == 0) {
-					d_printf("%s", cnf_lookup("name"));
+					d_printf("%s", cez_queue_get(&config, "name"));
 				} else if (strcmp(a, "RSSROLL_OWNER") == 0) {
-					d_printf("%s", cnf_lookup("owner"));
+					d_printf("%s", cez_queue_get(&config, "owner"));
 				} else if (strcmp(a, "RSSROLL_CTYPE") == 0) {
-					d_printf("%s", cnf_lookup("ct_html"));
+					d_printf("%s", cez_queue_get(&config, "ct_html"));
 				} else if (strcmp(a, "RSSROLL_CATEGORIES") == 0) {
 					db_prepare(&q, "SELECT id, title FROM categories");
 					while(db_step(&q)==SQLITE_ROW) {
 						d_printf("<p><a href='%s?%d'>%s</a></p>",
-						    cnf_lookup("url"), db_column_int(&q, 0), db_column_text(&q, 1));
+						    cez_queue_get(&config, "url"), db_column_int(&q, 0), db_column_text(&q, 1));
 					}
 					db_finalize(&q);
 				} else if (strcmp(a, "PREV") == 0) {
-					if (callback_result == strtol(cnf_lookup("feeds"), (char **)NULL, 10)) {
+					if (callback_result == strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10)) {
 						d_printf("<a href='%s?%ld/%ld'> <<< </a>",
-						    cnf_lookup("url"), query_category, query_limit + strtol(cnf_lookup("feeds"), (char **)NULL, 10));
+						    cez_queue_get(&config, "url"), query_category, query_limit + strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10));
 					}
 				} else if (strcmp(a, "NEXT") == 0) {
 					if (query_limit) {
 						d_printf("<a href='%s?%ld/%ld'> >>> </a>",
-						    cnf_lookup("url"), query_category, query_limit - strtol(cnf_lookup("feeds"), (char **)NULL, 10));
+						    cez_queue_get(&config, "url"), query_category, query_limit - strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10));
 					}
 				}
 				else if (r != NULL) {
@@ -180,12 +179,12 @@ render_front(const char *m, const st_rss_item_t *e)
 		db_prepare(&q, "SELECT id, modified, link, title, description, pubdate "
 				"FROM feeds WHERE chanid IN (select id from channels where catid = '%ld') "
 				"ORDER BY id DESC LIMIT '%ld', '%d'",
-				query_category, query_limit, strtol(cnf_lookup("feeds"), (char **)NULL, 10));
+				query_category, query_limit, strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10));
 		while (db_step(&q)==SQLITE_ROW) {
 			/* PREV option */
 			callback_result++;
 			snprintf(fn, sizeof(fn), "%s/%s/feed.html",
-			    cnf_lookup("htmldir"), cnf_lookup("webtheme"));
+			    cez_queue_get(&config, "htmldir"), cez_queue_get(&config, "webtheme"));
 			snprintf(rss_item.title, sizeof(rss_item.title), "%s",
 			    db_column_text(&q, 3));
 			snprintf(rss_item.url, sizeof(rss_item.url), "%s",
@@ -197,12 +196,12 @@ render_front(const char *m, const st_rss_item_t *e)
 		}
 		db_finalize(&q);
 	} else if (strcmp(m, "HEADER") == 0) {
-		snprintf(fn, sizeof(fn), "%s/%s/header.html", cnf_lookup("htmldir"),
-		    cnf_lookup("webtheme"));
+		snprintf(fn, sizeof(fn), "%s/%s/header.html", cez_queue_get(&config, "htmldir"),
+		    cez_queue_get(&config, "webtheme"));
 		render_html(fn, NULL, NULL);
 	} else if (strcmp(m, "FOOTER") == 0) {
-		snprintf(fn, sizeof(fn), "%s/%s/footer.html", cnf_lookup("htmldir"),
-		    cnf_lookup("webtheme"));
+		snprintf(fn, sizeof(fn), "%s/%s/footer.html", cez_queue_get(&config, "htmldir"),
+		    cez_queue_get(&config, "webtheme"));
 		render_html(fn, NULL, NULL);
 	} else {
 		d_printf("render_front: unknown macro '%s'<br>\n", m);
@@ -230,21 +229,6 @@ render_front_feed(const char *m, const st_rss_item_t *e)
 }
 
 int
-config_check(void)
-{
-	int i;
-
-	for (i = 0; params[i] != NULL; ++i) {
-		if (cnf_lookup(params[i]) == NULL) {
-			render_error("%s is missing", params[i]);
-			return (-1);
-		}
-	}
-
-	return (0);
-}
-
-int
 main(void)
 {
 	const char *s, *query_args;
@@ -252,11 +236,13 @@ main(void)
 	int i;
 
 	umask(007);
-	if (configfile_parse(rssrollrc, config_queue_cb) == -1) {
+	cez_queue_init(&config);
+	if (configfile_parse(rssrollrc, &config) == -1) {
 		render_error("error: cannot open config file: %s", rssrollrc);
 		goto done;
 	}
-	if (config_check() == -1) {
+	if ((s = cez_queue_check(&config, params)) != NULL) {
+		render_error("error: missing config: %s", s);
 		goto done;
 	}
 	if (chdir("/tmp")) {
@@ -265,8 +251,8 @@ main(void)
 		goto done;
 	}
 
-	if (sqlite3_open(cnf_lookup("dbpath"), &g.db) != SQLITE_OK) {
-		render_error("cannot load database: %s", cnf_lookup("dbpath"));
+	if (sqlite3_open(cez_queue_get(&config, "dbpath"), &g.db) != SQLITE_OK) {
+		render_error("cannot load database: %s", cez_queue_get(&config, "dbpath"));
 		goto done;
 	}
 
@@ -274,7 +260,7 @@ main(void)
 		if (strlen(s) > 64) {
 			printf("Status: 400\r\n\r\n You are trying to send very long query!\n");
 			fflush(stdout);
-			config_queue_purge();
+			cez_queue_purge(&config);
 			return (0);
 		} else {
 			for (i = 0; i < strlen(s); i++) {
@@ -285,7 +271,7 @@ main(void)
 					if(s[i] != '/') {
                                 		printf("Status: 400\r\n\r\nYou are trying to send wrong query!\n");
 	                                	fflush(stdout);
-						config_queue_purge();
+						cez_queue_purge(&config);
         	                        	return (0);
 					}
                 	        }
@@ -326,9 +312,9 @@ main(void)
 
 	char fn[1024];
 
-	printf("%s\r\n\r\n", cnf_lookup("ct_html"));
+	printf("%s\r\n\r\n", cez_queue_get(&config, "ct_html"));
 	fflush(stdout);
-	snprintf(fn, sizeof(fn), "%s/main.html", cnf_lookup("htmldir"));
+	snprintf(fn, sizeof(fn), "%s/main.html", cez_queue_get(&config, "htmldir"));
 	render_html(fn, &render_front, NULL);
 
 done:
@@ -341,7 +327,7 @@ done:
 		fflush(stdout);
 	}
 
-	config_queue_purge();
+	cez_queue_purge(&config);
 	sqlite3_close(g.db);
 	return (0);
 }

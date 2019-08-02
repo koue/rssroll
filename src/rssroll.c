@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2012-2019 Nikola Kolev <koue@chaosophia.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 
 #include "rss.h"
 
-#define RSSROLL_VERSION	"rssroll/0.6.2"
+#define RSSROLL_VERSION	"rssroll/0.6.3"
 
 int debug = 0;
 
