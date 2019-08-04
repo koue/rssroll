@@ -1,6 +1,6 @@
 # rssroll
 RSS aggregator written in C
-version 0.6.2 of 14 September 2018
+version 0.7
 
 RSS crawler which stores feeds into sqlite3 database.
 Simple web interface to browse them grouped by category.

@@ -40,7 +40,7 @@
 
 #include "rss.h"
 
-#define RSSROLL_VERSION	"rssroll/0.6.3"
+#define RSSROLL_VERSION	"rssroll/0.7"
 
 int debug = 0;
 
@@ -96,7 +96,8 @@ void
 parse_body(int chan_id, char *rssfile)
 {
 	int i;
-	st_rss_t *rss = NULL;
+	struct feed *rss = NULL;
+	struct item *item;
 
 	dmsg(0,"parse_body.");
 
@@ -104,13 +105,10 @@ parse_body(int chan_id, char *rssfile)
 		printf("rss id [%d] cannot be parsed.\n", chan_id);
 		return;
 	}
-	dmsg(0,"items - %d", rss->item_count);
-
-	/* check in reverse order, first feed has been added last to the rss */
-	for (i = (rss->item_count - 1); i > -1; i--) {
-		if(check_link(chan_id, rss->item[i].url, rss->item[i].date) == 0) {
-			add_feed(chan_id, rss->item[i].url, rss->item[i].title,
-			    rss->item[i].desc, rss->item[i].date);
+	TAILQ_FOREACH(item, &items_list, entry) {
+		if (check_link(chan_id, item->url, item->date) == 0) {
+			add_feed(chan_id, item->url, item->title, item->desc,
+			    item->date);
 		}
 	}
 	rss_close(rss);

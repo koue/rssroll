@@ -1,35 +1,42 @@
 /*
-rss.h - RSS (and Atom) parser and generator (using libxml2)
+ * Copyright (c) 2018-2019 Nikola Kolev <koue@chaosophia.net>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *    - Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    - Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials provided
+ *      with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
 
-Copyright (c) 2018 Nikola Kolev <koue@chaosophia.net>
-Copyright (c) 2006 NoisyB
+#ifndef _RSS_H_
+#define _RSS_H_
 
-
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-*/
-#ifndef RSS_H
-#define RSS_H
-
-/* increase this number if rss files have more then 32 items */
-#define RSSMAXITEM 32
-/* examine the rss items lenghts and change this value if its necessary. */
 #define RSSMAXBUFSIZE 131072
 
-// version id's
+#include <sys/queue.h>
+
 enum {
-	RSS_V0_90 = 1,
+	RSS_V0_90,
 	RSS_V0_91,
 	RSS_V0_92,
 	RSS_V0_93,
@@ -41,31 +48,30 @@ enum {
 	ATOM_V0_3,
 };
 
-typedef struct {
-	char title[256];
-	char url[256];
-	char desc[RSSMAXBUFSIZE];
+struct item {
+	char *title;
+	char *url;
+	char *desc;
 	time_t date;
-} st_rss_item_t;
+	TAILQ_ENTRY(item) entry;
+};
+TAILQ_HEAD(items_list, item) items_list;
 
-
-typedef struct {
-	int version;		// version of the feed
-	// feed information
-	char title[256];
-	char url[256];
-	char desc[RSSMAXBUFSIZE];
+struct feed {
+	int version;
+	char *filename;
+	char *title;
+	char *url;
+	char *desc;
 	time_t date;
-	st_rss_item_t item[RSSMAXITEM];
-	int item_count;
-} st_rss_t;
+};
 
 int rss_demux(const char *fname);
 
-st_rss_t *rss_open(const char *fname);
-int rss_close(st_rss_t *rss);
+struct feed *rss_open(const char *fname);
+int rss_close(struct feed *rss);
 
 extern int debug;
 void dmsg(int, const char *fmt, ...);
 
-#endif //  RSS_H
+#endif /* _RSS_H_ */
