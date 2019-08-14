@@ -105,7 +105,7 @@ parse_body(int chan_id, char *rssfile)
 		printf("rss id [%d] cannot be parsed.\n", chan_id);
 		return;
 	}
-	TAILQ_FOREACH(item, &items_list, entry) {
+	TAILQ_FOREACH(item, &rss->items_list, entry) {
 		if (check_link(chan_id, item->url, item->date) == 0) {
 			add_feed(chan_id, item->url, item->title, item->desc,
 			    item->date);
