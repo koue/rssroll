@@ -1,9 +1,11 @@
-# rssroll CHANGELOG
+# rssroll ChangeLog
 # v 0.6.3
 # Nikola Kolev <koue@chaosophia.net>
 # http://chaosophia.net/rssroll/
 #
-Changes 0.6.3	(2019.
+Changes 0.6.3	(2019.08.02):
+
+- Update to libcez version 1.09.
 
 Changes 0.6.2	(2018.09.14):
 
