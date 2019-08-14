@@ -1,8 +1,12 @@
 # rssroll ChangeLog
-# v 0.6.3
+# v 0.7
 # Nikola Kolev <koue@chaosophia.net>
 # http://chaosophia.net/rssroll/
 #
+Changes 0.7	(2019.08.14):
+
+- Introduce TAILQ.
+
 Changes 0.6.3	(2019.08.02):
 
 - Update to libcez version 1.09.
