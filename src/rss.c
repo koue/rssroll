@@ -96,11 +96,11 @@ xml_get_value(xmlNode *n, const char *name)
 }
 
 void
-rss_sanity_check(void)
+rss_sanity_check(struct feed *rss)
 {
 	struct item *item;
 	int count = 0;
-	TAILQ_FOREACH(item, &items_list, entry) {
+	TAILQ_FOREACH(item, &rss->items_list, entry) {
 		printf("title: %s\nurl: %s\ndate: %ld\ndesc: %s\n\n",
 		    item->title, item->url, (long)item->date, item->desc);
 		count++;
@@ -114,12 +114,12 @@ rss_close(struct feed *rss)
 	struct item *current;
 
 	dmsg(1, "%s: start", __func__);
-	while (!TAILQ_EMPTY(&items_list)) {
-		current = TAILQ_FIRST(&items_list);
+	while (!TAILQ_EMPTY(&rss->items_list)) {
+		current = TAILQ_FIRST(&rss->items_list);
 		free(current->desc);
 		free(current->title);
 		free(current->url);
-		TAILQ_REMOVE(&items_list, current, entry);
+		TAILQ_REMOVE(&rss->items_list, current, entry);
 		free(current);
 	}
 	if (rss) {
@@ -156,7 +156,7 @@ rss_channel(struct feed *rss, xmlDoc *doc, xmlNode *pnode)
 }
 
 static int
-rss_entry(xmlDoc *doc, xmlNode *pnode)
+rss_entry(struct feed *rss, xmlDoc *doc, xmlNode *pnode)
 {
 	struct item *current;
 
@@ -217,7 +217,7 @@ rss_entry(xmlDoc *doc, xmlNode *pnode)
 	free(link);
 	free(guid);
 	/* add items in reverse order, the first is the newest one */
-	TAILQ_INSERT_HEAD(&items_list, current, entry);
+	TAILQ_INSERT_HEAD(&rss->items_list, current, entry);
 	dmsg(1, "%s: end", __func__);
 	return (0);
 fail:
@@ -233,7 +233,7 @@ static void
 rss_head(struct feed *rss, xmlDoc *doc, xmlNode *node)
 {
 	dmsg(1, "%s: start", __func__);
-	TAILQ_INIT(&items_list);
+	TAILQ_INIT(&rss->items_list);
 	while (node) {
 		while (node && xmlIsBlankNode(node))
 			node = node->next;
@@ -256,7 +256,7 @@ rss_head(struct feed *rss, xmlDoc *doc, xmlNode *node)
 			rss_channel(rss, doc, node->xmlChildrenNode);
 		} else if (!strcmp((char *)node->name, "item") ||
 		    !strcmp((char *)node->name, "entry")) {
-			if (rss_entry(doc, node->xmlChildrenNode) == -1) {
+			if (rss_entry(rss, doc, node->xmlChildrenNode) == -1) {
 				xmlFreeDoc(doc);
 				rss_close(rss);
 				fprintf(stderr, "%s: %s\n", __func__, strerror(errno));
@@ -306,7 +306,7 @@ rss_parse(struct feed *rss)
 
 	rss_head(rss, doc, node);
 	if (debug > 1) {
-		rss_sanity_check();
+		rss_sanity_check(rss);
 		fflush(stdout);
 	}
 

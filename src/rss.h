@@ -55,7 +55,6 @@ struct item {
 	time_t date;
 	TAILQ_ENTRY(item) entry;
 };
-TAILQ_HEAD(items_list, item) items_list;
 
 struct feed {
 	int version;
@@ -64,6 +63,7 @@ struct feed {
 	char *url;
 	char *desc;
 	time_t date;
+	TAILQ_HEAD(items_list, item) items_list;
 };
 
 int rss_demux(const char *fname);
