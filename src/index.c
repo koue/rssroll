@@ -60,13 +60,13 @@ static struct 		cez_queue config;
 static const char *params[] = { "category", "feeds", "ct_html", "dbpath",
     "htmldir", "name", "owner", "url", "webtheme", NULL };
 
-typedef	void (*render_cb)(const char *, const st_rss_item_t *);
+typedef	void (*render_cb)(const char *, const struct item *);
 
 static void	 render_error(const char *fmt, ...);
 static int	 render_html(const char *html_fn, render_cb r,
-		     const st_rss_item_t *e);
-static void	 render_front(const char *m, const st_rss_item_t *e);
-static void	 render_front_feed(const char *m, const st_rss_item_t *e);
+		     const struct item *e);
+static void	 render_front(const char *m, const struct item *e);
+static void	 render_front_feed(const char *m, const struct item *e);
 
 static void
 d_printf(const char *fmt, ...)
@@ -111,7 +111,7 @@ render_error(const char *fmt, ...)
 }
 
 static int
-render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
+render_html(const char *html_fn, render_cb r, const struct item *e)
 {
 	FILE *f;
 	char s[8192];
@@ -169,32 +169,54 @@ render_html(const char *html_fn, render_cb r, const st_rss_item_t *e)
 }
 
 static void
-render_front(const char *m, const st_rss_item_t *e)
+render_front(const char *m, const struct item *e)
 {
 	char fn[1024];
 	Stmt q;
-	st_rss_item_t	rss_item;
+	struct item	*rss_item;
 
 	if (strcmp(m, "FEEDS") == 0) {
+		if ((rss_item = calloc(1, sizeof(*rss_item))) == NULL) {
+			fprintf(stderr, "%s: %s\n", __func__, strerror(errno));
+			exit(1);
+		}
+		snprintf(fn, sizeof(fn), "%s/%s/feed.html", cez_queue_get(&config, "htmldir"),
+		    cez_queue_get(&config, "webtheme"));
 		db_prepare(&q, "SELECT id, modified, link, title, description, pubdate "
 				"FROM feeds WHERE chanid IN (select id from channels where catid = '%ld') "
 				"ORDER BY id DESC LIMIT '%ld', '%d'",
 				query_category, query_limit, strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10));
+			snprintf(fn, sizeof(fn), "%s/%s/feed.html",
+			    cez_queue_get(&config, "htmldir"), cez_queue_get(&config, "webtheme"));
 		while (db_step(&q)==SQLITE_ROW) {
 			/* PREV option */
 			callback_result++;
-			snprintf(fn, sizeof(fn), "%s/%s/feed.html",
-			    cez_queue_get(&config, "htmldir"), cez_queue_get(&config, "webtheme"));
-			snprintf(rss_item.title, sizeof(rss_item.title), "%s",
-			    db_column_text(&q, 3));
-			snprintf(rss_item.url, sizeof(rss_item.url), "%s",
-			    db_column_text(&q, 2));
-			snprintf(rss_item.desc, sizeof(rss_item.desc), "%s",
-			    db_column_text(&q, 4));
-			rss_item.date = db_column_int64(&q, 5);
-			render_html(fn, &render_front_feed, &rss_item);
+			if ((rss_item->title = strdup(db_column_text(&q, 3))) == NULL) {
+				free(rss_item);
+				fprintf(stderr, "%s: %s\n", __func__, strerror(errno));
+				exit(1);
+			}
+			if ((rss_item->url = strdup(db_column_text(&q, 2))) == NULL) {
+				free(rss_item->title);
+				free(rss_item);
+				fprintf(stderr, "%s: %s\n", __func__, strerror(errno));
+				exit(1);
+			}
+			if ((rss_item->desc = strdup(db_column_text(&q, 4))) == NULL) {
+				free(rss_item->url);
+				free(rss_item->title);
+				free(rss_item);
+				fprintf(stderr, "%s: %s\n", __func__, strerror(errno));
+				exit(1);
+			}
+			rss_item->date = db_column_int64(&q, 5);
+			render_html(fn, &render_front_feed, rss_item);
+			free(rss_item->title);
+			free(rss_item->url);
+			free(rss_item->desc);
 		}
 		db_finalize(&q);
+		free(rss_item);
 	} else if (strcmp(m, "HEADER") == 0) {
 		snprintf(fn, sizeof(fn), "%s/%s/header.html", cez_queue_get(&config, "htmldir"),
 		    cez_queue_get(&config, "webtheme"));
@@ -209,7 +231,7 @@ render_front(const char *m, const st_rss_item_t *e)
 }
 
 static void
-render_front_feed(const char *m, const st_rss_item_t *e)
+render_front_feed(const char *m, const struct item *e)
 {
 	if (strcmp(m, "PUBDATE") == 0) {
 		d_printf("%s", ctime(&e->date));
