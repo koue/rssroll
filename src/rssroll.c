@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2019 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2012-2020 Nikola Kolev <koue@chaosophia.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,9 +28,8 @@
  *
  */
 
-#include <cez_fossil.h>
-#include <curl/curl.h>
-#include <curl/easy.h>
+#include <cez_fossil_base.h>
+#include <cez_fossil_db.h>
 #include <sqlite3.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,22 +37,17 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <cez_core_pool.h>
+#include <cez_net_http.h>
+
 #include "rss.h"
 
-#define RSSROLL_VERSION	"rssroll/0.7"
+#define RSSROLL_VERSION	"rssroll/0.8"
 
 int debug = 0;
 
 /* rss database store	*/
 Global g;
-
-/* curl write function */
-static size_t
-write_data(void *ptr, size_t size, size_t nmemb, void *stream)
-{
-	int written = fwrite(ptr, size, nmemb, (FILE *)stream);
-	return written;
-}
 
 /* add new item into the database */
 void
@@ -93,7 +87,7 @@ check_link(int chan_id, char *item_link, time_t item_pubdate)
 
 /* parse content of the rss */
 void
-parse_body(int chan_id, char *rssfile)
+parse_body(int chan_id, char *rssbody)
 {
 	int i;
 	struct feed *rss = NULL;
@@ -101,7 +95,7 @@ parse_body(int chan_id, char *rssfile)
 
 	dmsg(0,"parse_body.");
 
-	if ((rss = rss_open(rssfile)) == NULL) {
+	if ((rss = rss_parse(rssbody, 0)) == NULL) {
 		printf("rss id [%d] cannot be parsed.\n", chan_id);
 		return;
 	}
@@ -118,61 +112,55 @@ parse_body(int chan_id, char *rssfile)
 void
 fetch_channel(int chan_id, time_t chan_modified, const char *chan_link)
 {
-	CURL *curl_handle;
-	struct curl_slist *if_chan_modified = NULL;
-	FILE *bodyfile;
-	char chan_last_modified_time[64], fn[]="/tmp/rssroll.tmp.XXXXXXXXXX";
+        struct http_request *request;
+	struct http_response *response;
+	char chan_last_modified_time[32];
 	long	http_code = 0;
 	int fd;
 
-	dmsg(0,"%s: %d, %ld, %s", __func__, chan_id, chan_modified, chan_link);
+	dmsg(0, "%s: %d, %ld, %s", __func__, chan_id, chan_modified, chan_link);
 
 	strftime(chan_last_modified_time, sizeof(chan_last_modified_time),
-	    "If-Modified-Since: %a, %d %b %Y %T %Z", localtime(&chan_modified));
-	curl_global_init(CURL_GLOBAL_ALL);
-	curl_handle = curl_easy_init();
-	if_chan_modified = curl_slist_append(if_chan_modified,
-	    chan_last_modified_time);
-	curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, RSSROLL_VERSION);
-	curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, if_chan_modified);
-	curl_easy_setopt(curl_handle, CURLOPT_URL, chan_link);
-	curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L);
-	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_data);
+	    "%a, %d %b %Y %T %Z", localtime(&chan_modified));
 
-	if ((fd = mkstemp(fn)) == -1) {
-		fprintf(stderr, "%s: Cannot create temp file: %s\n", __func__,
-		    chan_link);
-		goto cleanup;
-	}
-	if (fchmod(fd, 0600)) {
-		fprintf(stderr, "%s: Cannot set permission to temp file: %s\n",
-		    __func__,  chan_link);
-		goto done;
-	}
-
-	if ((bodyfile = fdopen(fd, "w")) == NULL) {
-		fprintf(stderr, "%s: Cannot open file for parsing: %s\n",
-		    __func__, chan_link);
-		goto done;
-	}
-	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, bodyfile);
-	curl_easy_perform(curl_handle);
-	curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
-	fclose(bodyfile);
-	if (http_code != 304) {
-		parse_body(chan_id, fn);
-	} else {
-		dmsg(0,"%s: id - %d, link - %s has not been changed.",
+	if ((request = http_request_create(chan_link, RSSROLL_VERSION)) == NULL) {
+		dmsg(0, "%s error, request_create: id [%d], url [%s]",
 		    __func__, chan_id, chan_link);
+		return;
 	}
-done:
-	unlink(fn);
-cleanup:
-	dmsg(0, "%s: cleanup", __func__);
-	unlink(fn);
-	curl_slist_free_all(if_chan_modified);
-	curl_easy_cleanup(curl_handle);
-	curl_global_cleanup();
+
+	if (request->state != HTTP_REQUEST_OK) {
+		dmsg(0, "%s error, request state: %s",
+		    http_request_state_text(request->state));
+	}
+
+	http_request_header_add(request, "If-Modified-Since",
+	    chan_last_modified_time);
+
+	http_request_send(request);
+	if ((response = http_response_create(request)) == NULL) {
+		dmsg(0, "%s error, response_create: id [%d], url [%s]",
+		    __func__, chan_id, chan_link);
+		http_request_free(request);
+		return;
+	}
+
+	http_response_parse(response);
+
+	if (response->status == 200) {
+		parse_body(chan_id, http_response_body_print(response));
+	} else if (response->status == 304) {
+		dmsg(0, "%s: id - %d, link - %s has not been changed.",
+		    __func__, chan_id, chan_link);
+	} else {
+		dmsg(0, "%s error, response status [%lu]:"
+		        "id - %d, link - %s has not been changed.",
+		      __func__, response->status, chan_id, chan_link);
+	}
+
+	dmsg(0, "%s: done", __func__);
+	http_response_free(response);
+	http_request_free(request);
 }
 
 static void

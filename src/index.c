@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2019 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2012-2020 Nikola Kolev <koue@chaosophia.net>
  * Copyright (c) 2004-2006 Daniel Hartmeier. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,8 @@
  *
  */
 
-#include <cez_fossil.h>
+#include <cez_fossil_base.h>
+#include <cez_fossil_db.h>
 #include <cez_misc.h>
 #include <cez_queue.h>
 #include <ctype.h>
