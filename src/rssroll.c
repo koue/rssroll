@@ -28,8 +28,8 @@
  *
  */
 
-#include <cez_fossil_base.h>
-#include <cez_fossil_db.h>
+#include <fslbase.h>
+#include <fsldb.h>
 #include <sqlite3.h>
 #include <stdio.h>
 #include <stdlib.h>

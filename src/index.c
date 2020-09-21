@@ -28,12 +28,12 @@
  *
  */
 
-#include <cez_fossil_base.h>
-#include <cez_fossil_db.h>
 #include <cez_misc.h>
 #include <cez_queue.h>
 #include <ctype.h>
 #include <errno.h>
+#include <fslbase.h>
+#include <fsldb.h>
 #include <sqlite3.h>
 #include <stdarg.h>
 #include <stdio.h>
