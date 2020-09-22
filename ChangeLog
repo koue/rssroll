@@ -1,8 +1,14 @@
 # rssroll ChangeLog
-# v 0.7
+# v 0.8
 # Nikola Kolev <koue@chaosophia.net>
 # http://chaosophia.net/rssroll/
 #
+Changes 0.8	(2020.09.22):
+
+- Introduce libfsl.
+- Update to libcez version 1.11.
+- Drop curl dependency.
+
 Changes 0.7	(2019.08.14):
 
 - Introduce TAILQ.

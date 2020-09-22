@@ -3,8 +3,8 @@
 PORTNAME=	rssroll
 PORTVERSION=	0.8
 CATEGORIES=	www
-MASTER_SITES=	OPENBSD/LibreSSL:libressl
-DISTFILES=	libressl-${SSL_VERSION}.tar.gz:libressl
+#MASTER_SITES=	OPENBSD/LibreSSL:libressl
+#DISTFILES=	libressl-${SSL_VERSION}.tar.gz:libressl
 #MASTER_SITES=	http://git.chaosophia.net/rssroll/snapshot/:rssroll \
 		http://git.chaosophia.net/libcez/snapshot/:libcez
 #DISTFILES=	rssroll-master.tar.gz:rssroll \
@@ -15,7 +15,7 @@ COMMENT=	RSS collector in C
 
 LICENSE=	BSD2CLAUSE
 
-SSL_VERSION=	3.1.4
+#SSL_VERSION=	3.1.4
 FSL_VERSION=	2.12.1
 CEZ_VERSION=	1.11
 
@@ -35,8 +35,8 @@ CFLAGS+=	-I${WRKSRC_libfsl}/src/base \
 		-I${WRKSRC_libcez}/src/core \
 		-I${WRKSRC_libcez}/src/misc \
 		-I${WRKSRC_libcez}/src/net \
-		-I${WRKSRC_libcez}/src/queue \
-		-I${WRKDIR}/libressl-${SSL_VERSION}/include
+		-I${WRKSRC_libcez}/src/queue
+#		-I${WRKDIR}/libressl-${SSL_VERSION}/include
 
 LDFLAGS+=	-L${WRKSRC_libfsl}/src/base \
 		-L${WRKSRC_libfsl}/src/db \
@@ -48,15 +48,15 @@ LDFLAGS+=	-L${WRKSRC_libfsl}/src/base \
 PLIST_SUB+=	WWWOWN=${WWWOWN} WWWGRP=${WWWGRP}
 
 pre-configure:
-	@(cd ${WRKDIR} && ${EXTRACT_CMD} ${EXTRACT_BEFORE_ARGS} ${DISTDIR}/libressl-${SSL_VERSION}.tar.gz ${EXTRACT_AFTER_ARGS})
-	@(cd ${WRKDIR}/libressl-${SSL_VERSION} && ${SETENV} ./configure && ${SETENV} ${MAKE_ENV} ${MAKE})
-.	for FILE in \
+#	@(cd ${WRKDIR} && ${EXTRACT_CMD} ${EXTRACT_BEFORE_ARGS} ${DISTDIR}/libressl-${SSL_VERSION}.tar.gz ${EXTRACT_AFTER_ARGS})
+#	@(cd ${WRKDIR}/libressl-${SSL_VERSION} && ${SETENV} ./configure && ${SETENV} ${MAKE_ENV} ${MAKE})
+#.	for FILE in \
 		src/Makefile
-	${REINPLACE_CMD} 's|-lssl|${WRKDIR}/libressl-${SSL_VERSION}/ssl/.libs/libssl.a|g' \
+#	${REINPLACE_CMD} 's|-lssl|${WRKDIR}/libressl-${SSL_VERSION}/ssl/.libs/libssl.a|g' \
 		${WRKSRC}/${FILE}
-	${REINPLACE_CMD} 's|-lcrypto|${WRKDIR}/libressl-${SSL_VERSION}/crypto/.libs/libcrypto.a|g' \
+#	${REINPLACE_CMD} 's|-lcrypto|${WRKDIR}/libressl-${SSL_VERSION}/crypto/.libs/libcrypto.a|g' \
 		${WRKSRC}/${FILE}
-.	endfor
+#.	endfor
 	@(cd ${WRKSRC_libfsl}/src/base && ${SETENV} ${MAKE_ENV} ${MAKE})
 	@(cd ${WRKSRC_libfsl}/src/db && ${SETENV} ${MAKE_ENV} ${MAKE})
 	@(cd ${WRKSRC_libcez}/src/core && ${SETENV} ${MAKE_ENV} ${MAKE})

@@ -151,7 +151,7 @@ fetch_channel(int chan_id, time_t chan_modified, const char *chan_link)
 		    __func__, chan_id, chan_link);
 	} else {
 		dmsg(0, "%s error, response status [%lu]:"
-		        "id - %d, link - %s has not been changed.",
+		        "id - %d, link - %s.",
 		      __func__, response->status, chan_id, chan_link);
 	}
 
