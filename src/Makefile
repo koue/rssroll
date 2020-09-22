@@ -4,7 +4,7 @@ PROGS=		rssroll index.cgi
 SRCS.rssroll=	rssroll.c rss.c
 SRCS.index.cgi=	index.c
 
-CFLAGS+=	-Wall \
+CFLAGS+=	-Werror \
 		-I./ \
 		-I/usr/local/include \
 		-I/usr/local/include/libxml2

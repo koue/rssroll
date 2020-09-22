@@ -89,7 +89,6 @@ check_link(int chan_id, char *item_link, time_t item_pubdate)
 void
 parse_body(int chan_id, char *rssbody)
 {
-	int i;
 	struct feed *rss = NULL;
 	struct item *item;
 
@@ -115,15 +114,13 @@ fetch_channel(int chan_id, time_t chan_modified, const char *chan_link)
         struct http_request *request;
 	struct http_response *response;
 	char chan_last_modified_time[32];
-	long	http_code = 0;
-	int fd;
 
 	dmsg(0, "%s: %d, %ld, %s", __func__, chan_id, chan_modified, chan_link);
 
 	strftime(chan_last_modified_time, sizeof(chan_last_modified_time),
 	    "%a, %d %b %Y %T %Z", localtime(&chan_modified));
 
-	if ((request = http_request_create(chan_link, RSSROLL_VERSION)) == NULL) {
+	if ((request = http_request_create((char *)chan_link, RSSROLL_VERSION)) == NULL) {
 		dmsg(0, "%s error, request_create: id [%d], url [%s]",
 		    __func__, chan_id, chan_link);
 		return;
