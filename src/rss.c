@@ -126,7 +126,6 @@ rss_close(struct feed *rss)
 		free(rss->desc);
 		free(rss->title);
 		free(rss->url);
-		free(rss->filename);
 		free(rss);
 	}
 	dmsg(1, "%s: end", __func__);
@@ -268,37 +267,55 @@ rss_head(struct feed *rss, xmlDoc *doc, xmlNode *node)
 	dmsg(1, "%s: end", __func__);
 }
 
-static struct feed *
-rss_parse(struct feed *rss)
+struct feed *
+rss_parse(const char *xmlstream, int isfile)
 {
+	struct feed *rss;
 	xmlDoc *doc;
 	xmlNode *node;
 
 	dmsg(1, "%s: start", __func__);
-	if ((doc = xmlParseFile(rss->filename)) == NULL) {
-		fprintf(stderr, "%s: cannot read %s\n", __func__, rss->filename);
+	if ((rss = malloc(sizeof(struct feed))) == NULL)
 		return (NULL);
-	} else if ((node = xmlDocGetRootElement(doc)) == NULL) {
-		fprintf (stderr, "%s: empty document %s\n", __func__, rss->filename);
+
+	memset(rss, 0, sizeof(struct feed));
+
+	if (isfile)
+		doc = xmlParseFile(xmlstream);
+	else
+		doc = xmlParseDoc((const xmlChar *)xmlstream);
+
+	if (doc == NULL) {
+		fprintf(stderr, "%s: cannot read stream\n", __func__);
+		return (NULL);
+	}
+
+	if ((node = xmlDocGetRootElement(doc)) == NULL) {
+		fprintf (stderr, "%s: empty document\n", __func__);
+		free(rss);
 		xmlFreeDoc(doc);
 		return (NULL);
 	}
 
-	dmsg(1, "%s: rss->filename %s", __func__, rss->filename);
-	dmsg(1, "%s: node->name: %s", __func__, (char *)node->name);
+	if ((rss->version = rss_demux(doc, node)) == -1) {
+		fprintf (stderr, "%s: unknown document\n", __func__);
+		free(rss);
+		xmlFreeDoc(doc);
+		return (NULL);
+	}
 
 	node = node->xmlChildrenNode;
 	while (node && xmlIsBlankNode(node))
 		node = node->next;
 
 	if (node == NULL) {
-		fprintf(stderr, "%s: bad document %s\n", __func__, rss->filename);
+		fprintf(stderr, "%s: bad document\n", __func__);
+		free(rss);
 		xmlFreeDoc(doc);
 		return (NULL);
 	} else if (rss->version < ATOM_V0_1) {
 		if (strcmp((char *)node->name, "channel")) {
-			fprintf (stderr, "%s: bad document: channel missing %s\n",
-			    __func__, rss->filename);
+			fprintf (stderr, "%s: bad document: channel missing\n", __func__);
 			return (NULL);
 		} else if (rss->version != RSS_V1_0) /* document is RSS */
 			node = node->xmlChildrenNode;
@@ -316,22 +333,14 @@ rss_parse(struct feed *rss)
 }
 
 int
-rss_demux(const char *fname)
+rss_demux(xmlDoc *doc, xmlNode *node)
 {
-	xmlDoc *doc = NULL;
-	xmlNode *node = NULL;
 	int version = -1;
 	char *p = NULL;
 
-	dmsg(1, "%s: start %s", __func__, fname);
-	if ((doc = xmlParseFile(fname)) == NULL) {
-		fprintf(stderr, "%s: cannot read %s\n", __func__, fname);
-		goto done;
-	}
+	dmsg(1, "%s: start", __func__);
 
-	if ((node = xmlDocGetRootElement(doc)) == NULL)
-		goto done;
-	else if ((char *)node->name == NULL)
+	if ((char *)node->name == NULL)
 		goto done;
 	else if (strcmp((char *)node->name, "html") == 0) // not xml
 		goto done;
@@ -364,30 +373,8 @@ rss_demux(const char *fname)
 done:
 	if (p != NULL)
 		free(p);
-	xmlFreeDoc(doc);
 	dmsg(1, "%s: end", __func__);
 	return (version);
-}
-
-struct feed *
-rss_open(const char *fname)
-{
-	struct feed *rss = NULL;
-
-	dmsg(1, "%s: start", __func__);
-	dmsg(1, "%s: %s", __func__, fname);
-	if ((rss = malloc(sizeof(*rss))) == NULL)
-		return (NULL);
-
-	memset(rss, 0, sizeof(*rss));
-	rss->filename = strdup(fname);
-
-	if ((rss->version = rss_demux(fname)) == -1) {
-		fprintf(stderr, "ERROR: uknown feed format %s.\n", rss->filename);
-		return (NULL);
-	}
-	dmsg(1, "%s: end", __func__);
-	return rss_parse(rss);
 }
 
 /* debug message out */

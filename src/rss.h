@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2018-2020 Nikola Kolev <koue@chaosophia.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,8 @@
 #define RSSMAXBUFSIZE 131072
 
 #include <sys/queue.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 
 enum {
 	RSS_V0_90,
@@ -58,7 +60,6 @@ struct item {
 
 struct feed {
 	int version;
-	char *filename;
 	char *title;
 	char *url;
 	char *desc;
@@ -66,9 +67,9 @@ struct feed {
 	TAILQ_HEAD(items_list, item) items_list;
 };
 
-int rss_demux(const char *fname);
+int rss_demux(xmlDoc *doc, xmlNode *node);
 
-struct feed *rss_open(const char *fname);
+struct feed *rss_parse(const char *xmlstream, int isfile);
 int rss_close(struct feed *rss);
 
 extern int debug;
