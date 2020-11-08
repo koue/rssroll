@@ -37,6 +37,8 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include <cez_core_pool.h>
+
 enum {
 	RSS_V0_90,
 	RSS_V0_91,
@@ -59,15 +61,17 @@ struct item {
 };
 
 struct feed {
+	struct pool *pool;
 	int version;
 	char *title;
 	char *url;
 	char *desc;
 	time_t date;
+	xmlDoc *doc;
 	TAILQ_HEAD(items_list, item) items_list;
 };
 
-int rss_demux(xmlDoc *doc, xmlNode *node);
+int rss_demux(struct feed *rss, xmlNode *node);
 
 struct feed *rss_parse(const char *xmlstream, int isfile);
 int rss_close(struct feed *rss);
