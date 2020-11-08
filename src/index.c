@@ -44,7 +44,6 @@
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
-#include <zlib.h>
 
 #include "rss.h"
 
@@ -53,7 +52,6 @@ Global g;
 static char		query_string[10];
 unsigned long		query_category = 1;
 unsigned long		query_limit = 0;
-static gzFile		gz = NULL;
 static char		*rssrollrc = "/etc/rssrollrc";
 static unsigned long	callback_result = 0;
 
@@ -70,31 +68,6 @@ static void	 render_front(const char *m, const struct item *e);
 static void	 render_front_feed(const char *m, const struct item *e);
 
 static void
-d_printf(const char *fmt, ...)
-{
-	static char s[RSSMAXBUFSIZE];
-	va_list ap;
-	int r;
-
-	va_start(ap, fmt);
-	r = vsnprintf(s, sizeof(s), fmt, ap);
-	va_end(ap);
-	if (r < 0 || r >= sizeof(s)) {
-		printf("error d_printf: vsnprintf: r %d (%d)", r,
-		    (int)sizeof(s));
-	}
-	if (gz != NULL) {
-		r = gzputs(gz, s);
-		if (r != strlen(s)) {
-			printf("error d_printf: gzputs: r %d (%d)",
-			    r, (int)strlen(s));
-		}
-	} else {
-		fprintf(stdout, "%s", s);
-	}
-}
-
-static void
 render_error(const char *fmt, ...)
 {
 	va_list ap;
@@ -105,10 +78,10 @@ render_error(const char *fmt, ...)
 	va_end(ap);
 	printf("Content-Type: text/html; charset=utf-8\r\n\r\n");
 	fflush(stdout);
-	d_printf("<html><head><title>Error</title></head><body>\n");
-	d_printf("<h2>Error</h2><p><b>%s</b><p>\n", s);
-	d_printf("Time: <b>%s</b><br>\n", rfc822_time(time(0)));
-	d_printf("</body></html>\n");
+	printf("<html><head><title>Error</title></head><body>\n");
+	printf("<h2>Error</h2><p><b>%s</b><p>\n", s);
+	printf("Time: <b>%s</b><br>\n", rfc822_time(time(0)));
+	printf("</body></html>\n");
 }
 
 static int
@@ -119,7 +92,7 @@ render_html(const char *html_fn, render_cb r, const struct item *e)
 	Stmt q;
 
 	if ((f = fopen(html_fn, "re")) == NULL) {
-		d_printf("ERROR: fopen: %s: %s<br>\n", html_fn,
+		printf("ERROR: fopen: %s: %s<br>\n", html_fn,
 		    strerror(errno));
 		return (1);
 	}
@@ -127,33 +100,33 @@ render_html(const char *html_fn, render_cb r, const struct item *e)
 		char *a, *b;
 		for (a = s; (b = strstr(a, "%%")) != NULL;) {
 			*b = 0;
-			d_printf("%s", a);
+			printf("%s", a);
 			a = b + 2;
 			if ((b = strstr(a, "%%")) != NULL) {
 				*b = 0;
 				if (strcmp(a, "RSSROLL_BASEURL") == 0) {
-					d_printf("%s", cez_queue_get(&config, "url"));
+					printf("%s", cez_queue_get(&config, "url"));
 				} else if (strcmp(a, "RSSROLL_NAME") == 0) {
-					d_printf("%s", cez_queue_get(&config, "name"));
+					printf("%s", cez_queue_get(&config, "name"));
 				} else if (strcmp(a, "RSSROLL_OWNER") == 0) {
-					d_printf("%s", cez_queue_get(&config, "owner"));
+					printf("%s", cez_queue_get(&config, "owner"));
 				} else if (strcmp(a, "RSSROLL_CTYPE") == 0) {
-					d_printf("%s", cez_queue_get(&config, "ct_html"));
+					printf("%s", cez_queue_get(&config, "ct_html"));
 				} else if (strcmp(a, "RSSROLL_CATEGORIES") == 0) {
 					db_prepare(&q, "SELECT id, title FROM categories");
 					while(db_step(&q)==SQLITE_ROW) {
-						d_printf("<p><a href='%s?%d'>%s</a></p>",
+						printf("<p><a href='%s?%d'>%s</a></p>",
 						    cez_queue_get(&config, "url"), db_column_int(&q, 0), db_column_text(&q, 1));
 					}
 					db_finalize(&q);
 				} else if (strcmp(a, "PREV") == 0) {
 					if (callback_result == strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10)) {
-						d_printf("<a href='%s?%ld/%ld'> <<< </a>",
+						printf("<a href='%s?%ld/%ld'> <<< </a>",
 						    cez_queue_get(&config, "url"), query_category, query_limit + strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10));
 					}
 				} else if (strcmp(a, "NEXT") == 0) {
 					if (query_limit) {
-						d_printf("<a href='%s?%ld/%ld'> >>> </a>",
+						printf("<a href='%s?%ld/%ld'> >>> </a>",
 						    cez_queue_get(&config, "url"), query_category, query_limit - strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10));
 					}
 				}
@@ -163,7 +136,7 @@ render_html(const char *html_fn, render_cb r, const struct item *e)
 				a = b + 2;
 			}
 		}
-		d_printf("%s", a);
+		printf("%s", a);
 	}
 	fclose(f);
 	return (0);
@@ -227,7 +200,7 @@ render_front(const char *m, const struct item *e)
 		    cez_queue_get(&config, "webtheme"));
 		render_html(fn, NULL, NULL);
 	} else {
-		d_printf("render_front: unknown macro '%s'<br>\n", m);
+		printf("render_front: unknown macro '%s'<br>\n", m);
 	}
 }
 
@@ -235,19 +208,19 @@ static void
 render_front_feed(const char *m, const struct item *e)
 {
 	if (strcmp(m, "PUBDATE") == 0) {
-		d_printf("%s", ctime(&e->date));
+		printf("%s", ctime(&e->date));
 	} else if (strcmp(m, "TITLE") == 0) {
-		d_printf("%s", e->title);
+		printf("%s", e->title);
 	} else if (strcmp(m, "DESCRIPTION") == 0) {
-		d_printf("%s", e->desc);
+		printf("%s", e->desc);
 	} else if (strcmp(m, "URL") == 0) {
-		d_printf("%s", e->url);
+		printf("%s", e->url);
 	} else if (strcmp(m, "CHANNEL") == 0) {
 		char domain[64];
 		sscanf(e->url, "%*[^//]//%63[^/]", domain);
-		d_printf("%s", domain);
+		printf("%s", domain);
 	} else {
-		d_printf("render_front_feed: unknown macro '%s'<br>\n", m);
+		printf("render_front_feed: unknown macro '%s'<br>\n", m);
 	}
 }
 
@@ -319,19 +292,6 @@ main(void)
 			printf("warning main: invalid IF_MODIFIED_SINCE '%s'", s);
 		}
 	}
-	if ((s = getenv("HTTP_ACCEPT_ENCODING")) != NULL) {
-		char *p = strstr(s, "gzip");
-
-		if (p != NULL && ((strncmp(p, "gzip;q=0", 8) != 0) ||
-		    strtol(p + 7, (char **)NULL, 10)  > 0.0)) {
-			gz = gzdopen(fileno(stdout), "wb9");
-			if (gz == NULL) {
-				printf("error main: gzdopen");
-			} else {
-				printf("Content-Encoding: gzip\r\n");
-			}
-		}
-	}
 
 	char fn[1024];
 
@@ -341,14 +301,7 @@ main(void)
 	render_html(fn, &render_front, NULL);
 
 done:
-	if (gz != NULL) {
-		if (gzclose(gz) != Z_OK) {
-			printf("error main: gzclose");
-		}
-		gz = NULL;
-	} else {
-		fflush(stdout);
-	}
+	fflush(stdout);
 
 	cez_queue_purge(&config);
 	sqlite3_close(g.db);
