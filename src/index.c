@@ -228,7 +228,6 @@ int
 main(void)
 {
 	const char *s, *query_args;
-	time_t if_modified_since = 0;
 	int i;
 
 	umask(007);
@@ -279,17 +278,6 @@ main(void)
 			if (query_args != NULL) {
 				query_limit = strtol(query_args, NULL, 0);
 			}
-		}
-	}
-
-	if ((s = getenv("IF_MODIFIED_SINCE")) != NULL) {
-		if_modified_since = convert_rfc822_time(s);
-		if (if_modified_since <= 0) {
-			if_modified_since =
-			    (time_t)strtoul(s, NULL, 10);
-		}
-		if (if_modified_since <= 0) {
-			printf("warning main: invalid IF_MODIFIED_SINCE '%s'", s);
 		}
 	}
 

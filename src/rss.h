@@ -31,8 +31,6 @@
 #ifndef _RSS_H_
 #define _RSS_H_
 
-#define RSSMAXBUFSIZE 131072
-
 #include <sys/queue.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
