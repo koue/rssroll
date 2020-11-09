@@ -38,6 +38,9 @@
 
 #include <cez_core_pool.h>
 
+#define	VERSION		"rssroll/0.9.0"
+#define	CONFFILE	"/etc/rssrollrc"
+
 enum {
 	RSS_V0_90,
 	RSS_V0_91,

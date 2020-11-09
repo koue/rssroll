@@ -42,8 +42,6 @@
 
 #include "rss.h"
 
-#define RSSROLL_VERSION	"rssroll/0.8"
-
 int debug = 0;
 
 /* rss database store	*/
@@ -120,7 +118,7 @@ fetch_channel(int chan_id, time_t chan_modified, const char *chan_link)
 	strftime(chan_last_modified_time, sizeof(chan_last_modified_time),
 	    "%a, %d %b %Y %T %Z", localtime(&chan_modified));
 
-	if ((request = http_request_create((char *)chan_link, RSSROLL_VERSION)) == NULL) {
+	if ((request = http_request_create((char *)chan_link, VERSION)) == NULL) {
 		dmsg(0, "%s error, request_create: id [%d], url [%s]",
 		    __func__, chan_id, chan_link);
 		return;

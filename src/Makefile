@@ -12,7 +12,8 @@ LDFLAGS+=	-L/usr/local/lib
 LDADD.rssroll=	-lz -lfsldb -lfslbase -lsqlite3 -lxml2 \
 		-lceznethttp -lceznet -lcezcorepool -lcezcorebuffer -lcezcorestring \
 		-lcezcoreassoc -lssl -lcrypto
-LDADD.index.cgi=-lz -lcezqueue -lfsldb -lfslbase -lcezmisc -lsqlite3 -lcezcorepool
+LDADD.index.cgi=-lcezqueue -lfsldb -lfslbase -lcezmisc -lsqlite3 -lcezcorepool \
+		-lcezrender
 
 MAN=
 

@@ -1,7 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	rssroll
-PORTVERSION=	0.8
+PORTVERSION=	0.9.0
 CATEGORIES=	www
 #MASTER_SITES=	OPENBSD/LibreSSL:libressl
 #DISTFILES=	libressl-${SSL_VERSION}.tar.gz:libressl
@@ -17,7 +17,7 @@ LICENSE=	BSD2CLAUSE
 
 #SSL_VERSION=	3.1.4
 FSL_VERSION=	2.12.1
-CEZ_VERSION=	1.12
+CEZ_VERSION=	1.13
 
 USE_GITHUB=	yes
 GH_ACCOUNT=	koue
@@ -35,7 +35,8 @@ CFLAGS+=	-I${WRKSRC_libfsl}/src/base \
 		-I${WRKSRC_libcez}/src/core \
 		-I${WRKSRC_libcez}/src/misc \
 		-I${WRKSRC_libcez}/src/net \
-		-I${WRKSRC_libcez}/src/queue
+		-I${WRKSRC_libcez}/src/queue \
+		-I${WRKSRC_libcez}/src/render
 #		-I${WRKDIR}/libressl-${SSL_VERSION}/include
 
 LDFLAGS+=	-L${WRKSRC_libfsl}/src/base \
@@ -43,7 +44,8 @@ LDFLAGS+=	-L${WRKSRC_libfsl}/src/base \
 		-L${WRKSRC_libcez}/src/core \
 		-L${WRKSRC_libcez}/src/misc \
 		-L${WRKSRC_libcez}/src/net \
-		-L${WRKSRC_libcez}/src/queue
+		-L${WRKSRC_libcez}/src/queue \
+		-L${WRKSRC_libcez}/src/render
 
 PLIST_SUB+=	WWWOWN=${WWWOWN} WWWGRP=${WWWGRP}
 
@@ -63,6 +65,7 @@ pre-configure:
 	@(cd ${WRKSRC_libcez}/src/misc && ${SETENV} ${MAKE_ENV} ${MAKE})
 	@(cd ${WRKSRC_libcez}/src/net && ${SETENV} ${MAKE_ENV} ${MAKE})
 	@(cd ${WRKSRC_libcez}/src/queue && ${SETENV} ${MAKE_ENV} ${MAKE})
+	@(cd ${WRKSRC_libcez}/src/render && ${SETENV} ${MAKE_ENV} ${MAKE})
 
 post-patch:
 	@${REINPLACE_CMD} -e "s|/etc/rssrollrc|${PREFIX}/etc/rssrollrc|" \
@@ -72,6 +75,6 @@ do-install:
 	${INSTALL_PROGRAM} ${WRKSRC}/src/rssroll ${STAGEDIR}${PREFIX}/bin
 	(cd ${WRKSRC} && ${COPYTREE_SHARE} "html css" ${STAGEDIR}${PREFIX}/www/rssroll/)
 	${INSTALL_PROGRAM} ${WRKSRC}/src/index.cgi ${STAGEDIR}${PREFIX}/www/rssroll/index.cgi
-	${INSTALL_DATA} ${WRKSRC}/rssrollrc ${STAGEDIR}${PREFIX}/etc/rssrollrc.sample
+	${INSTALL_DATA} ${WRKSRC}/etc/rssrollrc ${STAGEDIR}${PREFIX}/etc/rssrollrc.sample
 
 .include <bsd.port.mk>
