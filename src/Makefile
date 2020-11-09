@@ -1,8 +1,8 @@
 #
 PROGS=		rssroll index.cgi
 
-SRCS.rssroll=	rssroll.c rss.c
-SRCS.index.cgi=	index.c
+SRCS.rssroll=	rssroll.c rss.c item.c
+SRCS.index.cgi=	index.c item.c
 
 CFLAGS+=	-Werror \
 		-I./ \
@@ -12,7 +12,7 @@ LDFLAGS+=	-L/usr/local/lib
 LDADD.rssroll=	-lz -lfsldb -lfslbase -lsqlite3 -lxml2 \
 		-lceznethttp -lceznet -lcezcorepool -lcezcorebuffer -lcezcorestring \
 		-lcezcoreassoc -lssl -lcrypto
-LDADD.index.cgi=-lz -lcezqueue -lfsldb -lfslbase -lcezmisc -lsqlite3
+LDADD.index.cgi=-lz -lcezqueue -lfsldb -lfslbase -lcezmisc -lsqlite3 -lcezcorepool
 
 MAN=
 

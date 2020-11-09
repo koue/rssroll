@@ -33,7 +33,6 @@
 #include <string.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "rss.h"
@@ -195,23 +194,6 @@ rss_channel(struct feed *rss, xmlNode *pnode)
 		pnode = pnode->next;
 	}
 	dmsg(1, "%s: end", __func__);
-}
-
-struct item *
-item_create(struct pool *pool)
-{
-	struct item *item = pool_alloc(pool, sizeof(struct item));
-
-	/* Make sure cleared out */
-	memset(item, 0, sizeof(struct item));
-
-	/* Common */
-	item->title = NIL;
-	item->url = NIL;
-	item->desc = NIL;
-	item->date = 0;
-
-	return (item);
 }
 
 static int

@@ -42,7 +42,6 @@
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "rss.h"
@@ -142,55 +141,52 @@ render_html(const char *html_fn, render_cb r, const struct item *e)
 	return (0);
 }
 
+static char *
+getvalue(struct pool *pool, const char *value)
+{
+	char *current;
+	if (value) {
+		current = pool_strdup(pool, value);
+		return (current);
+	}
+	return (NULL);
+}
+
 static void
 render_front(const char *m, const struct item *e)
 {
+	struct pool *pool = pool_create(1024);
+	struct item *item;
 	char fn[1024];
 	Stmt q;
-	struct item	*rss_item;
 
 	if (strcmp(m, "FEEDS") == 0) {
-		if ((rss_item = calloc(1, sizeof(*rss_item))) == NULL) {
-			fprintf(stderr, "%s: %s\n", __func__, strerror(errno));
-			exit(1);
-		}
 		snprintf(fn, sizeof(fn), "%s/%s/feed.html", cez_queue_get(&config, "htmldir"),
 		    cez_queue_get(&config, "webtheme"));
-		db_prepare(&q, "SELECT id, modified, link, title, description, pubdate "
-				"FROM feeds WHERE chanid IN (select id from channels where catid = '%ld') "
-				"ORDER BY id DESC LIMIT '%ld', '%d'",
-				query_category, query_limit, strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10));
-			snprintf(fn, sizeof(fn), "%s/%s/feed.html",
-			    cez_queue_get(&config, "htmldir"), cez_queue_get(&config, "webtheme"));
+		db_prepare(&q, "SELECT "
+			       "    id, modified, link, title, description, pubdate "
+			       "FROM "
+			       "    feeds "
+			       "WHERE "
+			       "    chanid IN (select id from channels where catid = '%ld') "
+			       "ORDER BY id "
+			       "DESC LIMIT '%ld', '%d'",
+				query_category, query_limit,
+				strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10));
+		snprintf(fn, sizeof(fn), "%s/%s/feed.html", cez_queue_get(&config, "htmldir"),
+		    cez_queue_get(&config, "webtheme"));
 		while (db_step(&q)==SQLITE_ROW) {
 			/* PREV option */
 			callback_result++;
-			if ((rss_item->title = strdup(db_column_text(&q, 3))) == NULL) {
-				free(rss_item);
-				fprintf(stderr, "%s: %s\n", __func__, strerror(errno));
-				exit(1);
-			}
-			if ((rss_item->url = strdup(db_column_text(&q, 2))) == NULL) {
-				free(rss_item->title);
-				free(rss_item);
-				fprintf(stderr, "%s: %s\n", __func__, strerror(errno));
-				exit(1);
-			}
-			if ((rss_item->desc = strdup(db_column_text(&q, 4))) == NULL) {
-				free(rss_item->url);
-				free(rss_item->title);
-				free(rss_item);
-				fprintf(stderr, "%s: %s\n", __func__, strerror(errno));
-				exit(1);
-			}
-			rss_item->date = db_column_int64(&q, 5);
-			render_html(fn, &render_front_feed, rss_item);
-			free(rss_item->title);
-			free(rss_item->url);
-			free(rss_item->desc);
+			item = item_create(pool);
+			item->title = getvalue(pool, db_column_text(&q, 3));
+			item->url = getvalue(pool, db_column_text(&q, 2));
+			item->desc = getvalue(pool, db_column_text(&q, 4));
+			item->date = db_column_int64(&q, 5);
+			render_html(fn, &render_front_feed, item);
+			pool_free(pool);
 		}
 		db_finalize(&q);
-		free(rss_item);
 	} else if (strcmp(m, "HEADER") == 0) {
 		snprintf(fn, sizeof(fn), "%s/%s/header.html", cez_queue_get(&config, "htmldir"),
 		    cez_queue_get(&config, "webtheme"));

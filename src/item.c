@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2020 Nikola Kolev <koue@chaosophia.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,56 +28,25 @@
  *
  */
 
-#ifndef _RSS_H_
-#define _RSS_H_
-
-#include <sys/queue.h>
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-#include <time.h>
+#include <string.h>
 
 #include <cez_core_pool.h>
 
-enum {
-	RSS_V0_90,
-	RSS_V0_91,
-	RSS_V0_92,
-	RSS_V0_93,
-	RSS_V0_94,
-	RSS_V1_0,
-	RSS_V2_0,
-	ATOM_V0_1,
-	ATOM_V0_2,
-	ATOM_V0_3,
-};
+#include "rss.h"
 
-struct item {
-	char *title;
-	char *url;
-	char *desc;
-	time_t date;
-	TAILQ_ENTRY(item) entry;
-};
+struct item *
+item_create(struct pool *pool)
+{
+	struct item *item = pool_alloc(pool, sizeof(struct item));
 
-struct feed {
-	struct pool *pool;
-	int version;
-	char *title;
-	char *url;
-	char *desc;
-	time_t date;
-	xmlDoc *doc;
-	TAILQ_HEAD(items_list, item) items_list;
-};
+	/* Make sure cleared out */
+	memset(item, 0, sizeof(struct item));
 
-int rss_demux(struct feed *rss, xmlNode *node);
+	/* Common */
+	item->title = NIL;
+	item->url = NIL;
+	item->desc = NIL;
+	item->date = 0;
 
-struct feed *rss_parse(const char *xmlstream, int isfile);
-int rss_close(struct feed *rss);
-
-extern int debug;
-void dmsg(int, const char *fmt, ...);
-
-struct item *item_create(struct pool *pool);
-
-#endif /* _RSS_H_ */
+	return (item);
+}
