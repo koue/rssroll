@@ -163,14 +163,23 @@ rss_sanity_check(struct feed *rss)
 int
 rss_close(struct feed *rss)
 {
-	struct item *current;
-
 	dmsg(1, "%s: start", __func__);
 	feed_free(rss);
 	dmsg(1, "%s: end", __func__);
 
 	return (0);
+}
 
+static int
+isnode(xmlNode *node, const char *string)
+{
+	return (!strcmp((char *)node->name, string));
+}
+
+static int
+isnodecase(xmlNode *node, const char *string)
+{
+	return (!strcasecmp((char *)node->name, string));
 }
 
 static void
@@ -182,13 +191,12 @@ rss_channel(struct feed *rss, xmlNode *pnode)
 	dmsg(1, "%s: start", __func__);
 	while (pnode) {
 		dmsg(1, "%s: pnode->name: %s", __func__, (char *) pnode->name);
-		if (strcmp((char *)pnode->name, "title") == 0) {
+		if (isnode(pnode, "title")) {
 			rss->title = xml_get_content(pool, pnode);
-		} else if (strcmp((char *)pnode->name, "description") == 0) {
+		} else if (isnode(pnode, "description")) {
 			rss->desc = xml_get_content(pool, pnode);
-		} else if (strcmp((char *)pnode->name, "date") == 0||
-		    strcmp((char *)pnode->name, "pubDate") == 0 ||
-		    strcmp((char *) pnode->name, "dc:date") == 0)
+		} else if (isnode(pnode, "date") || isnode(pnode, "pubDate") ||
+		    isnode(pnode, "dc:date"))
 			rss->date = strptime2((char *)xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
 
 		pnode = pnode->next;
@@ -205,11 +213,11 @@ rss_entry(struct feed *rss, xmlNode *pnode)
 
 	char *p = NULL, *link = NULL, *guid = NULL;
 
+	dmsg(1, "%s: start", __func__);
 	if ((current = item_create(pool)) == NULL) {
 		goto fail;
 	}
 
-	dmsg(1, "%s: start", __func__);
 	while (pnode) {
 		while (pnode && xmlIsBlankNode(pnode))
 			pnode = pnode->next;
@@ -218,9 +226,9 @@ rss_entry(struct feed *rss, xmlNode *pnode)
 			break;
 
 		dmsg(1, "%s: pnode->name: %s", __func__, (char *)pnode->name);
-		if (strcmp((char *)pnode->name, "title") == 0) {
+		if (isnode(pnode, "title")) {
 			current->title = xml_get_content(pool, pnode);
-		} else if (strcmp((char *)pnode->name, "link") == 0) {
+		} else if (isnode(pnode, "link")) {
 			// atom
 			if ((p = xml_get_value(pool, pnode, "rel")) != NULL) {
 				if (strcmp(p, "alternate") == 0) {
@@ -230,18 +238,15 @@ rss_entry(struct feed *rss, xmlNode *pnode)
 			} else {
 				link = xml_get_content(pool, pnode);
 			}
-		} else if (strcmp((char *)pnode->name, "guid") == 0) {
+		} else if (isnode(pnode, "guid")) {
 			guid = xml_get_content(pool, pnode);
-		} else if (!strcmp((char *)pnode->name, "description")) {
+		} else if (isnode(pnode, "description")) {
 			current->desc = xml_get_content(pool, pnode);
-		} else if (!strcmp((char *)pnode->name, "content")) {
+		} else if (isnode(pnode, "content")) {
 			current->desc = xml_get_content(pool, pnode);
-		} else if (!strcasecmp((char *)pnode->name, "date") ||
-		    !strcasecmp((char *)pnode->name, "pubDate") ||
-		    !strcasecmp((char *)pnode->name, "dc:date") ||
-		    !strcmp((char *)pnode->name, "modified") ||
-		    !strcmp((char *)pnode->name, "updated") ||
-		    !strcasecmp((char *)pnode->name, "cropDate")) {
+		} else if (isnodecase(pnode, "date") || isnodecase(pnode, "pubDate") ||
+		    isnodecase(pnode, "dc:date") || isnode(pnode, "modified") ||
+		    isnode(pnode, "updated") || isnodecase(pnode, "cropDate")) {
 			current->date = strptime2((char *)xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
 		}
 
@@ -282,20 +287,17 @@ rss_head(struct feed *rss, xmlNode *node)
 			break;
 
 		dmsg(1, "%s: node->name: %s", __func__, (char *)node->name);
-		if (!strcmp((char *)node->name, "title")) {
+		if (isnode(node, "title")) {
 			rss->title = xml_get_content(pool, node);
-		} else if (!strcmp((char *)node->name, "description")) {
+		} else if (isnode(node, "description")) {
 			rss->desc = xml_get_content(pool, node);
-		} else if (!strcmp((char *)node->name, "date") ||
-		    !strcmp((char *)node->name, "pubDate") ||
-		    !strcmp((char *)node->name, "modified") ||
-		    !strcmp((char *)node->name, "updated") ||
-		    !strcmp((char *)node->name, "dc:date")) {
+		} else if (isnode(node, "date") || isnode(node, "pubDate") ||
+		    isnode(node, "modified") || isnode(node, "updated") ||
+		    isnode(node, "dc:date")) {
 			rss->date = strptime2((char *)xmlNodeListGetString(node->xmlChildrenNode->doc, node->xmlChildrenNode, 1));
-		} else if (!strcmp((char *)node->name, "channel") && (rss->version == RSS_V1_0)) {
+		} else if (isnode(node, "channel") && (rss->version == RSS_V1_0)) {
 			rss_channel(rss, node->xmlChildrenNode);
-		} else if (!strcmp((char *)node->name, "item") ||
-		    !strcmp((char *)node->name, "entry")) {
+		} else if (isnode(node, "item") || isnode(node, "entry")) {
 			if (rss_entry(rss, node->xmlChildrenNode) == -1) {
 				xmlFreeDoc(doc);
 				rss_close(rss);
@@ -349,7 +351,7 @@ rss_parse(const char *xmlstream, int isfile)
 		fprintf(stderr, "%s: bad document\n", __func__);
 		goto faildoc;
 	} else if (rss->version < ATOM_V0_1) {
-		if (strcmp((char *)node->name, "channel")) {
+		if (isnode(node, "channel") == 0) {
 			fprintf (stderr, "%s: bad document: channel missing\n", __func__);
 			goto faildoc;
 		} else if (rss->version != RSS_V1_0) // document is RSS
@@ -385,9 +387,9 @@ rss_demux(struct feed *rss, xmlNode *node)
 
 	if ((char *)node->name == NULL)
 		goto done;
-	else if (strcmp((char *)node->name, "html") == 0) // not xml
+	else if (isnode(node, "html")) // not xml
 		goto done;
-	else if (strcmp((char *)node->name, "feed") == 0) {
+	else if (isnode(node, "feed")) {
 		version = ATOM_V0_1;	//default
 		if ((p = xml_get_value(pool, node, "version")) == NULL)
 			goto done;
@@ -395,7 +397,7 @@ rss_demux(struct feed *rss, xmlNode *node)
 			version = ATOM_V0_3;
 		else if (strcmp(p, "0.2") == 0)
 			version = ATOM_V0_2;
-	} else if (strcmp((char *)node->name, "rss") == 0) {
+	} else if (isnode(node, "rss")) {
 		if ((p = xml_get_value(pool, node, "version")) == NULL)
 			goto done;
 		else if (strcmp(p, "0.91") == 0)
@@ -409,8 +411,7 @@ rss_demux(struct feed *rss, xmlNode *node)
 		else if ((strcmp(p, "2") == 0) || (strcmp(p, "2.0") == 0) ||
 			    (strcmp(p, "2.00") == 0))
 			version = RSS_V2_0;
-	} else if ((strcmp((char *)node->name, "rdf") == 0) ||
-		    (strcmp((char *)node->name, "RDF") == 0)) {
+	} else if (isnode(node, "rdf") || isnode(node, "RDF")) {
 		version = RSS_V1_0;
 	}
 done:
