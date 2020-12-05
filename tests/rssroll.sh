@@ -26,7 +26,7 @@ _runquery() {
 }
 
 echo
-echo "===== Run DB Tests ====="
+echo "===== Run DB tests ====="
 _runquery "SELECT COUNT(*) FROM categories;2"
 _runquery "SELECT title FROM categories WHERE id=2;test2"
 _runquery "SELECT COUNT(*) FROM channels;6"

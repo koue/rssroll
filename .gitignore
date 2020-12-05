@@ -6,3 +6,4 @@ src/*.core
 tidy.txt
 compile_commands.json
 tests/rssrolltest.db
+tests/test.file
