@@ -1,6 +1,14 @@
 #!/bin/sh
-set -e
+set -eo pipefail
+
+### Variables
+VALGRINDCMD="valgrind -q --tool=memcheck --leak-check=yes --num-callers=20"
+TESTCMD="../src/index.cgi --valgrind"
+
+###
+# clean database
 rm -f rssrolltest.db
+
 sqlite3 rssrolltest.db < ../scripts/create_database.sql
 sqlite3 rssrolltest.db "INSERT INTO categories (title) VALUES ('test1')"
 sqlite3 rssrolltest.db "INSERT INTO categories (title) VALUES ('test2')"
@@ -10,9 +18,11 @@ sqlite3 rssrolltest.db "INSERT INTO channels (catid, link) VALUES (1, 'https://r
 sqlite3 rssrolltest.db "INSERT INTO channels (catid, link) VALUES (2, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/rss10.xml')"
 sqlite3 rssrolltest.db "INSERT INTO channels (catid, link) VALUES (1, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/rss20.xml')"
 sqlite3 rssrolltest.db "INSERT INTO channels (catid, link) VALUES (2, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/notexist.xml')"
-# run valgrind
-valgrind -q --tool=memcheck --leak-check=yes --num-callers=20 ../src/rssroll -d rssrolltest.db
-# queries
+
+### Valgrind test
+${VALGRINDCMD} ../src/rssroll -d rssrolltest.db
+
+### DB queries test
 SQLITERUN="sqlite3 rssrolltest.db"
 _runquery() {
     QUERY=`echo "${1}" | cut -d ';' -f 1`
@@ -48,5 +58,43 @@ _runquery "SELECT COUNT(*) FROM feeds WHERE title IS '(NULL)';6"
 _runquery "SELECT COUNT(*) FROM feeds WHERE title IS NOT '(NULL)';22"
 _runquery "SELECT COUNT(*) FROM feeds WHERE link LIKE '%backissues%';9"
 _runquery "SELECT COUNT(*) FROM feeds WHERE description LIKE '%ok%';4"
+echo "OK"
+echo "===== Done ====="
+
+### HTML tests
+_runhtml() {
+    QUERY_STRING=`echo "${1}" | cut -d ':' -f 1`
+    TEMPLATE=`echo "${1}" | cut -d ':' -f 2`
+    RESULT=`echo "${1}" | cut -d ':' -f 3`
+
+    ${TESTCMD} > test.file
+    diff -q "${TEMPLATE}" test.file
+    ${VALGRINDCMD} ${TESTCMD} | ${RESULT}
+}
+
+echo
+echo "===== Run html tests ====="
+# default html
+_runhtml ":html/default.template:grep DOCTYPE"
+# category 1 html
+_runhtml "1:html/category1.template:grep DOCTYPE"
+# category 1, page2 html
+_runhtml "1/10:html/category1-page2.template:grep DOCTYPE"
+# category 1, page3 html
+_runhtml "1/20:html/category1-page3.template:grep DOCTYPE"
+# category 1, nomore html
+_runhtml "1/30:html/category1-nomore.template:grep DOCTYPE"
+# category 2 html
+_runhtml "2:html/category2.template:grep DOCTYPE"
+# no category html
+_runhtml "3:html/nocategory.template:grep DOCTYPE"
+# wrong query html
+_runhtml "zxc/10:html/wrongquery.template:grep 400"
+# wrong query html
+_runhtml "./10:html/wrongquery.template:grep 400"
+# wrong query html
+_runhtml "&amp;10:html/wrongquery.template:grep 400"
+# remove test file
+rm -f test.file
 echo "OK"
 echo "===== Done ====="

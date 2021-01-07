@@ -286,7 +286,7 @@ main(int argc, char *argv[])
 
 	cez_queue_init(&config);
 	if (valgrind) {
-		conffile = "etc/rssrollrc";
+		conffile = "../etc/rssrollrc";
 	} else {
 		conffile = CONFFILE;
 	}
@@ -300,11 +300,11 @@ main(int argc, char *argv[])
 	}
 
 	if (valgrind) {
-		if (cqu(&config, "dbpath", "tests/rssrolltest.db") == -1) {
+		if (cqu(&config, "dbpath", "rssrolltest.db") == -1) {
 			printf("Cannot adjust dbpath. Exit\n");
 			exit (1);
 		}
-		if (cqu(&config, "htmldir", "./html") == -1) {
+		if (cqu(&config, "htmldir", "../html") == -1) {
 			printf("Cannot adjust htmldir. Exit\n");
 			exit (1);
 		}
@@ -352,7 +352,6 @@ main(int argc, char *argv[])
 	}
 
 	printf("%s\r\n\r\n", cez_queue_get(&config, "ct_html"));
-	fflush(stdout);
 	render_init();
 	cez_render_call(&render, "MAIN", NULL);
 
