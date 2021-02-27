@@ -1,0 +1,66 @@
+Content-Type: text/html; charset=utf-8
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>rssroller</title>
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+        <meta http-equiv="Content-Style-Type" content="text/css" />
+        <style type="text/css" media="screen, print">
+		@import "css/flak.css";
+        </style>
+</head>
+<body>
+<div class="main">
+<div class="topbar"><a href="http://rssroller.example.net/cgi-bin/rssroll.cgi" title="home">rssroller</a></div>
+<div class="content">
+
+<article>
+<div class="post">
+<a name="top"></a>
+<h3><a href="http://xml.com/pub/2000/08/09/xslt/xslt.html">Processing Inclusions with XSLT</a></h3>
+<div class="sf tail">
+<br>
+<a href="http://xml.com/pub/2000/08/09/xslt/xslt.html">xml.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/4">follow</a><br />
+</div>
+<div class="desc">
+<p>
+     Processing document inclusions with general XML tools can be
+     problematic. This article proposes a way of preserving inclusion
+     information through SAX-based processing.
+    </p>
+</div>
+<a href="#categories">#categories</a>
+</div>
+</article>
+<article>
+<div class="post">
+<a name="top"></a>
+<h3><a href="http://xml.com/pub/2000/08/09/rdfdb/index.html">Putting RDF to Work</a></h3>
+<div class="sf tail">
+<br>
+<a href="http://xml.com/pub/2000/08/09/rdfdb/index.html">xml.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/4">follow</a><br />
+</div>
+<div class="desc">
+<p>
+     Tool and API support for the Resource Description Framework
+     is slowly coming of age. Edd Dumbill takes a look at RDFDB,
+     one of the most exciting new RDF toolkits.
+    </p>
+</div>
+<a href="#categories">#categories</a>
+</div>
+</article>
+
+<p> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </p>
+</div>
+<div class="sidebar">
+<div>
+<a name="categories"><h3>Categories</h3></a>
+<p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?1'>test1</a></p><p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?2'>test2</a></p>
+</div>
+</div>
+</div>
+</body></html>
+

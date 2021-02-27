@@ -84,6 +84,7 @@ _test_db() {
 
 ### HTML tests
 _runhtml() {
+    echo "$1"
     QUERY_STRING=`echo "${1}" | cut -d ':' -f 1`
     TEMPLATE=`echo "${1}" | cut -d ':' -f 2`
     RESULT=`echo "${1}" | cut -d ':' -f 3`
@@ -95,6 +96,10 @@ _runhtml() {
 
 _test_html() {
     _print_header html
+    # channel 1 html
+    _runhtml "0/1:html/channel1.template:grep DOCTYPE"
+    # channel 4 html
+    _runhtml "0/4:html/channel4.template:grep DOCTYPE"
     # default html
     _runhtml ":html/default.template:grep DOCTYPE"
     # category 1 html

@@ -1,8 +1,12 @@
 # rssroll ChangeLog
-# v 0.9.0
+# v 0.10.0
 # Nikola Kolev <koue@chaosophia.net>
 # http://chaosophia.net/rssroll/
 #
+Changes 0.10.0	(2021.02.27):
+
+- Add showing of single channel feeds only.
+
 Changes 0.9.0	(2020.11.10):
 
 - Update to libcez version 1.13.

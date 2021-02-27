@@ -22,7 +22,7 @@ Content-Type: text/html; charset=utf-8
 <h3><a href="http://xml.com/pub/2000/08/09/xslt/xslt.html">Processing Inclusions with XSLT</a></h3>
 <div class="sf tail">
 <br>
-<a href="http://xml.com/pub/2000/08/09/xslt/xslt.html">xml.com</a><br />
+<a href="http://xml.com/pub/2000/08/09/xslt/xslt.html">xml.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/4">follow</a><br />
 </div>
 <div class="desc">
 <p>
@@ -40,7 +40,7 @@ Content-Type: text/html; charset=utf-8
 <h3><a href="http://xml.com/pub/2000/08/09/rdfdb/index.html">Putting RDF to Work</a></h3>
 <div class="sf tail">
 <br>
-<a href="http://xml.com/pub/2000/08/09/rdfdb/index.html">xml.com</a><br />
+<a href="http://xml.com/pub/2000/08/09/rdfdb/index.html">xml.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/4">follow</a><br />
 </div>
 <div class="desc">
 <p>
@@ -58,7 +58,7 @@ Content-Type: text/html; charset=utf-8
 <h3><a href="http://writetheweb.com/read.php?item=24">Giving the world a pluggable Gnutella</a></h3>
 <div class="sf tail">
 <br>
-<a href="http://writetheweb.com/read.php?item=24">writetheweb.com</a><br />
+<a href="http://writetheweb.com/read.php?item=24">writetheweb.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/2">follow</a><br />
 </div>
 <div class="desc">
 <p>WorldOS is a framework on which to build programs that work like Freenet or Gnutella -allowing distributed applications using peer-to-peer routing.</p>
@@ -72,7 +72,7 @@ Content-Type: text/html; charset=utf-8
 <h3><a href="http://writetheweb.com/read.php?item=23">Syndication discussions hot up</a></h3>
 <div class="sf tail">
 <br>
-<a href="http://writetheweb.com/read.php?item=23">writetheweb.com</a><br />
+<a href="http://writetheweb.com/read.php?item=23">writetheweb.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/2">follow</a><br />
 </div>
 <div class="desc">
 <p>After a period of dormancy, the Syndication mailing list has become active again, with contributions from leaders in traditional media and Web syndication.</p>
@@ -86,7 +86,7 @@ Content-Type: text/html; charset=utf-8
 <h3><a href="http://writetheweb.com/read.php?item=22">Personal web server integrates file sharing and messaging</a></h3>
 <div class="sf tail">
 <br>
-<a href="http://writetheweb.com/read.php?item=22">writetheweb.com</a><br />
+<a href="http://writetheweb.com/read.php?item=22">writetheweb.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/2">follow</a><br />
 </div>
 <div class="desc">
 <p>The Magi Project is an innovative project to create a combined personal web server and messaging system that enables the sharing and synchronization of information across desktop, laptop and palmtop devices.</p>
@@ -100,7 +100,7 @@ Content-Type: text/html; charset=utf-8
 <h3><a href="http://writetheweb.com/read.php?item=21">Syndication and Metadata</a></h3>
 <div class="sf tail">
 <br>
-<a href="http://writetheweb.com/read.php?item=21">writetheweb.com</a><br />
+<a href="http://writetheweb.com/read.php?item=21">writetheweb.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/2">follow</a><br />
 </div>
 <div class="desc">
 <p>RSS is probably the best known metadata format around. RDF is probably one of the least understood. In this essay, published on my O'Reilly Network weblog, I argue that the next generation of RSS should be based on RDF.</p>
@@ -114,7 +114,7 @@ Content-Type: text/html; charset=utf-8
 <h3><a href="http://writetheweb.com/read.php?item=20">UK bloggers get organised</a></h3>
 <div class="sf tail">
 <br>
-<a href="http://writetheweb.com/read.php?item=20">writetheweb.com</a><br />
+<a href="http://writetheweb.com/read.php?item=20">writetheweb.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/2">follow</a><br />
 </div>
 <div class="desc">
 <p>Looks like the weblogs scene is gathering pace beyond the shores of the US. There's now a UK-specific page on weblogs.com, and a mailing list at egroups.</p>
@@ -128,7 +128,7 @@ Content-Type: text/html; charset=utf-8
 <h3><a href="http://writetheweb.com/read.php?item=19">Yournamehere.com more important than anything</a></h3>
 <div class="sf tail">
 <br>
-<a href="http://writetheweb.com/read.php?item=19">writetheweb.com</a><br />
+<a href="http://writetheweb.com/read.php?item=19">writetheweb.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/2">follow</a><br />
 </div>
 <div class="desc">
 <p>Whatever you're publishing on the web, your site name is the most valuable asset you have, according to Carl Steadman.</p>

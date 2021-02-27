@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2018-2021 Nikola Kolev <koue@chaosophia.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@
 
 #include <cez_core_pool.h>
 
-#define	VERSION		"rssroll/0.9.0"
+#define	VERSION		"rssroll/0.10.0"
 #define	CONFFILE	"/etc/rssrollrc"
 
 enum {
@@ -59,6 +59,7 @@ struct item {
 	char *url;
 	char *desc;
 	time_t date;
+	long chanid;
 	TAILQ_ENTRY(item) entry;
 };
 

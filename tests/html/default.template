@@ -23,7 +23,7 @@ Content-Type: text/html; charset=utf-8
 <div class="sf tail">
 Mon Sep 30 01:56:00 2002
 <br>
-<a href="http://scriptingnews.userland.com/backissues/2002/09/29#When:6:56:02PM">scriptingnews.userland.com</a><br />
+<a href="http://scriptingnews.userland.com/backissues/2002/09/29#When:6:56:02PM">scriptingnews.userland.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/5">follow</a><br />
 </div>
 <div class="desc">
 <p>"rssflowersalignright"With any luck we should have one or two more days of namespaces stuff here on Scripting News. It feels like it's winding down. Later in the week I'm going to a <a href="http://harvardbusinessonline.hbsp.harvard.edu/b02/en/conferences/conf_detail.jhtml?id=s775stg&pid=144XCF">conference</a> put on by the Harvard Business School. So that should change the topic a bit. The following week I'm off to Colorado for the <a href="http://www.digitalidworld.com/conference/2002/index.php">Digital ID World</a> conference. We had to go through namespaces, and it turns out that weblogs are a great way to work around mail lists that are clogged with <a href="http://www.userland.com/whatIsStopEnergy">stop energy</a>. I think we solved the problem, have reached a consensus, and will be ready to move forward shortly.</p>
@@ -38,7 +38,7 @@ Mon Sep 30 01:56:00 2002
 <div class="sf tail">
 Sun Sep 29 19:59:00 2002
 <br>
-<a href="http://scriptingnews.userland.com/backissues/2002/09/29#When:12:59:01PM">scriptingnews.userland.com</a><br />
+<a href="http://scriptingnews.userland.com/backissues/2002/09/29#When:12:59:01PM">scriptingnews.userland.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/5">follow</a><br />
 </div>
 <div class="desc">
 <p>Joshua Allen: <a href="http://www.netcrucible.com/blog/2002/09/29.html#a243">Who loves namespaces?</a></p>
@@ -53,7 +53,7 @@ Sun Sep 29 19:59:00 2002
 <div class="sf tail">
 Mon Sep 30 01:52:00 2002
 <br>
-<a href="http://scriptingnews.userland.com/backissues/2002/09/29#When:6:52:02PM">scriptingnews.userland.com</a><br />
+<a href="http://scriptingnews.userland.com/backissues/2002/09/29#When:6:52:02PM">scriptingnews.userland.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/5">follow</a><br />
 </div>
 <div class="desc">
 <p><a href="http://www.docuverse.com/blog/donpark/2002/09/29.html#a68">Don Park</a>: "It is too easy for engineer to anticipate too much and XML Namespace is a frequent host of over-anticipation."</p>
@@ -68,7 +68,7 @@ Mon Sep 30 01:52:00 2002
 <div class="sf tail">
 Sun Sep 29 17:05:00 2002
 <br>
-<a href="http://scriptingnews.userland.com/backissues/2002/09/29#When:10:05:20AM">scriptingnews.userland.com</a><br />
+<a href="http://scriptingnews.userland.com/backissues/2002/09/29#When:10:05:20AM">scriptingnews.userland.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/5">follow</a><br />
 </div>
 <div class="desc">
 <p><a href="http://scriptingnews.userland.com/stories/storyReader$1768">Three Sunday Morning Options</a>. "I just got off the phone with Tim Bray, who graciously returned my call on a Sunday morning while he was making breakfast for his kids." We talked about three options for namespaces in RSS 2.0, and I think I now have the tradeoffs well outlined, and ready for other developers to review. If there is now a consensus, I think we can easily move forward. </p>
@@ -83,7 +83,7 @@ Sun Sep 29 17:05:00 2002
 <div class="sf tail">
 Sun Sep 29 19:09:00 2002
 <br>
-<a href="http://scriptingnews.userland.com/backissues/2002/09/29#When:12:09:28PM">scriptingnews.userland.com</a><br />
+<a href="http://scriptingnews.userland.com/backissues/2002/09/29#When:12:09:28PM">scriptingnews.userland.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/5">follow</a><br />
 </div>
 <div class="desc">
 <p><a href="http://blog.mediacooperative.com/mt-comments.cgi?entry_id=1435">Mark Pilgrim</a> weighs in behind option 1 on a Ben Hammersley thread. On the RSS2-Support list, Phil Ringnalda lists a set of <a href="http://groups.yahoo.com/group/RSS2-Support/message/54">proposals</a>, the first is equivalent to option 1. </p>
@@ -98,7 +98,7 @@ Sun Sep 29 19:09:00 2002
 <div class="sf tail">
 Sun Sep 29 15:01:00 2002
 <br>
-<a href="http://scriptingnews.userland.com/backissues/2002/09/29#When:8:01:02AM">scriptingnews.userland.com</a><br />
+<a href="http://scriptingnews.userland.com/backissues/2002/09/29#When:8:01:02AM">scriptingnews.userland.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/5">follow</a><br />
 </div>
 <div class="desc">
 <p><a href="http://effbot.org/zone/effnews-4.htm">Fredrik Lundh breaks</a> through, following Simon Fell's lead, now his Python aggregator works with Scripting News <a href="http://www.scripting.com/rss.xml">in</a> RSS 2.0. BTW, the spec is imperfect in regards to namespaces. We anticipated a 2.0.1 and 2.0.2 in the Roadmap for exactly this purpose. Thanks for your help, as usual, Fredrik. </p>
@@ -113,7 +113,7 @@ Sun Sep 29 15:01:00 2002
 <div class="sf tail">
 Sun Sep 29 23:48:00 2002
 <br>
-<a href="http://scriptingnews.userland.com/backissues/2002/09/29#lawAndOrder">scriptingnews.userland.com</a><br />
+<a href="http://scriptingnews.userland.com/backissues/2002/09/29#lawAndOrder">scriptingnews.userland.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/5">follow</a><br />
 </div>
 <div class="desc">
 <p>
@@ -130,7 +130,7 @@ Sun Sep 29 23:48:00 2002
 <div class="sf tail">
 Sun Sep 29 17:24:00 2002
 <br>
-<a href="http://scriptingnews.userland.com/backissues/2002/09/29#rule1">scriptingnews.userland.com</a><br />
+<a href="http://scriptingnews.userland.com/backissues/2002/09/29#rule1">scriptingnews.userland.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/5">follow</a><br />
 </div>
 <div class="desc">
 <p>
@@ -148,7 +148,7 @@ Sun Sep 29 17:24:00 2002
 <div class="sf tail">
 Sun Sep 29 11:13:00 2002
 <br>
-<a href="http://scriptingnews.userland.com/backissues/2002/09/29#reallyEarlyMorningNocoffeeNotes">scriptingnews.userland.com</a><br />
+<a href="http://scriptingnews.userland.com/backissues/2002/09/29#reallyEarlyMorningNocoffeeNotes">scriptingnews.userland.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/5">follow</a><br />
 </div>
 <div class="desc">
 <p>
@@ -168,7 +168,7 @@ Sun Sep 29 11:13:00 2002
 <h3><a href="http://cafe.elharo.com/java/ant-tip-1-write-a-master-build-file/">Ant Tip 1: Write a master build file</a></h3>
 <div class="sf tail">
 <br>
-<a href="http://cafe.elharo.com/java/ant-tip-1-write-a-master-build-file/">cafe.elharo.com</a><br />
+<a href="http://cafe.elharo.com/java/ant-tip-1-write-a-master-build-file/">cafe.elharo.com</a>&nbsp;|&nbsp;<a href="http://rssroller.example.net/cgi-bin/rssroll.cgi?0/3">follow</a><br />
 </div>
 <div class="desc">
 <p>Many Java projects are divided into multiple subprojects or modules, each in its own directory. Often you&#8217;ll want to build
