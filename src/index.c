@@ -192,68 +192,6 @@ render_items_list(const char *macro, void *arg)
 }
 
 static void
-render_channel(const char *macro, void *arg)
-{
-	struct item *current = (struct item *)arg;
-
-	if (current && current->url) {
-		char domain[64];
-		sscanf(current->url, "%*[^//]//%63[^/]", domain);
-		printf("%s", domain);
-	}
-}
-
-static void
-render_follow(const char *macro, void *arg)
-{
-	struct item *current = (struct item *)arg;
-
-	if (current && current->chanid) {
-		printf("%ld", current->chanid);
-	}
-}
-
-static void
-render_url(const char *macro, void *arg)
-{
-	struct item *current = (struct item *)arg;
-
-	if (current && current->url) {
-		printf("%s", current->url);
-	}
-}
-
-static void
-render_description(const char *macro, void *arg)
-{
-	struct item *current = (struct item *)arg;
-
-	if (current && current->desc) {
-		printf("%s", current->desc);
-	}
-}
-
-static void
-render_pubdate(const char *macro, void *arg)
-{
-	struct item *current = (struct item *)arg;
-
-	if (current && current->date) {
-		printf("%s", ctime(&current->date));
-	}
-}
-
-static void
-render_title(const char *macro, void *arg)
-{
-	struct item *current = (struct item *)arg;
-
-	if (current && current->title) {
-		printf("%s", current->title);
-	}
-}
-
-static void
 render_main(const char *macro, void *arg)
 {
 	cez_render_call(&render, macro, arg);
@@ -306,27 +244,37 @@ render_categories(const char *macro, void *arg)
 
 
 static void
-render_ctype(const char *macro, void *arg)
+render_print(const char *macro, void *arg)
 {
-	printf("%s", cez_queue_get(&config, "ct_html"));
-}
+	struct item *current = (struct item *)arg;
 
-static void
-render_owner(const char *macro, void *arg)
-{
-	printf("%s", cez_queue_get(&config, "owner"));
-}
-
-static void
-render_name(const char *macro, void *arg)
-{
-	printf("%s", cez_queue_get(&config, "name"));
-}
-
-static void
-render_baseurl(const char *macro, void *arg)
-{
-	printf("%s", cez_queue_get(&config, "url"));
+	if (strcmp(macro, "BASEURL") == 0) {
+		printf("%s", cez_queue_get(&config, "url"));
+	} else if (strcmp(macro, "NAME") == 0) {
+		printf("%s", cez_queue_get(&config, "name"));
+	} else if (strcmp(macro, "OWNER") == 0) {
+		printf("%s", cez_queue_get(&config, "owner"));
+	} else if (strcmp(macro, "CTYPE") == 0) {
+		printf("%s", cez_queue_get(&config, "ct_html"));
+	} else if (current == NULL) {
+		return;
+	} else if (strcmp(macro, "TITLE") == 0) {
+		(current->title) && printf("%s", current->title);
+	} else if (strcmp(macro, "PUBDATE") == 0) {
+		(current->date) && printf("%s", ctime(&current->date));
+	} else if (strcmp(macro, "DESCRIPTION") == 0) {
+		(current->desc) && printf("%s", current->desc);
+	} else if (strcmp(macro, "URL") == 0) {
+		(current->url) && printf("%s", current->url);
+	} else if (strcmp(macro, "FOLLOW") == 0) {
+		(current->chanid) && printf("%ld", current->chanid);
+	} else if (strcmp(macro, "CHANNEL") == 0) {
+		if (current->url) {
+			char domain[64];
+			sscanf(current->url, "%*[^//]//%63[^/]", domain);
+			printf("%s", domain);
+		}
+	}
 }
 
 static void
@@ -347,17 +295,17 @@ render_init(void)
 	snprintf(fn, sizeof(fn), "%s/%s/feed.html", cez_queue_get(&config, "htmldir"),
 	    cez_queue_get(&config, "webtheme"));
 	cez_render_add(&render, "ITEMHTML", fn, (struct entry *)render_main);
-	cez_render_add(&render, "RSSROLL_BASEURL", NULL, (struct item *)render_baseurl);
-	cez_render_add(&render, "RSSROLL_NAME", NULL, (struct item *)render_name);
-	cez_render_add(&render, "RSSROLL_OWNER", NULL, (struct item *)render_owner);
-	cez_render_add(&render, "RSSROLL_CTYPE", NULL, (struct item *)render_ctype);
-	cez_render_add(&render, "RSSROLL_CATEGORIES", NULL, (struct item *)render_categories);
-	cez_render_add(&render, "PUBDATE", NULL, (struct item *)render_pubdate);
-	cez_render_add(&render, "TITLE", NULL, (struct item *)render_title);
-	cez_render_add(&render, "DESCRIPTION", NULL, (struct item *)render_description);
-	cez_render_add(&render, "URL", NULL, (struct item *)render_url);
-	cez_render_add(&render, "CHANNEL", NULL, (struct item *)render_channel);
-	cez_render_add(&render, "FOLLOW", NULL, (struct item *)render_follow);
+	cez_render_add(&render, "BASEURL", NULL, (struct item *)render_print);
+	cez_render_add(&render, "NAME", NULL, (struct item *)render_print);
+	cez_render_add(&render, "OWNER", NULL, (struct item *)render_print);
+	cez_render_add(&render, "CTYPE", NULL, (struct item *)render_print);
+	cez_render_add(&render, "CATEGORIES", NULL, (struct item *)render_categories);
+	cez_render_add(&render, "PUBDATE", NULL, (struct item *)render_print);
+	cez_render_add(&render, "TITLE", NULL, (struct item *)render_print);
+	cez_render_add(&render, "DESCRIPTION", NULL, (struct item *)render_print);
+	cez_render_add(&render, "URL", NULL, (struct item *)render_print);
+	cez_render_add(&render, "CHANNEL", NULL, (struct item *)render_print);
+	cez_render_add(&render, "FOLLOW", NULL, (struct item *)render_print);
 	cez_render_add(&render, "PREV", NULL, (struct item*)render_prev);
 	cez_render_add(&render, "NEXT", NULL, (struct item*)render_next);
 }
