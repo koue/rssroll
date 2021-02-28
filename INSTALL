@@ -24,16 +24,16 @@ To setup:
 	# vi /var/www/etc/rssrollrc
 	Edit config file and add proper options.
 
-	# sqlite3 PATH_TO_SQLITE_DB < scripts/create_database.sql
+	# sqlite3 PATH_TO_SQLITE_DB < scripts/database_create.sql
 	Create empty database.
 
-	# sqlite3 PATH_TO_SQLITE_DB "insert into categories (title) values ('news')"
-	Add category into database.
+	# sqlite3 PATH_TO_SQLITE_DB "insert into tags (title) values ('news')"
+	Add tag into database.
 
-	# sqlite3 PATH_TO_SQLITE_DB "insert into categories (title) values ('tech')"
-	Add more categories into database.
+	# sqlite3 PATH_TO_SQLITE_DB "insert into tags (title) values ('tech')"
+	Add more tags into database.
 
-	# sqlite3 PATH_TO_SQLITE_DB "insert into channels (catid, modified, link) values (2, 123456, 'http://www.freebsd.org/security/rss.xml')"
+	# sqlite3 PATH_TO_SQLITE_DB "insert into channels (tagid, modified, link) values (2, 123456, 'http://www.freebsd.org/security/rss.xml')"
 	Add RSS URL for tracing.
 
 	# chroot -u www -g www /var/www /bin/rssroll -d PATH_TO_SQLITE_DB

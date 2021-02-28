@@ -23,18 +23,18 @@ _clean() {
 }
 
 _db_create() {
-    sqlite3 rssrolltest.db < ../scripts/create_database.sql
+    sqlite3 rssrolltest.db < ../scripts/database_create.sql
 }
 
 _db_load() {
-    sqlite3 rssrolltest.db "INSERT INTO categories (title) VALUES ('test1')"
-    sqlite3 rssrolltest.db "INSERT INTO categories (title) VALUES ('test2')"
-    sqlite3 rssrolltest.db "INSERT INTO channels (catid, link) VALUES (1, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/atom.xml')"
-    sqlite3 rssrolltest.db "INSERT INTO channels (catid, link) VALUES (2, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/rss091.xml')"
-    sqlite3 rssrolltest.db "INSERT INTO channels (catid, link) VALUES (1, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/rss092.xml')"
-    sqlite3 rssrolltest.db "INSERT INTO channels (catid, link) VALUES (2, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/rss10.xml')"
-    sqlite3 rssrolltest.db "INSERT INTO channels (catid, link) VALUES (1, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/rss20.xml')"
-    sqlite3 rssrolltest.db "INSERT INTO channels (catid, link) VALUES (2, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/notexist.xml')"
+    sqlite3 rssrolltest.db "INSERT INTO tags (title) VALUES ('test1')"
+    sqlite3 rssrolltest.db "INSERT INTO tags (title) VALUES ('test2')"
+    sqlite3 rssrolltest.db "INSERT INTO channels (tagid, link) VALUES (1, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/atom.xml')"
+    sqlite3 rssrolltest.db "INSERT INTO channels (tagid, link) VALUES (2, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/rss091.xml')"
+    sqlite3 rssrolltest.db "INSERT INTO channels (tagid, link) VALUES (1, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/rss092.xml')"
+    sqlite3 rssrolltest.db "INSERT INTO channels (tagid, link) VALUES (2, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/rss10.xml')"
+    sqlite3 rssrolltest.db "INSERT INTO channels (tagid, link) VALUES (1, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/rss20.xml')"
+    sqlite3 rssrolltest.db "INSERT INTO channels (tagid, link) VALUES (2, 'https://raw.githubusercontent.com/koue/rssroll/develop/tests/notexist.xml')"
 }
 
 ### Valgrind test
@@ -58,10 +58,10 @@ _runquery() {
 
 _test_db() {
     _print_header db
-    _runquery "SELECT COUNT(*) FROM categories;2"
-    _runquery "SELECT title FROM categories WHERE id=2;test2"
+    _runquery "SELECT COUNT(*) FROM tags;2"
+    _runquery "SELECT title FROM tags WHERE id=2;test2"
     _runquery "SELECT COUNT(*) FROM channels;6"
-    _runquery "SELECT COUNT(*) FROM channels WHERE catid=1;3"
+    _runquery "SELECT COUNT(*) FROM channels WHERE tagid=1;3"
     _runquery "SELECT COUNT(*) FROM feeds;28"
     _runquery "SELECT COUNT(*) FROM feeds WHERE chanid=3;10"
     _runquery "SELECT COUNT(*) FROM feeds WHERE chanid=5;9"
@@ -102,18 +102,18 @@ _test_html() {
     _runhtml "0/4:html/channel4.template:grep DOCTYPE"
     # default html
     _runhtml ":html/default.template:grep DOCTYPE"
-    # category 1 html
-    _runhtml "1:html/category1.template:grep DOCTYPE"
-    # category 1, page2 html
-    _runhtml "1/10:html/category1-page2.template:grep DOCTYPE"
-    # category 1, page3 html
-    _runhtml "1/20:html/category1-page3.template:grep DOCTYPE"
-    # category 1, nomore html
-    _runhtml "1/30:html/category1-nomore.template:grep DOCTYPE"
-    # category 2 html
-    _runhtml "2:html/category2.template:grep DOCTYPE"
-    # no category html
-    _runhtml "3:html/nocategory.template:grep DOCTYPE"
+    # tag 1 html
+    _runhtml "1:html/tag1.template:grep DOCTYPE"
+    # tag 1, page2 html
+    _runhtml "1/10:html/tag1-page2.template:grep DOCTYPE"
+    # tag 1, page3 html
+    _runhtml "1/20:html/tag1-page3.template:grep DOCTYPE"
+    # tag 1, nomore html
+    _runhtml "1/30:html/tag1-nomore.template:grep DOCTYPE"
+    # tag 2 html
+    _runhtml "2:html/tag2.template:grep DOCTYPE"
+    # no tag html
+    _runhtml "3:html/notag.template:grep DOCTYPE"
     # wrong query html
     _runhtml "zxc/10:html/wrongquery.template:grep 400"
     # wrong query html

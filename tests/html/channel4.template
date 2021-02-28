@@ -31,7 +31,7 @@ Content-Type: text/html; charset=utf-8
      information through SAX-based processing.
     </p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -49,7 +49,7 @@ Content-Type: text/html; charset=utf-8
      one of the most exciting new RDF toolkits.
     </p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 
@@ -57,8 +57,10 @@ Content-Type: text/html; charset=utf-8
 </div>
 <div class="sidebar">
 <div>
-<a name="categories"><h3>Categories</h3></a>
-<p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?1'>test1</a></p><p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?2'>test2</a></p>
+<a name="tags"><h3>Tags</h3></a>
+<p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?1'>test1</a></p>
+<p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?2'>test2</a></p>
+
 </div>
 </div>
 </div>

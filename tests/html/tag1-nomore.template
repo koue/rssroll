@@ -21,8 +21,10 @@ Content-Type: text/html; charset=utf-8
 </div>
 <div class="sidebar">
 <div>
-<a name="categories"><h3>Categories</h3></a>
-<p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?1'>test1</a></p><p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?2'>test2</a></p>
+<a name="tags"><h3>Tags</h3></a>
+<p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?1'>test1</a></p>
+<p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?2'>test2</a></p>
+
 </div>
 </div>
 </div>

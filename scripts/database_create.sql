@@ -1,4 +1,4 @@
-CREATE TABLE categories (
+CREATE TABLE tags (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	title VARCHAR(100),
 	description VARCHAR(100),
@@ -7,7 +7,7 @@ CREATE TABLE categories (
 
 CREATE TABLE channels (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	catid INTEGER,
+	tagid INTEGER,
 	modified TIMESTAMP,
 	link VARCHAR(100),
 	language VARCHAR(20),

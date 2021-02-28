@@ -1,3 +1,11 @@
+20210228:
+	Update to 0.10.1
+
+	$ cp PATH_TO_SQLITE_DB PATH_TO_SQLITE_DB.backup
+	$ sqlite3 PATH_TO_SQLITE_DB < scripts/database_update_to_0_10_1.sql
+
+	Replace 'category' parameter with 'tag' in the rssroll config file.
+
 20200922:
 	Update to 0.8
 

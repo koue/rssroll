@@ -42,7 +42,7 @@ Content-Type: text/html; charset=utf-8
 
 That is, [...]</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -66,7 +66,7 @@ if (theSeconds &#38;lt; 10) then
   set theSeconds to "0" &#38; theSeconds
 end [...]</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -83,7 +83,7 @@ into Cafe au Lait or Cafe con Leche. That site was a partial response to
 my feelings about the shortcomings of a lot of existing weblog
 management and CMS software. [...]</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -100,7 +100,7 @@ Vienna RSS client, the WordPress blogging engine, and the PHPMyAdmin
 web-based interface to MySQL. Along the way I’ve noticed the same
 repeating problem in each of these products, and [...]</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -118,7 +118,7 @@ software. Specifically I upgraded MySQL 4.1, Apache 2, and PHP here on
 cafe.elharo.com after noticing that MySQL had crashed. I didn&#8217;t do
 any major version upgrades, just moved everything up to the latest point [...]</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -132,7 +132,7 @@ any major version upgrades, just moved everything up to the latest point [...]</
 <div class="desc">
 <p> I&#8217;m getting really tired of paying for software that doesn&#8217;t work and isn&#8217;t supported. It&#8217;s one thing when a free-beer tool like Thunderbird or Eclipse or doesn&#8217;t work quite right. It&#8217;s quite another when I&#8217;ve given some company my hard-earned cash, and they can&#8217;t bothered to fix bugs,  answer my e-mail, or support [...]</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -149,7 +149,7 @@ posted the above with various suggestions and FAQ references. They were
 nothing I hadn&#8217;t tried before though. However what really got my
 goat about this whole situation was not the [...]</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -166,7 +166,7 @@ travelers who find themselves booked into this boring behemoth or nearby
 locations, situated in the middle of gorgeous suburban Santa Clara, home
 of office parks and strip malls. Believe it or not, [...]</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -180,7 +180,7 @@ of office parks and strip malls. Believe it or not, [...]</p>
 <div class="desc">
 <p>Java&#8217;s slogan is &#8220;Write once, run anywhere&#8221;; but perhaps it should be, &#8220;Write once, run anywhere except Turkey.&#8221; Java is a wonderful programming language that&#8217;s loved and adored around the world, but not in Turkey, a nation of more than 60 million people. Nor is Java all that popular with the millions of Turkish speakers [...]</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -196,7 +196,7 @@ Sun Jul 31 12:29:00 2005
 <p>
          </p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 
@@ -204,8 +204,10 @@ Sun Jul 31 12:29:00 2005
 </div>
 <div class="sidebar">
 <div>
-<a name="categories"><h3>Categories</h3></a>
-<p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?1'>test1</a></p><p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?2'>test2</a></p>
+<a name="tags"><h3>Tags</h3></a>
+<p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?1'>test1</a></p>
+<p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?2'>test2</a></p>
+
 </div>
 </div>
 </div>

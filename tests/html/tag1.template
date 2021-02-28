@@ -28,7 +28,7 @@ Mon Sep 30 01:56:00 2002
 <div class="desc">
 <p>"rssflowersalignright"With any luck we should have one or two more days of namespaces stuff here on Scripting News. It feels like it's winding down. Later in the week I'm going to a <a href="http://harvardbusinessonline.hbsp.harvard.edu/b02/en/conferences/conf_detail.jhtml?id=s775stg&pid=144XCF">conference</a> put on by the Harvard Business School. So that should change the topic a bit. The following week I'm off to Colorado for the <a href="http://www.digitalidworld.com/conference/2002/index.php">Digital ID World</a> conference. We had to go through namespaces, and it turns out that weblogs are a great way to work around mail lists that are clogged with <a href="http://www.userland.com/whatIsStopEnergy">stop energy</a>. I think we solved the problem, have reached a consensus, and will be ready to move forward shortly.</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -43,7 +43,7 @@ Sun Sep 29 19:59:00 2002
 <div class="desc">
 <p>Joshua Allen: <a href="http://www.netcrucible.com/blog/2002/09/29.html#a243">Who loves namespaces?</a></p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -58,7 +58,7 @@ Mon Sep 30 01:52:00 2002
 <div class="desc">
 <p><a href="http://www.docuverse.com/blog/donpark/2002/09/29.html#a68">Don Park</a>: "It is too easy for engineer to anticipate too much and XML Namespace is a frequent host of over-anticipation."</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -73,7 +73,7 @@ Sun Sep 29 17:05:00 2002
 <div class="desc">
 <p><a href="http://scriptingnews.userland.com/stories/storyReader$1768">Three Sunday Morning Options</a>. "I just got off the phone with Tim Bray, who graciously returned my call on a Sunday morning while he was making breakfast for his kids." We talked about three options for namespaces in RSS 2.0, and I think I now have the tradeoffs well outlined, and ready for other developers to review. If there is now a consensus, I think we can easily move forward. </p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -88,7 +88,7 @@ Sun Sep 29 19:09:00 2002
 <div class="desc">
 <p><a href="http://blog.mediacooperative.com/mt-comments.cgi?entry_id=1435">Mark Pilgrim</a> weighs in behind option 1 on a Ben Hammersley thread. On the RSS2-Support list, Phil Ringnalda lists a set of <a href="http://groups.yahoo.com/group/RSS2-Support/message/54">proposals</a>, the first is equivalent to option 1. </p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -103,7 +103,7 @@ Sun Sep 29 15:01:00 2002
 <div class="desc">
 <p><a href="http://effbot.org/zone/effnews-4.htm">Fredrik Lundh breaks</a> through, following Simon Fell's lead, now his Python aggregator works with Scripting News <a href="http://www.scripting.com/rss.xml">in</a> RSS 2.0. BTW, the spec is imperfect in regards to namespaces. We anticipated a 2.0.1 and 2.0.2 in the Roadmap for exactly this purpose. Thanks for your help, as usual, Fredrik. </p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -120,7 +120,7 @@ Sun Sep 29 23:48:00 2002
 				<p><a href="http://www.nbc.com/Law_&_Order/index.html"><img src="http://radio.weblogs.com/0001015/images/2002/09/29/lenny.gif" width="45" height="53" border="0" align="right" hspace="15" vspace="5" alt="A picture named lenny.gif"></a>A great line in a recent Law and Order. Lenny Briscoe, played by Jerry Orbach, is interrogating a suspect. The suspect tells a story and reaches a point where no one believes him, not even the suspect himself. Lenny says: "Now there's five minutes of my life that's lost forever." </p>
 				</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -138,7 +138,7 @@ Sun Sep 29 17:24:00 2002
 				<p>BTW, you can ask anyone who's worked for me in a technical job to explain rules 1 and 1b. (I'll clue you in. Rule 1 is "No Breakage" and Rule 1b is "Don't Break Dave.")</p>
 				</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -159,7 +159,7 @@ Sun Sep 29 11:13:00 2002
 				<p>One more bit of philosophy. At my checkup earlier this week, one of the things my cardiologist asked was if I was experiencing any kind of intellectual dysfunction. In other words, did I lose any of my sharpness as a result of the surgery in June. I told him yes I had and thanked him for asking. In an amazing bit of synchronicity, the next day John Robb <a href="http://jrobb.userland.com/2002/09/25.html#a2598">located</a> an article in New Scientist that said that scientists had found a way to prevent this from happening. I hadn't talked with John about my experience or the question the doctor asked. Yesterday I was telling the story to my friend Dave Jacobs. He said it's not a problem because I always had excess capacity in that area. Exactly right Big Dave and thanks for the vote of confidence.</p>
 				</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 <article>
@@ -176,7 +176,7 @@ subprojects individually, without necessarily building all of the larger
 master project. For example, in my XOM project, I have one master
 build.xml file that builds the software itself, and another build.xml file in the web [...]</p>
 </div>
-<a href="#categories">#categories</a>
+<a href="#tags">#tags</a>
 </div>
 </article>
 
@@ -184,8 +184,10 @@ build.xml file that builds the software itself, and another build.xml file in th
 </div>
 <div class="sidebar">
 <div>
-<a name="categories"><h3>Categories</h3></a>
-<p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?1'>test1</a></p><p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?2'>test2</a></p>
+<a name="tags"><h3>Tags</h3></a>
+<p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?1'>test1</a></p>
+<p><a href='http://rssroller.example.net/cgi-bin/rssroll.cgi?2'>test2</a></p>
+
 </div>
 </div>
 </div>

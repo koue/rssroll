@@ -22,5 +22,5 @@ webtheme=flak
 # how many feeds will be printed on the page
 feeds=10
 
-# default category
-category=1
+# default tag
+tag=1

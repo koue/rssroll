@@ -67,7 +67,7 @@ static unsigned long	callback_result = 0;
 
 static struct		cez_render render;
 static struct 		cez_queue config;
-static const char *params[] = { "category", "feeds", "ct_html", "dbpath",
+static const char *params[] = { "tag", "feeds", "ct_html", "dbpath",
     "htmldir", "name", "owner", "url", "webtheme", NULL };
 
 static int
@@ -164,16 +164,16 @@ render_items_list(const char *macro, void *arg)
 		              "FROM "
 		              "    feeds "
 		              "WHERE ");
-	if (query_array[0] == 0) // list single channel
+	if (query_array[0] == 0) { // show single channel
 		blob_append_sql(&sql, "chanid = '%ld' ", query_array[1]);
-	else // list tag
-		blob_append_sql(&sql, "chanid IN (select id from channels where catid = '%ld') ",
+	} else { // show tag
+		blob_append_sql(&sql, "chanid IN (select id from channels where tagid = '%ld') ",
 		    query_array[1]);
+	}
 	blob_append_sql(&sql, "ORDER BY id "
 			      "DESC LIMIT '%ld', '%d'",
 			      query_array[2],
 			      strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10));
-
 	db_prepare_blob(&q, &sql);
 	while (db_step(&q)==SQLITE_ROW) {
 		/* PREV option */
@@ -202,13 +202,12 @@ render_next(const char *macro, void *arg)
 {
 	if (query_array[2]) {
 		long step = query_array[2] - strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10);
-		if (query_array[0] == 0) {
-			printf("<a href='%s?0/%ld/%ld'> >>> </a>", cez_queue_get(&config, "url"),
-			    query_array[1], step);
-		} else {
-			printf("<a href='%s?%ld/%ld'> >>> </a>", cez_queue_get(&config, "url"),
-			    query_array[1], step);
-		}
+		if (step < 0)
+			step = 0;
+		printf("<a href='%s?", cez_queue_get(&config, "url"));
+		if (query_array[0] == 0)
+			printf("0/");
+		printf("%ld/%ld'> >>> </a>", query_array[1], step);
 	}
 }
 
@@ -218,24 +217,22 @@ render_prev(const char *macro, void *arg)
 	long step = 0;
 	if (callback_result == strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10)) {
 		step = query_array[2] + strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10);
+		printf("<a href='%s?", cez_queue_get(&config, "url"));
 		if (query_array[0] == 0) {
-			printf("<a href='%s?0/%ld/%ld'> <<< </a>", cez_queue_get(&config, "url"),
-			    query_array[1], step);
-		} else {
-			printf("<a href='%s?%ld/%ld'> <<< </a>", cez_queue_get(&config, "url"),
-			    query_array[1], step);
+			printf("0/");
 		}
+		printf("%ld/%ld'> <<< </a>", query_array[1], step);
 	}
 }
 
 static void
-render_categories(const char *macro, void *arg)
+render_tags(const char *macro, void *arg)
 {
 	Stmt q;
 
-	db_prepare(&q, "SELECT id, title FROM categories");
+	db_prepare(&q, "SELECT id, title FROM tags ORDER BY id");
 	while(db_step(&q)==SQLITE_ROW) {
-		printf("<p><a href='%s?%d'>%s</a></p>",
+		printf("<p><a href='%s?%d'>%s</a></p>\n",
 		    cez_queue_get(&config, "url"), db_column_int(&q, 0),
 		    db_column_text(&q, 1));
 	}
@@ -299,7 +296,7 @@ render_init(void)
 	cez_render_add(&render, "NAME", NULL, (struct item *)render_print);
 	cez_render_add(&render, "OWNER", NULL, (struct item *)render_print);
 	cez_render_add(&render, "CTYPE", NULL, (struct item *)render_print);
-	cez_render_add(&render, "CATEGORIES", NULL, (struct item *)render_categories);
+	cez_render_add(&render, "TAGS", NULL, (struct item *)render_tags);
 	cez_render_add(&render, "PUBDATE", NULL, (struct item *)render_print);
 	cez_render_add(&render, "TITLE", NULL, (struct item *)render_print);
 	cez_render_add(&render, "DESCRIPTION", NULL, (struct item *)render_print);
@@ -337,6 +334,10 @@ main(int argc, char *argv[])
 	}
 	if ((confcheck = cez_queue_check(&config, params)) != NULL) {
 		render_error("error: missing config: %s", confcheck);
+		goto done;
+	}
+	if (strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10) <= 0) {
+		render_error("error: number of feeds cannot be 0 or lower");
 		goto done;
 	}
 

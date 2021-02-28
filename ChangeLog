@@ -1,8 +1,12 @@
 # rssroll ChangeLog
-# v 0.10.0
+# v 0.10.1
 # Nikola Kolev <koue@chaosophia.net>
 # http://chaosophia.net/rssroll/
 #
+Changes 0.10.1	(2021.02.28):
+
+- Rename categories to tags.
+
 Changes 0.10.0	(2021.02.27):
 
 - Add showing of single channel feeds only.
