@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2021 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2012-2022 Nikola Kolev <koue@chaosophia.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,7 +30,7 @@
 #include <cez_core_pool.h>
 #include <cez_misc.h>
 #include <cez_queue.h>
-#include <cez_render.h>
+#include <render.h>
 #include <ctype.h>
 #include <errno.h>
 #include <fslbase.h>
@@ -65,7 +65,7 @@ Global g;
 static long		query_array[3] = { -1, 1, 0 };
 static unsigned long	callback_result = 0;
 
-static struct		cez_render render;
+static struct		render render;
 static struct 		cez_queue config;
 static const char *params[] = { "tag", "feeds", "ct_html", "dbpath",
     "htmldir", "name", "owner", "url", "webtheme", NULL };
@@ -185,7 +185,7 @@ render_items_list(const char *macro, void *arg)
 		item->desc = getvalue(pool, db_column_text(&q, 4));
 		item->date = db_column_int64(&q, 5);
 		item->chanid = db_column_int64(&q, 6);
-		cez_render_call(&render, "ITEMHTML", (void *)item);
+		render_run(&render, "ITEMHTML", (void *)item);
 		pool_free(pool);
 	}
 	db_finalize(&q);
@@ -194,7 +194,7 @@ render_items_list(const char *macro, void *arg)
 static void
 render_main(const char *macro, void *arg)
 {
-	cez_render_call(&render, macro, arg);
+	render_run(&render, macro, arg);
 }
 
 static void
@@ -275,36 +275,36 @@ render_print(const char *macro, void *arg)
 }
 
 static void
-render_init(void)
+config_render(void)
 {
 	char fn[256];
 
-	cez_render_init(&render);
+	render_init(&render);
 	snprintf(fn, sizeof(fn), "%s/main.html", cez_queue_get(&config, "htmldir"));
-	cez_render_add(&render, "MAIN", fn, (struct item *)render_main);
+	render_add(&render, "MAIN", fn, (struct item *)render_main);
 	snprintf(fn, sizeof(fn), "%s/%s/header.html", cez_queue_get(&config, "htmldir"),
 	    cez_queue_get(&config, "webtheme"));
-	cez_render_add(&render, "HEADER", fn, (struct item *)render_main);
+	render_add(&render, "HEADER", fn, (struct item *)render_main);
 	snprintf(fn, sizeof(fn), "%s/%s/footer.html", cez_queue_get(&config, "htmldir"),
 	    cez_queue_get(&config, "webtheme"));
-	cez_render_add(&render, "FOOTER", fn, (struct item *)render_main);
-	cez_render_add(&render, "FEEDS", NULL, (struct entry *)render_items_list);
+	render_add(&render, "FOOTER", fn, (struct item *)render_main);
+	render_add(&render, "FEEDS", NULL, (struct entry *)render_items_list);
 	snprintf(fn, sizeof(fn), "%s/%s/feed.html", cez_queue_get(&config, "htmldir"),
 	    cez_queue_get(&config, "webtheme"));
-	cez_render_add(&render, "ITEMHTML", fn, (struct entry *)render_main);
-	cez_render_add(&render, "BASEURL", NULL, (struct item *)render_print);
-	cez_render_add(&render, "NAME", NULL, (struct item *)render_print);
-	cez_render_add(&render, "OWNER", NULL, (struct item *)render_print);
-	cez_render_add(&render, "CTYPE", NULL, (struct item *)render_print);
-	cez_render_add(&render, "TAGS", NULL, (struct item *)render_tags);
-	cez_render_add(&render, "PUBDATE", NULL, (struct item *)render_print);
-	cez_render_add(&render, "TITLE", NULL, (struct item *)render_print);
-	cez_render_add(&render, "DESCRIPTION", NULL, (struct item *)render_print);
-	cez_render_add(&render, "URL", NULL, (struct item *)render_print);
-	cez_render_add(&render, "CHANNEL", NULL, (struct item *)render_print);
-	cez_render_add(&render, "FOLLOW", NULL, (struct item *)render_print);
-	cez_render_add(&render, "PREV", NULL, (struct item*)render_prev);
-	cez_render_add(&render, "NEXT", NULL, (struct item*)render_next);
+	render_add(&render, "ITEMHTML", fn, (struct entry *)render_main);
+	render_add(&render, "BASEURL", NULL, (struct item *)render_print);
+	render_add(&render, "NAME", NULL, (struct item *)render_print);
+	render_add(&render, "OWNER", NULL, (struct item *)render_print);
+	render_add(&render, "CTYPE", NULL, (struct item *)render_print);
+	render_add(&render, "TAGS", NULL, (struct item *)render_tags);
+	render_add(&render, "PUBDATE", NULL, (struct item *)render_print);
+	render_add(&render, "TITLE", NULL, (struct item *)render_print);
+	render_add(&render, "DESCRIPTION", NULL, (struct item *)render_print);
+	render_add(&render, "URL", NULL, (struct item *)render_print);
+	render_add(&render, "CHANNEL", NULL, (struct item *)render_print);
+	render_add(&render, "FOLLOW", NULL, (struct item *)render_print);
+	render_add(&render, "PREV", NULL, (struct item*)render_prev);
+	render_add(&render, "NEXT", NULL, (struct item*)render_next);
 }
 
 int
@@ -376,13 +376,13 @@ main(int argc, char *argv[])
 	}
 
 	printf("%s\r\n\r\n", cez_queue_get(&config, "ct_html"));
-	render_init();
-	cez_render_call(&render, "MAIN", NULL);
+	config_render();
+	render_run(&render, "MAIN", NULL);
 
 done:
 	fflush(stdout);
 
-	cez_render_purge(&render);
+	render_purge(&render);
 	cez_queue_purge(&config);
 	sqlite3_close(g.db);
 	return (0);

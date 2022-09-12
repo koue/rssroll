@@ -13,7 +13,7 @@ LDADD.rssroll=	-lz -lfsldb -lfslbase -lsqlite3 -lxml2 \
 		-lceznethttp -lceznet -lcezcorepool -lcezcorebuffer -lcezcorestring \
 		-lcezcoreassoc -lssl -lcrypto
 LDADD.index.cgi=-lcezqueue -lfsldb -lfslbase -lcezmisc -lsqlite3 -lcezcorepool \
-		-lcezrender
+		-lrender
 
 MAN=
 

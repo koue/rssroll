@@ -39,7 +39,7 @@ install:
 	rm -rf $(LOCALBASE)$(WEBDIR)/css
 	cp src/index.cgi $(LOCALBASE)$(WEBDIR)/
 	cp src/rssroll $(LOCALBASE)$(BINDIR)/
-	cp rssrollrc $(LOCALBASE)$(CONFDIR)/rssrollrc.sample
+	cp etc/rssrollrc $(LOCALBASE)$(CONFDIR)/rssrollrc.sample
 	cp -r html $(LOCALBASE)$(DATADIR)/
 	cp -r css $(LOCALBASE)$(WEBDIR)/
 
