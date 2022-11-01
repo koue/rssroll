@@ -9,9 +9,7 @@ CFLAGS+=	-Werror \
 		-I/usr/local/include \
 		-I/usr/local/include/libxml2
 LDFLAGS+=	-L/usr/local/lib
-LDADD.rssroll=	-lz -lfsldb -lfslbase -lsqlite3 -lxml2 \
-		-lceznethttp -lceznet -lcezcorepool -lcezcorebuffer -lcezcorestring \
-		-lcezcoreassoc -lssl -lcrypto
+LDADD.rssroll=	-lz -lfsldb -lfslbase -lsqlite3 -lxml2 -lcezcorepool -lfetch
 LDADD.index.cgi=-lcezqueue -lfsldb -lfslbase -lcezmisc -lsqlite3 -lcezcorepool \
 		-lrender
 

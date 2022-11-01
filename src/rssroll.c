@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2020 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2012-2022 Nikola Kolev <koue@chaosophia.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,17 +28,17 @@
  *
  */
 
-#include <fslbase.h>
-#include <fsldb.h>
-#include <sqlite3.h>
+#include <sys/param.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fetch.h>
 
-#include <cez_core_pool.h>
-#include <cez_net_http.h>
+#include <fslbase.h>
+#include <fsldb.h>
+#include <sqlite3.h>
 
 #include "rss.h"
 
@@ -107,55 +107,39 @@ parse_body(int chan_id, char *rssbody)
 
 /* fetch rss file */
 void
-fetch_channel(int chan_id, time_t chan_modified, const char *chan_link)
+fetch_channel(int id, time_t modified, const char *link)
 {
-        struct http_request *request;
-	struct http_response *response;
-	char chan_last_modified_time[32];
+    Blob body = empty_blob;
+    struct url *url;
+    struct url_stat us;
+    char flags[8];
+    FILE *fp;
 
-	dmsg(0, "%s: %d, %ld, %s", __func__, chan_id, chan_modified, chan_link);
+    *flags = 0;
 
-	strftime(chan_last_modified_time, sizeof(chan_last_modified_time),
-	    "%a, %d %b %Y %T %Z", localtime(&chan_modified));
+	dmsg(0, "%s: %d, %ld, %s", __func__, id, modified, link);
 
-	if ((request = http_request_create((char *)chan_link, VERSION)) == NULL) {
-		dmsg(0, "%s error, request_create: id [%d], url [%s]",
-		    __func__, chan_id, chan_link);
-		return;
-	}
+    if ((url = fetchParseURL(link)) == NULL) {
+        dmsg(0, "%s: invalid URL %s", __func__, link);
+        return;
+    }
 
-	if (request->state != HTTP_REQUEST_OK) {
-		dmsg(0, "%s error, request state: %s",
-		    http_request_state_text(request->state));
-	}
+    url->ims_time = modified;
+    strcat(flags, "i");
 
-	http_request_header_add(request, "If-Modified-Since",
-	    chan_last_modified_time);
-
-	http_request_send(request);
-	if ((response = http_response_create(request)) == NULL) {
-		dmsg(0, "%s error, response_create: id [%d], url [%s]",
-		    __func__, chan_id, chan_link);
-		http_request_free(request);
-		return;
-	}
-
-	http_response_parse(response);
-
-	if (response->status == 200) {
-		parse_body(chan_id, http_response_body_print(response));
-	} else if (response->status == 304) {
-		dmsg(0, "%s: id - %d, link - %s has not been changed.",
-		    __func__, chan_id, chan_link);
-	} else {
-		dmsg(0, "%s error, response status [%lu]:"
-		        "id - %d, link - %s.",
-		      __func__, response->status, chan_id, chan_link);
-	}
-
-	dmsg(0, "%s: done", __func__);
-	http_response_free(response);
-	http_request_free(request);
+    if ((fp = fetchXGet(url, &us, flags)) == NULL) {
+        dmsg(0, "%s: cannot fetch URL %s", __func__, link);
+        goto fail;
+    }
+    if ((blob_read_from_channel(&body, fp, -1)) < 1) {
+        dmsg(0, "%s: empty body %s", __func__, link);
+        goto reset;
+    }
+    parse_body(id, blob_str(&body));
+reset:
+    blob_reset(&body);
+fail:
+    fetchFreeURL(url);
 }
 
 static void
@@ -197,7 +181,7 @@ main(int argc, char** argv)
 		fprintf(stderr, "Cannot open database file: %s\n", dbname);
 		return (1);
 	}
-	dmsg(0,"database successfully loaded.");
+	dmsg(0, "database successfully loaded.");
 	db_prepare(&q, "SELECT id, modified, link FROM channels");
 	while (db_step(&q)==SQLITE_ROW) {
 		fetch_channel(db_column_int(&q, 0), (time_t)db_column_int64(&q, 1),
@@ -205,6 +189,6 @@ main(int argc, char** argv)
 	}
 	db_finalize(&q);
 	sqlite3_close(g.db);
-	dmsg(0,"database successfully closed.");
+	dmsg(0, "database successfully closed.");
 	return (0);
 }

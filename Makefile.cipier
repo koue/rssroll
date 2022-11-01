@@ -1,7 +1,7 @@
 # $FreeBSD$
 
 PORTNAME=	rssroll
-PORTVERSION=	0.10.1
+PORTVERSION=	0.11.0
 CATEGORIES=	www
 #MASTER_SITES=	OPENBSD/LibreSSL:libressl
 #DISTFILES=	libressl-${SSL_VERSION}.tar.gz:libressl
@@ -38,7 +38,6 @@ CFLAGS+=	-fPIC \
 		-I${WRKSRC_libfsl}/src/db \
 		-I${WRKSRC_libcez}/src/core \
 		-I${WRKSRC_libcez}/src/misc \
-		-I${WRKSRC_libcez}/src/net \
 		-I${WRKSRC_libcez}/src/queue \
 		-I${WRKSRC_librender}/src
 #		-I${WRKDIR}/libressl-${SSL_VERSION}/include
@@ -47,7 +46,6 @@ LDFLAGS+=	-L${WRKSRC_libfsl}/src/base \
 		-L${WRKSRC_libfsl}/src/db \
 		-L${WRKSRC_libcez}/src/core \
 		-L${WRKSRC_libcez}/src/misc \
-		-L${WRKSRC_libcez}/src/net \
 		-L${WRKSRC_libcez}/src/queue \
 		-L${WRKSRC_librender}/src
 
@@ -67,7 +65,6 @@ pre-configure:
 	@(cd ${WRKSRC_libfsl}/src/db && ${SETENV} ${MAKE_ENV} ${MAKE})
 	@(cd ${WRKSRC_libcez}/src/core && ${SETENV} ${MAKE_ENV} ${MAKE})
 	@(cd ${WRKSRC_libcez}/src/misc && ${SETENV} ${MAKE_ENV} ${MAKE})
-	@(cd ${WRKSRC_libcez}/src/net && ${SETENV} ${MAKE_ENV} ${MAKE})
 	@(cd ${WRKSRC_libcez}/src/queue && ${SETENV} ${MAKE_ENV} ${MAKE})
 	@(cd ${WRKSRC_librender}/src && ${SETENV} ${MAKE_ENV} ${MAKE})
 

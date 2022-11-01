@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2021 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2018-2022 Nikola Kolev <koue@chaosophia.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@
 
 #include <cez_core_pool.h>
 
-#define	VERSION		"rssroll/0.10.1"
+#define	VERSION		"rssroll/0.11.0"
 #define	CONFFILE	"/etc/rssrollrc"
 
 enum {

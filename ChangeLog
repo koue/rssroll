@@ -1,8 +1,12 @@
 # rssroll ChangeLog
-# v 0.10.1
+# v 0.11.0
 # Nikola Kolev <koue@chaosophia.net>
 # http://chaosophia.net/rssroll/
 #
+Changes 0.11.0  (2022.11.01):
+
+- Switch to libfetch(3).
+
 Changes 0.10.1	(2021.02.28):
 
 - Rename categories to tags.
