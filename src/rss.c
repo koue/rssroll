@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2018-2022 Nikola Kolev <koue@chaosophia.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,89 +36,7 @@
 #include <unistd.h>
 
 #include "rss.h"
-
-time_t
-strptime2(char *s)
-{
-	int i = 0;
-	char y[100], m[100], d[100];
-	char h[100], min[100];
-	struct tm time_tag;
-	time_t t = time (0);
-	const char *month_s[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-				"Jul", "Aug", "Sep", "Oct", "Nov", "Dec", NULL};
-
-	*y = *m = *d = *h = *min = 0;
-
-	if (s[10] == 'T') {                     // YYYY-MM-DDT00:00+00:00
-		sscanf (s, " %4s-%2s-%2sT%2s:%2s", y, m, d, h, min);
-	} else if (s[3] == ',' && s[4] == ' ') {// Mon, 31 Jul 2006 15:05:00 GMT
-		sscanf (s + 5, "%2s %s %4s %2s:%2s", d, m, y, h, min);
-		for (i = 0; month_s[i]; i++)
-		if (!strcasecmp (m, month_s[i])) {
-			sprintf (m, "%d", i + 1);
-			break;
-		}
-	} else if (s[4] == '-' && s[7] == '-') {	// 2006-07-19
-		sscanf (s, "%4s-%2s-%2s", y, m, d);
-	} else {					// YYYYMMDDTHHMMSS
-		// sscanf (s, " %4s%2s%2sT", y, m, d);
-	}
-	free(s);
-
-	memset(&time_tag, 0, sizeof(struct tm));
-
-	if (*y)
-		time_tag.tm_year = strtol (y, NULL, 10) - 1900;
-	if (*m)
-		time_tag.tm_mon = strtol (m, NULL, 10) - 1;
-	if (*d)
-		time_tag.tm_mday = strtol (d, NULL, 10);
-	if (*h)
-		time_tag.tm_hour = strtol (h, NULL, 10);
-	if (*min)
-		time_tag.tm_min = strtol (min, NULL, 10);
-
-	t = mktime(&time_tag);
-
-	return (t);
-}
-
-
-char *
-xml_get_value(struct pool *pool, xmlNode *node, const char *name)
-{
-	xmlChar *current;
-	char *value;
-
-	if (node && name) {
-		if (xmlHasProp(node, (const unsigned char *)name)) {
-			current = xmlGetProp(node, (const unsigned char *)name);
-			value = pool_strdup(pool, (char *)current);
-			xmlFree(current);
-			return (value);
-		}
-	}
-	return (NULL);
-}
-
-char *
-xml_get_content(struct pool *pool, xmlNode *node)
-{
-	char *content;
-	xmlChar *current;
-
-	if (node) {
-		if ((current = xmlNodeGetContent(node->xmlChildrenNode)) == NULL) {
-			return (NULL);
-		}
-		content = pool_strdup(pool, (char *)current);
-		xmlFree(current);
-		return (content);
-	}
-
-	return (NULL);
-}
+#include "xml.h"
 
 struct feed *
 feed_create(void)
@@ -170,18 +88,6 @@ rss_close(struct feed *rss)
 	return (0);
 }
 
-static int
-isnode(xmlNode *node, const char *string)
-{
-	return (!strcmp((char *)node->name, string));
-}
-
-static int
-isnodecase(xmlNode *node, const char *string)
-{
-	return (!strcasecmp((char *)node->name, string));
-}
-
 static void
 rss_channel(struct feed *rss, xmlNode *pnode)
 {
@@ -191,13 +97,13 @@ rss_channel(struct feed *rss, xmlNode *pnode)
 	dmsg(1, "%s: start", __func__);
 	while (pnode) {
 		dmsg(1, "%s: pnode->name: %s", __func__, (char *) pnode->name);
-		if (isnode(pnode, "title")) {
+		if (xml_isnode(pnode, "title", 0)) {
 			rss->title = xml_get_content(pool, pnode);
-		} else if (isnode(pnode, "description")) {
+		} else if (xml_isnode(pnode, "description", 0)) {
 			rss->desc = xml_get_content(pool, pnode);
-		} else if (isnode(pnode, "date") || isnode(pnode, "pubDate") ||
-		    isnode(pnode, "dc:date"))
-			rss->date = strptime2((char *)xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
+		} else {
+            xml_isnode_date(pnode, &rss->date);
+        }
 
 		pnode = pnode->next;
 	}
@@ -226,9 +132,9 @@ rss_entry(struct feed *rss, xmlNode *pnode)
 			break;
 
 		dmsg(1, "%s: pnode->name: %s", __func__, (char *)pnode->name);
-		if (isnode(pnode, "title")) {
+		if (xml_isnode(pnode, "title", 0)) {
 			current->title = xml_get_content(pool, pnode);
-		} else if (isnode(pnode, "link")) {
+		} else if (xml_isnode(pnode, "link", 0)) {
 			// atom
 			if ((p = xml_get_value(pool, pnode, "rel")) != NULL) {
 				if (strcmp(p, "alternate") == 0) {
@@ -238,16 +144,14 @@ rss_entry(struct feed *rss, xmlNode *pnode)
 			} else {
 				link = xml_get_content(pool, pnode);
 			}
-		} else if (isnode(pnode, "guid")) {
+		} else if (xml_isnode(pnode, "guid", 0)) {
 			guid = xml_get_content(pool, pnode);
-		} else if (isnode(pnode, "description")) {
+		} else if (xml_isnode(pnode, "description", 0)) {
 			current->desc = xml_get_content(pool, pnode);
-		} else if (isnode(pnode, "content")) {
+		} else if (xml_isnode(pnode, "content", 0)) {
 			current->desc = xml_get_content(pool, pnode);
-		} else if (isnodecase(pnode, "date") || isnodecase(pnode, "pubDate") ||
-		    isnodecase(pnode, "dc:date") || isnode(pnode, "modified") ||
-		    isnode(pnode, "updated") || isnodecase(pnode, "cropDate")) {
-			current->date = strptime2((char *)xmlNodeListGetString(pnode->xmlChildrenNode->doc, pnode->xmlChildrenNode, 1));
+		} else {
+            xml_isnode_date(pnode, &current->date);
 		}
 
 		pnode = pnode->next;
@@ -287,24 +191,23 @@ rss_head(struct feed *rss, xmlNode *node)
 			break;
 
 		dmsg(1, "%s: node->name: %s", __func__, (char *)node->name);
-		if (isnode(node, "title")) {
+		if (xml_isnode(node, "title", 0)) {
 			rss->title = xml_get_content(pool, node);
-		} else if (isnode(node, "description")) {
+		} else if (xml_isnode(node, "description", 0)) {
 			rss->desc = xml_get_content(pool, node);
-		} else if (isnode(node, "date") || isnode(node, "pubDate") ||
-		    isnode(node, "modified") || isnode(node, "updated") ||
-		    isnode(node, "dc:date")) {
-			rss->date = strptime2((char *)xmlNodeListGetString(node->xmlChildrenNode->doc, node->xmlChildrenNode, 1));
-		} else if (isnode(node, "channel") && (rss->version == RSS_V1_0)) {
+		} else if (xml_isnode(node, "channel", 0) && (rss->version == RSS_V1_0)) {
 			rss_channel(rss, node->xmlChildrenNode);
-		} else if (isnode(node, "item") || isnode(node, "entry")) {
+		} else if (xml_isnode(node, "item", 0) || xml_isnode(node, "entry", 0)) {
 			if (rss_entry(rss, node->xmlChildrenNode) == -1) {
 				xmlFreeDoc(doc);
 				rss_close(rss);
 				fprintf(stderr, "%s: %s\n", __func__, strerror(errno));
 				exit(1);
 			}
-		}
+		} else {
+            xml_isnode_date(node, &rss->date);
+        }
+
 	node = node->next;
 	}
 	dmsg(1, "%s: end", __func__);
@@ -351,7 +254,7 @@ rss_parse(const char *xmlstream, int isfile)
 		fprintf(stderr, "%s: bad document\n", __func__);
 		goto faildoc;
 	} else if (rss->version < ATOM_V0_1) {
-		if (isnode(node, "channel") == 0) {
+		if (xml_isnode(node, "channel", 0) == 0) {
 			fprintf (stderr, "%s: bad document: channel missing\n", __func__);
 			goto faildoc;
 		} else if (rss->version != RSS_V1_0) // document is RSS
@@ -387,9 +290,9 @@ rss_demux(struct feed *rss, xmlNode *node)
 
 	if ((char *)node->name == NULL)
 		goto done;
-	else if (isnode(node, "html")) // not xml
+	else if (xml_isnode(node, "html", 0)) // not xml
 		goto done;
-	else if (isnode(node, "feed")) {
+	else if (xml_isnode(node, "feed", 0)) {
 		version = ATOM_V0_1;	//default
 		if ((p = xml_get_value(pool, node, "version")) == NULL)
 			goto done;
@@ -397,7 +300,7 @@ rss_demux(struct feed *rss, xmlNode *node)
 			version = ATOM_V0_3;
 		else if (strcmp(p, "0.2") == 0)
 			version = ATOM_V0_2;
-	} else if (isnode(node, "rss")) {
+	} else if (xml_isnode(node, "rss", 0)) {
 		if ((p = xml_get_value(pool, node, "version")) == NULL)
 			goto done;
 		else if (strcmp(p, "0.91") == 0)
@@ -411,7 +314,7 @@ rss_demux(struct feed *rss, xmlNode *node)
 		else if ((strcmp(p, "2") == 0) || (strcmp(p, "2.0") == 0) ||
 			    (strcmp(p, "2.00") == 0))
 			version = RSS_V2_0;
-	} else if (isnode(node, "rdf") || isnode(node, "RDF")) {
+	} else if (xml_isnode(node, "rdf", 0) || xml_isnode(node, "RDF", 0)) {
 		version = RSS_V1_0;
 	}
 done:

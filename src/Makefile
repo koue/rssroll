@@ -1,7 +1,7 @@
 #
 PROGS=		rssroll index.cgi
 
-SRCS.rssroll=	rssroll.c rss.c item.c
+SRCS.rssroll=	rssroll.c rss.c item.c xml.c
 SRCS.index.cgi=	index.c item.c
 
 CFLAGS+=	-Werror \
