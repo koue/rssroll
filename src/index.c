@@ -327,63 +327,60 @@ main(int argc, char *argv[])
 		conffile = "../etc/rssrollrc";
 	} else {
 		conffile = CONFFILE;
+		if (chdir("/tmp") != 0) {
+			printf("error main: chdir: /tmp: %s", strerror(errno));
+			render_error("chdir: /tmp: %s", strerror(errno));
+			goto purge;
+		}
 	}
 	if (configfile_parse(conffile, &config) == -1) {
 		render_error("error: cannot open config file: %s", conffile);
-		goto done;
+		goto purge;
 	}
-	if ((confcheck = cez_queue_check(&config, params)) != NULL) {
-		render_error("error: missing config: %s", confcheck);
-		goto done;
-	}
-	if (strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10) <= 0) {
-		render_error("error: number of feeds cannot be 0 or lower");
-		goto done;
-	}
-
 	if (valgrind) {
 		if (cqu(&config, "dbpath", "rssrolltest.db") == -1) {
 			printf("Cannot adjust dbpath. Exit\n");
-			exit (1);
+			goto purge;
 		}
 		if (cqu(&config, "htmldir", "../html") == -1) {
 			printf("Cannot adjust htmldir. Exit\n");
-			exit (1);
+			goto purge;
 		}
 	}
-
-	if ((valgrind == 0) && chdir("/tmp")) {
-		printf("error main: chdir: /tmp: %s", strerror(errno));
-		render_error("chdir: /tmp: %s", strerror(errno));
-		goto done;
+	if ((confcheck = cez_queue_check(&config, params)) != NULL) {
+		render_error("error: missing config: %s", confcheck);
+		goto purge;
 	}
-
-	if (sqlite3_open(cez_queue_get(&config, "dbpath"), &g.db) != SQLITE_OK) {
-		render_error("cannot load database: %s", cez_queue_get(&config, "dbpath"));
-		goto done;
+	if (strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10) <= 0) {
+		render_error("error: number of feeds cannot be 0 or lower");
+		goto purge;
 	}
 
 	if (((query_string = getenv("QUERY_STRING")) != NULL) && strlen(query_string)) {
 		if (query_string_validate(query_string) == -1) {
-			cez_queue_purge(&config);
-			return (0);
+			goto purge;
 		}
 	}
+
 	if (query_parse(query_string) == -1) {
                	printf("Status: 400\r\n\r\nYou are trying to send wrong query!\n");
 	       	fflush(stdout);
-		return (-1);
+		goto purge;
+	}
+
+	if (sqlite3_open(cez_queue_get(&config, "dbpath"), &g.db) != SQLITE_OK) {
+		render_error("cannot load database: %s", cez_queue_get(&config, "dbpath"));
+		goto purge;
 	}
 
 	printf("%s\r\n\r\n", cez_queue_get(&config, "ct_html"));
 	config_render();
 	render_run(&render, "MAIN", NULL);
-
-done:
 	fflush(stdout);
 
 	render_purge(&render);
-	cez_queue_purge(&config);
 	sqlite3_close(g.db);
+purge:
+	cez_queue_purge(&config);
 	return (0);
 }

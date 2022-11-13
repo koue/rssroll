@@ -31,8 +31,6 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <libxml/parser.h>
-#include <libxml/tree.h>
 #include <unistd.h>
 
 #include "rss.h"
@@ -102,8 +100,8 @@ rss_channel(struct feed *rss, xmlNode *pnode)
 		} else if (xml_isnode(pnode, "description", 0)) {
 			rss->desc = xml_get_content(pool, pnode);
 		} else {
-            xml_isnode_date(pnode, &rss->date);
-        }
+                        xml_isnode_date(pnode, &rss->date);
+                }
 
 		pnode = pnode->next;
 	}
@@ -151,7 +149,7 @@ rss_entry(struct feed *rss, xmlNode *pnode)
 		} else if (xml_isnode(pnode, "content", 0)) {
 			current->desc = xml_get_content(pool, pnode);
 		} else {
-            xml_isnode_date(pnode, &current->date);
+                        xml_isnode_date(pnode, &current->date);
 		}
 
 		pnode = pnode->next;
@@ -205,10 +203,10 @@ rss_head(struct feed *rss, xmlNode *node)
 				exit(1);
 			}
 		} else {
-            xml_isnode_date(node, &rss->date);
-        }
+                        xml_isnode_date(node, &rss->date);
+                }
 
-	node = node->next;
+                node = node->next;
 	}
 	dmsg(1, "%s: end", __func__);
 }
