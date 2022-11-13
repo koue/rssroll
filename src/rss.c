@@ -36,7 +36,7 @@
 #include "rss.h"
 #include "xml.h"
 
-struct feed *
+static struct feed *
 feed_create(void)
 {
 	struct pool *pool = pool_create(1024);
@@ -57,13 +57,13 @@ feed_create(void)
 	return (feed);
 }
 
-void
+static void
 feed_free(struct feed *feed)
 {
 	pool_free(feed->pool);
 }
 
-void
+static void
 rss_sanity_check(struct feed *rss)
 {
 	struct item *item;
@@ -211,6 +211,69 @@ rss_head(struct feed *rss, xmlNode *node)
 	dmsg(1, "%s: end", __func__);
 }
 
+static int
+rss_version_atom(struct pool *pool, xmlNode *node)
+{
+	int version = ATOM_V0_1;	//default
+	char *p = NULL;
+
+	if ((p = xml_get_value(pool, node, "version")) == NULL)
+		goto done;
+	else if (strcmp(p, "0.3") == 0)
+		version = ATOM_V0_3;
+	else if (strcmp(p, "0.2") == 0)
+		version = ATOM_V0_2;
+done:
+	return (version);
+}
+
+static int
+rss_version_rss(struct pool *pool, xmlNode *node)
+{
+	int version = -1;
+	char *p = NULL;
+
+	if ((p = xml_get_value(pool, node, "version")) == NULL)
+		goto done;
+	else if (strcmp(p, "0.91") == 0)
+		version = RSS_V0_91;
+	else if (strcmp(p, "0.92") == 0)
+		version = RSS_V0_92;
+	else if (strcmp(p, "0.93") == 0)
+		version = RSS_V0_93;
+	else if (strcmp(p, "0.94") == 0)
+		version = RSS_V0_94;
+	else if ((strcmp(p, "2") == 0) || (strcmp(p, "2.0") == 0) ||
+	    (strcmp(p, "2.00") == 0))
+		version = RSS_V2_0;
+done:
+	return (version);
+}
+
+static int
+rss_demux(struct feed *rss, xmlNode *node)
+{
+	struct pool *pool = rss->pool;
+	int version = -1;
+
+	dmsg(1, "%s: start", __func__);
+
+	if ((char *)node->name == NULL)
+		goto done;
+	else if (xml_isnode(node, "html", 0)) // not xml
+		goto done;
+	else if (xml_isnode(node, "feed", 0)) {
+		version = rss_version_atom(pool, node);
+	} else if (xml_isnode(node, "rss", 0)) {
+		version = rss_version_rss(pool, node);
+	} else if (xml_isnode(node, "rdf", 0) || xml_isnode(node, "RDF", 0)) {
+		version = RSS_V1_0;
+	}
+done:
+	dmsg(1, "%s: end", __func__);
+	return (version);
+}
+
 struct feed *
 rss_parse(const char *xmlstream, int isfile)
 {
@@ -275,49 +338,6 @@ faildoc:
 fail:
 	feed_free(rss);
 	return (NULL);
-}
-
-int
-rss_demux(struct feed *rss, xmlNode *node)
-{
-	struct pool *pool = rss->pool;
-	int version = -1;
-	char *p = NULL;
-
-	dmsg(1, "%s: start", __func__);
-
-	if ((char *)node->name == NULL)
-		goto done;
-	else if (xml_isnode(node, "html", 0)) // not xml
-		goto done;
-	else if (xml_isnode(node, "feed", 0)) {
-		version = ATOM_V0_1;	//default
-		if ((p = xml_get_value(pool, node, "version")) == NULL)
-			goto done;
-		else if (strcmp(p, "0.3") == 0)
-			version = ATOM_V0_3;
-		else if (strcmp(p, "0.2") == 0)
-			version = ATOM_V0_2;
-	} else if (xml_isnode(node, "rss", 0)) {
-		if ((p = xml_get_value(pool, node, "version")) == NULL)
-			goto done;
-		else if (strcmp(p, "0.91") == 0)
-			version = RSS_V0_91;
-		else if (strcmp(p, "0.92") == 0)
-			version = RSS_V0_92;
-		else if (strcmp(p, "0.93") == 0)
-			version = RSS_V0_93;
-		else if (strcmp(p, "0.94") == 0)
-			version = RSS_V0_94;
-		else if ((strcmp(p, "2") == 0) || (strcmp(p, "2.0") == 0) ||
-			    (strcmp(p, "2.00") == 0))
-			version = RSS_V2_0;
-	} else if (xml_isnode(node, "rdf", 0) || xml_isnode(node, "RDF", 0)) {
-		version = RSS_V1_0;
-	}
-done:
-	dmsg(1, "%s: end", __func__);
-	return (version);
 }
 
 /* debug message out */

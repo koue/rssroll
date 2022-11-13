@@ -74,8 +74,6 @@ struct feed {
 	TAILQ_HEAD(items_list, item) items_list;
 };
 
-int rss_demux(struct feed *rss, xmlNode *node);
-
 struct feed *rss_parse(const char *xmlstream, int isfile);
 int rss_close(struct feed *rss);
 
