@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2020-2023 Nikola Kolev <koue@chaosophia.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
 
 #include <string.h>
 
-#include <cez_core_pool.h>
+#include <libpool.h>
 
 #include "rss.h"
 
@@ -43,9 +43,9 @@ item_create(struct pool *pool)
 	memset(item, 0, sizeof(struct item));
 
 	/* Common */
-	item->title = NIL;
-	item->url = NIL;
-	item->desc = NIL;
+	item->title = NULL;
+	item->url = NULL;
+	item->desc = NULL;
 	item->date = 0;
 	item->chanid = 0;
 

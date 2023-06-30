@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2022 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2012-2023 Nikola Kolev <koue@chaosophia.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,9 +27,9 @@
  *
  */
 
-#include <cez_core_pool.h>
 #include <cez_misc.h>
-#include <cez_queue.h>
+#include <libpool.h>
+#include <libqueue.h>
 #include <render.h>
 #include <ctype.h>
 #include <errno.h>
@@ -66,7 +66,7 @@ static long		query_array[3] = { -1, 1, 0 };
 static unsigned long	callback_result = 0;
 
 static struct		render render;
-static struct 		cez_queue config;
+static struct 		queue config;
 static const char *params[] = { "tag", "feeds", "ct_html", "dbpath",
     "htmldir", "name", "owner", "url", "webtheme", NULL };
 
@@ -173,7 +173,7 @@ render_items_list(const char *macro, void *arg)
 	blob_append_sql(&sql, "ORDER BY id "
 			      "DESC LIMIT '%ld', '%d'",
 			      query_array[2],
-			      strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10));
+			      strtol(queue_get(&config, "feeds"), (char **)NULL, 10));
 	db_prepare_blob(&q, &sql);
 	while (db_step(&q)==SQLITE_ROW) {
 		/* PREV option */
@@ -201,10 +201,10 @@ static void
 render_next(const char *macro, void *arg)
 {
 	if (query_array[2]) {
-		long step = query_array[2] - strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10);
+		long step = query_array[2] - strtol(queue_get(&config, "feeds"), (char **)NULL, 10);
 		if (step < 0)
 			step = 0;
-		printf("<a href='%s?", cez_queue_get(&config, "url"));
+		printf("<a href='%s?", queue_get(&config, "url"));
 		if (query_array[0] == 0)
 			printf("0/");
 		printf("%ld/%ld'> >>> </a>", query_array[1], step);
@@ -215,9 +215,9 @@ static void
 render_prev(const char *macro, void *arg)
 {
 	long step = 0;
-	if (callback_result == strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10)) {
-		step = query_array[2] + strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10);
-		printf("<a href='%s?", cez_queue_get(&config, "url"));
+	if (callback_result == strtol(queue_get(&config, "feeds"), (char **)NULL, 10)) {
+		step = query_array[2] + strtol(queue_get(&config, "feeds"), (char **)NULL, 10);
+		printf("<a href='%s?", queue_get(&config, "url"));
 		if (query_array[0] == 0) {
 			printf("0/");
 		}
@@ -233,7 +233,7 @@ render_tags(const char *macro, void *arg)
 	db_prepare(&q, "SELECT id, title FROM tags ORDER BY id");
 	while(db_step(&q)==SQLITE_ROW) {
 		printf("<p><a href='%s?%d'>%s</a></p>\n",
-		    cez_queue_get(&config, "url"), db_column_int(&q, 0),
+		    queue_get(&config, "url"), db_column_int(&q, 0),
 		    db_column_text(&q, 1));
 	}
 	db_finalize(&q);
@@ -246,13 +246,13 @@ render_print(const char *macro, void *arg)
 	struct item *current = (struct item *)arg;
 
 	if (strcmp(macro, "BASEURL") == 0) {
-		printf("%s", cez_queue_get(&config, "url"));
+		printf("%s", queue_get(&config, "url"));
 	} else if (strcmp(macro, "NAME") == 0) {
-		printf("%s", cez_queue_get(&config, "name"));
+		printf("%s", queue_get(&config, "name"));
 	} else if (strcmp(macro, "OWNER") == 0) {
-		printf("%s", cez_queue_get(&config, "owner"));
+		printf("%s", queue_get(&config, "owner"));
 	} else if (strcmp(macro, "CTYPE") == 0) {
-		printf("%s", cez_queue_get(&config, "ct_html"));
+		printf("%s", queue_get(&config, "ct_html"));
 	} else if (current == NULL) {
 		return;
 	} else if (strcmp(macro, "TITLE") == 0) {
@@ -280,17 +280,17 @@ config_render(void)
 	char fn[256];
 
 	render_init(&render);
-	snprintf(fn, sizeof(fn), "%s/main.html", cez_queue_get(&config, "htmldir"));
+	snprintf(fn, sizeof(fn), "%s/main.html", queue_get(&config, "htmldir"));
 	render_add(&render, "MAIN", fn, (struct item *)render_main);
-	snprintf(fn, sizeof(fn), "%s/%s/header.html", cez_queue_get(&config, "htmldir"),
-	    cez_queue_get(&config, "webtheme"));
+	snprintf(fn, sizeof(fn), "%s/%s/header.html", queue_get(&config, "htmldir"),
+	    queue_get(&config, "webtheme"));
 	render_add(&render, "HEADER", fn, (struct item *)render_main);
-	snprintf(fn, sizeof(fn), "%s/%s/footer.html", cez_queue_get(&config, "htmldir"),
-	    cez_queue_get(&config, "webtheme"));
+	snprintf(fn, sizeof(fn), "%s/%s/footer.html", queue_get(&config, "htmldir"),
+	    queue_get(&config, "webtheme"));
 	render_add(&render, "FOOTER", fn, (struct item *)render_main);
 	render_add(&render, "FEEDS", NULL, (struct entry *)render_items_list);
-	snprintf(fn, sizeof(fn), "%s/%s/feed.html", cez_queue_get(&config, "htmldir"),
-	    cez_queue_get(&config, "webtheme"));
+	snprintf(fn, sizeof(fn), "%s/%s/feed.html", queue_get(&config, "htmldir"),
+	    queue_get(&config, "webtheme"));
 	render_add(&render, "ITEMHTML", fn, (struct entry *)render_main);
 	render_add(&render, "BASEURL", NULL, (struct item *)render_print);
 	render_add(&render, "NAME", NULL, (struct item *)render_print);
@@ -322,7 +322,7 @@ main(int argc, char *argv[])
 		}
 	}
 
-	cez_queue_init(&config);
+	queue_init(&config);
 	if (valgrind) {
 		conffile = "../etc/rssrollrc";
 	} else {
@@ -333,25 +333,25 @@ main(int argc, char *argv[])
 			goto purge;
 		}
 	}
-	if (configfile_parse(conffile, &config) == -1) {
+	if (queue_file(conffile, &config) == -1) {
 		render_error("error: cannot open config file: %s", conffile);
 		goto purge;
 	}
 	if (valgrind) {
-		if (cqu(&config, "dbpath", "rssrolltest.db") == -1) {
+		if (qu(&config, "dbpath", "rssrolltest.db") == -1) {
 			printf("Cannot adjust dbpath. Exit\n");
 			goto purge;
 		}
-		if (cqu(&config, "htmldir", "../html") == -1) {
+		if (qu(&config, "htmldir", "../html") == -1) {
 			printf("Cannot adjust htmldir. Exit\n");
 			goto purge;
 		}
 	}
-	if ((confcheck = cez_queue_check(&config, params)) != NULL) {
+	if ((confcheck = queue_check(&config, params)) != NULL) {
 		render_error("error: missing config: %s", confcheck);
 		goto purge;
 	}
-	if (strtol(cez_queue_get(&config, "feeds"), (char **)NULL, 10) <= 0) {
+	if (strtol(queue_get(&config, "feeds"), (char **)NULL, 10) <= 0) {
 		render_error("error: number of feeds cannot be 0 or lower");
 		goto purge;
 	}
@@ -368,12 +368,12 @@ main(int argc, char *argv[])
 		goto purge;
 	}
 
-	if (sqlite3_open(cez_queue_get(&config, "dbpath"), &g.db) != SQLITE_OK) {
-		render_error("cannot load database: %s", cez_queue_get(&config, "dbpath"));
+	if (sqlite3_open(queue_get(&config, "dbpath"), &g.db) != SQLITE_OK) {
+		render_error("cannot load database: %s", queue_get(&config, "dbpath"));
 		goto purge;
 	}
 
-	printf("%s\r\n\r\n", cez_queue_get(&config, "ct_html"));
+	printf("%s\r\n\r\n", queue_get(&config, "ct_html"));
 	config_render();
 	render_run(&render, "MAIN", NULL);
 	fflush(stdout);
@@ -381,6 +381,6 @@ main(int argc, char *argv[])
 	render_purge(&render);
 	sqlite3_close(g.db);
 purge:
-	cez_queue_purge(&config);
+	queue_purge(&config);
 	return (0);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2022 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2018-2023 Nikola Kolev <koue@chaosophia.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,10 +48,10 @@ feed_create(void)
 	/* Common */
 	feed->pool = pool;
 	feed->version = 0;
-	feed->title = NIL;
-	feed->url = NIL;
-	feed->desc = NIL;
-	feed->doc = NIL;
+	feed->title = NULL;
+	feed->url = NULL;
+	feed->desc = NULL;
+	feed->doc = NULL;
 	time_t date = 0;
 
 	return (feed);

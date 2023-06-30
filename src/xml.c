@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Nikola Kolev <koue@chaosophia.net>
+ * Copyright (c) 2022-2023 Nikola Kolev <koue@chaosophia.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
-#include <cez_core_pool.h>
+#include <libpool.h>
 
 static time_t
 strptime2(char *s)
