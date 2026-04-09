@@ -232,7 +232,7 @@ render_tags(const char *macro, void *arg)
 
 	db_prepare(&q, "SELECT id, title FROM tags ORDER BY id");
 	while(db_step(&q)==SQLITE_ROW) {
-		printf("<p><a href='%s?%d'>%s</a></p>\n",
+		printf("<a href='%s?%d'>%s</a> |\n",
 		    queue_get(&config, "url"), db_column_int(&q, 0),
 		    db_column_text(&q, 1));
 	}
